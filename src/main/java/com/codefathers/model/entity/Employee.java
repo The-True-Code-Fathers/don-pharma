@@ -4,13 +4,37 @@ import com.codefathers.model.enums.EmployeeGender;
 import com.codefathers.model.enums.EmployeeRole;
 import lombok.Data;
 
-import java.util.Date;
+import jakarta.persistence.*;
+
+import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
+@Entity
 public class Employee {
-    private int id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id
+    private UUID id;
+
+    @Column(nullable = false)
     private String fullName;
-    private Date birthDate;
+
+    @Column(nullable = false)
+    private LocalDate birthDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private EmployeeGender gender;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private EmployeeRole role;
+
+    public Employee(String fullName, LocalDate birthDate, EmployeeGender gender, EmployeeRole role) {
+        this.fullName = fullName;
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.role = role;
+    }
+
 }
