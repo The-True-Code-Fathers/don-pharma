@@ -1,27 +1,35 @@
 package com.codefathers;
 
+import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.entity.Employee;
+import com.codefathers.model.entity.Product;
 import com.codefathers.model.enums.EmployeeGender;
 import com.codefathers.model.enums.EmployeeRole;
+import com.codefathers.service.ProductRepository;
+import com.codefathers.service.ProductRepositoryImpl;
+import com.codefathers.service.ProductService;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.LocalDate;
 
 
 public class Main {
 
+
     public static void main(String[] args) {
-        Employee user = new Employee("Nelson Antunes", LocalDate.of(1992, 11, 17), EmployeeGender.FEMALE,
-                EmployeeRole.LOCAL_MANAGER);
+        ProductService productService = new ProductService(new ProductRepositoryImpl());
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            session.persist(user);
-            session.getTransaction().commit();
-        }
+        var qualquerCOisa = CreateProductDTO.builder()
+                .sku("A-12345")
+                .description("QUalquer coisa")
+                .name("Paracetamol")
+                .sellPrice(BigDecimal.valueOf(5))
+                .buyPrice(BigDecimal.valueOf(10))
+                .build();
 
-        HibernateUtil.shutdown();
+        productService.createProduct(qualquerCOisa);
     }
 }
