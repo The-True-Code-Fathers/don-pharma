@@ -27,11 +27,11 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     @Override
-    public Optional<Payment> findByEmployeeId(Employee employeeId) {
+    public Optional<Payment> findPaymentByEmployee(Employee employee) {
         try (Session session = sessionFactory.openSession()) {
-            String hql = "FROM Payment p WHERE p.employee.id = :employeeId";
+            String hql = "FROM Payment p WHERE p.employee = :employee";
             Payment payment = session.createQuery(hql, Payment.class)
-                    .setParameter("employeeId", employeeId)
+                    .setParameter("employee", employee)
                     .uniqueResult();
             return Optional.ofNullable(payment);
         }
@@ -46,15 +46,19 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     @Override
-    public void save(Payment payment) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-            session.persist(payment);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
-            throw e;
-        }
+public void save(Payment payment) {
+    Transaction transaction = null;
+    try (Session session = sessionFactory.openSession()) {
+        transaction = session.beginTransaction();
+
+        payment.setEmployee(session.merge(payment.getEmployee()));
+
+        session.persist(payment);
+        transaction.commit();
+    } catch (Exception e) {
+        if (transaction != null) transaction.rollback();
+        throw e;
     }
+}
+
 }

@@ -7,16 +7,20 @@ import java.util.UUID;
 
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
+import com.codefathers.repository.EmployeeRepositoryImpl;
 import com.codefathers.repository.PaymentRepository;
 
 public class PaymentService {
-    PaymentRepository paymentRepository;
 
-    public PaymentService(PaymentRepository paymentRepository) {
+    PaymentRepository paymentRepository;
+    EmployeeRepositoryImpl employeeRepository;
+
+    public PaymentService(PaymentRepository paymentRepository, EmployeeRepositoryImpl employeeRepository) {
         this.paymentRepository = paymentRepository;
+        this.employeeRepository = employeeRepository;
     }
 
-    public Payment createPayment(Employee employeeId, 
+    public Payment createPayment(Employee employee, 
     BigDecimal amountInTaxes, 
     BigDecimal grossIncome,  
     BigDecimal mealVoucherAmount, 
@@ -25,7 +29,7 @@ public class PaymentService {
     BigDecimal dentalInsuranceAmount, 
     BigDecimal profitSharingAmount) {
         Payment payment = Payment.builder().
-        employeeId(employeeId).
+        employee(employee).
         amountInTaxes(amountInTaxes).
         grossIncome(grossIncome).
         mealVoucherAmount(mealVoucherAmount).
@@ -34,19 +38,24 @@ public class PaymentService {
         dentalInsuranceAmount(dentalInsuranceAmount).
         profitSharingAmount(profitSharingAmount).
         build();
+        paymentRepository.save(payment);
         return payment;
     }
 
-    public Optional<Payment> findPaymentByEmployeeId(Employee employeeId) {
-        return paymentRepository.findByEmployeeId(employeeId);
-    }
-
-    public Optional<Payment> findById(UUID id) {
-        return paymentRepository.findById(id);
+    public Optional<Payment> findPaymentByEmployee(Employee employee) {
+        return paymentRepository.findPaymentByEmployee(employee);
     }
 
     public List<Payment> getAllPayments() {
         return paymentRepository.getAllPayments();
+    }
+
+    public Employee findEmployeeById(UUID employeeId) {
+        return employeeRepository.searchEmployeePerId(employeeId);
+    }
+
+    public Optional<Payment> findById(UUID id) {
+        return paymentRepository.findById(id);
     }
 
 }

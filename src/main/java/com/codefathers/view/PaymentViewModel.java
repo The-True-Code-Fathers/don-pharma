@@ -13,8 +13,8 @@ import com.codefathers.service.PaymentService;
 public class PaymentViewModel {
 
     private final PaymentService paymentService;
-    private Payment currentPayment;
     private final Scanner scanner = new Scanner(System.in);
+    private Payment currentPayment;
 
     public PaymentViewModel(PaymentService paymentService) {
         this.paymentService = paymentService;
@@ -46,15 +46,18 @@ public class PaymentViewModel {
         }
     }
 
-    // 🚀 Método para criar Payment com interação
     private void createPaymentInteractive() {
         try {
             System.out.println("\n--- Create Payment ---");
 
             System.out.print("Enter Employee UUID: ");
             UUID employeeId = UUID.fromString(scanner.nextLine());
-            Employee employee = new Employee();
-            employee.setId(employeeId);
+
+            Employee employee = paymentService.findEmployeeById(employeeId);
+            if (employee == null) {
+                System.out.println("❌ Employee not found.");
+                return;
+            }
 
             System.out.print("Enter Gross Income: ");
             BigDecimal grossIncome = new BigDecimal(scanner.nextLine());
@@ -76,7 +79,7 @@ public class PaymentViewModel {
 
             System.out.print("Enter Profit Sharing Amount: ");
             BigDecimal profitSharingAmount = new BigDecimal(scanner.nextLine());
-
+            
             currentPayment = paymentService.createPayment(
                     employee,
                     amountInTaxes,
@@ -95,7 +98,6 @@ public class PaymentViewModel {
         }
     }
 
-    // 🔍 Buscar por Payment ID
     private void findPaymentByIdInteractive() {
         try {
             System.out.println("\n--- Find Payment by Payment UUID ---");
@@ -117,20 +119,20 @@ public class PaymentViewModel {
         }
     }
 
-    // 🔍 Buscar por Employee ID
     private void findPaymentByEmployeeIdInteractive() {
         try {
             System.out.println("\n--- Find Payment by Employee UUID ---");
 
             System.out.print("Enter Employee UUID: ");
-            System.out.print("Enter Employee UUID: ");
-            UUID employeeUUID = UUID.fromString(scanner.nextLine());
+            UUID employeeId = UUID.fromString(scanner.nextLine());
 
-            // supondo que exista um construtor com id
-            Employee employee = new Employee();
-            employee.setId(employeeUUID);
+            Employee employee = paymentService.findEmployeeById(employeeId);
+            if (employee == null) {
+                System.out.println("❌ Employee not found.");
+                return;
+            }
 
-            Optional<Payment> payment = paymentService.findPaymentByEmployeeId(employee);
+            Optional<Payment> payment = paymentService.findPaymentByEmployee(employee);
 
             if (payment.isPresent()) {
                 System.out.println("✅ Payment found for employee:");
@@ -144,7 +146,6 @@ public class PaymentViewModel {
         }
     }
 
-    // 📜 Listar todos os pagamentos
     private void listAllPayments() {
         System.out.println("\n--- List of All Payments ---");
 

@@ -13,7 +13,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     public void saveEmployee(Employee employee) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
-            session.save(employee);
+            session.persist(employee);
             session.getTransaction().commit();
         } catch (Exception e) {
             System.out.println("Erro ao salvar funcionário: " + e.getMessage());

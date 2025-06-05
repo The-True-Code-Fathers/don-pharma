@@ -12,11 +12,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
-
-@Builder
+import jakarta.persistence.ManyToOne;
 @Data
+@Builder
 @Entity(name = "payment")
 public class Payment {
 
@@ -24,10 +22,9 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "employee_id")
-    private Employee employeeId;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "employee_id", nullable = false)
+    private Employee employee;
     
     @Column(name = "amount_in_taxes", precision = 19, scale = 4, nullable = false)
     private BigDecimal amountInTaxes;
