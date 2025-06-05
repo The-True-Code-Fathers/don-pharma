@@ -13,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
 @Data
-@Entity(name = "order")
+@Entity(name = "\"order\"")
 public class Order {
     
     @Id
@@ -45,6 +45,6 @@ public class Order {
     private BigDecimal totalAmount;
     
     @Column(nullable = false)
-    private boolean invoced;
+    private boolean invoiced;
 
 }
