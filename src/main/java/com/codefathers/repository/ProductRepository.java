@@ -1,4 +1,4 @@
-package com.codefathers.service;
+package com.codefathers.repository;
 
 import com.codefathers.model.entity.Product;
 

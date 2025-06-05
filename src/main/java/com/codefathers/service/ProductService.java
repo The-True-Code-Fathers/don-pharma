@@ -2,8 +2,8 @@ package com.codefathers.service;
 
 import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.entity.Product;
+import com.codefathers.repository.ProductRepository;
 import org.hibernate.exception.ConstraintViolationException;
-import org.postgresql.util.PSQLException;
 
 
 public class ProductService {
@@ -20,6 +20,7 @@ public class ProductService {
                     .buyPrice(products.getBuyPrice())
                     .sellPrice(products.getSellPrice())
                     .name(products.getName())
+                    .description(products.getDescription())
                     .build();
         try {
             productRepository.save(product);
