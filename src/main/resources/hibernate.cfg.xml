@@ -22,6 +22,7 @@
         <mapping class="com.codefathers.model.entity.Employee"/>
         <mapping class="com.codefathers.model.entity.Product" />
         <mapping class="com.codefathers.model.entity.Order" />
+        <mapping class="com.codefathers.model.entity.OrderItem" />
         <mapping class="com.codefathers.model.entity.ShippingProvider" />
         <mapping class="com.codefathers.model.entity.ShippingArea" />
     </session-factory>

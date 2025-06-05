@@ -1,6 +1,7 @@
 package com.codefathers.model.entity;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -15,7 +16,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Order {
-    
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -23,28 +23,23 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "seller_id", nullable = false)
     private Employee seller;
-    
-    @ManyToMany
-    @JoinColumn(name = "product_sku", nullable = false)
-    private Product product;
-    
-    @Column(name = "product_quantity", nullable = false)
-    private int productQuantity;
-    
+
+    @OneToMany(mappedBy = "\"order\"", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items;
+
     @Column(name = "products_price", precision = 19, scale = 4, nullable = false)
     private BigDecimal productsPrice;
-    
-    @Column(name = "shipping_price", precision = 19, scale = 4, nullable = false)
-    private BigDecimal shippingPrice;
-    
+
     @ManyToOne
     @JoinColumn(name = "shipping_provider_id", nullable = false)
     private ShippingProvider shippingProvider;
+
+    @Column(name = "shipping_price", precision = 19, scale = 4, nullable = false)
+    private BigDecimal shippingPrice;
 
     @Column(name = "total_amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal totalAmount;
     
     @Column(nullable = false)
     private boolean invoiced;
-
 }
