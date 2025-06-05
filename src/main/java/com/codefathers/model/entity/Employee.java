@@ -2,15 +2,21 @@ package com.codefathers.model.entity;
 
 import com.codefathers.model.enums.EmployeeGender;
 import com.codefathers.model.enums.EmployeeRole;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import jakarta.persistence.*;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
 @Entity(name = "employee")
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Employee {
     
     @GeneratedValue(strategy = GenerationType.UUID)

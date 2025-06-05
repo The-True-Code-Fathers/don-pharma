@@ -11,9 +11,8 @@ import java.time.LocalDate;
 
 
 public class Main {
-
     public static void main(String[] args) {
-        Employee user = new Employee("Nelson Antunes", LocalDate.of(1992, 11, 17), EmployeeGender.FEMALE,
+        Employee user = new Employee("Nelson Antunes", LocalDate.of(1989, 2, 26), EmployeeGender.FEMALE,
                 EmployeeRole.LOCAL_MANAGER);
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
