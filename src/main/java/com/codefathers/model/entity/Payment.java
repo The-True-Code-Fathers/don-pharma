@@ -1,23 +1,33 @@
 package com.codefathers.model.entity;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 
+@Builder
 @Data
 @Entity(name = "payment")
 public class Payment {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
     @OneToOne
     @MapsId
     @JoinColumn(name = "employee_id")
-    private final int employeeId;
+    private Employee employeeId;
     
     @Column(name = "amount_in_taxes", precision = 19, scale = 4, nullable = false)
     private BigDecimal amountInTaxes;
@@ -39,5 +49,5 @@ public class Payment {
 
     @Column(name = "profit_sharing_amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal profitSharingAmount;
-    
+
 }

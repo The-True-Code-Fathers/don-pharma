@@ -1,27 +1,24 @@
 package com.codefathers;
 
-import com.codefathers.model.entity.Employee;
-import com.codefathers.model.enums.EmployeeGender;
-import com.codefathers.model.enums.EmployeeRole;
-import com.codefathers.util.HibernateUtil;
-import org.hibernate.Session;
+import com.codefathers.repository.PaymentRepositoryImpl;
+import com.codefathers.service.PaymentService;
+import com.codefathers.view.PaymentViewModel;
 
-import java.sql.Date;
-import java.time.LocalDate;
-
-
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 public class Main {
 
     public static void main(String[] args) {
-        Employee user = new Employee("Nelson Antunes", LocalDate.of(1992, 11, 17), EmployeeGender.FEMALE,
-                EmployeeRole.LOCAL_MANAGER);
+        SessionFactory sessionFactory = new Configuration()
+                .configure("hibernate.cfg.xml") // Arquivo de configuração no src/main/resources
+                .buildSessionFactory();
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            session.persist(user);
-            session.getTransaction().commit();
-        }
+        PaymentRepositoryImpl paymentRepository = new PaymentRepositoryImpl(sessionFactory);
+        PaymentService paymentService = new PaymentService(paymentRepository);
+        PaymentViewModel paymentViewModel = new PaymentViewModel(paymentService);
 
-        HibernateUtil.shutdown();
+        paymentViewModel.showMenu();
+
+        sessionFactory.close();
     }
 }

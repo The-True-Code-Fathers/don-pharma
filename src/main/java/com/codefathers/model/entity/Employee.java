@@ -3,12 +3,13 @@ package com.codefathers.model.entity;
 import com.codefathers.model.enums.EmployeeGender;
 import com.codefathers.model.enums.EmployeeRole;
 import lombok.Data;
-
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
+@NoArgsConstructor
 @Data
 @Entity(name = "employee")
 public class Employee {
