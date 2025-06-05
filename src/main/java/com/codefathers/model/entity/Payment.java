@@ -5,29 +5,39 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
 
 @Data
+@Entity(name = "payment")
 public class Payment {
+
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "employee_id")
     private final int employeeId;
     
-    @Column(precision = 19, scale = 4)
+    @Column(name = "amount_in_taxes", precision = 19, scale = 4, nullable = false)
     private BigDecimal amountInTaxes;
 
-    @Column(precision = 19, scale = 4)
+    @Column(name = "gross_income", precision = 19, scale = 4, nullable = false)
     private BigDecimal grossIncome;
 
-    @Column(precision = 19, scale = 4)
+    @Column(name = "meal_voucher_amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal mealVoucherAmount;
 
-    @Column(precision = 19, scale = 4)
+    @Column(name = "food_voucher_amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal foodVoucherAmount;
 
-    @Column(precision = 19, scale = 4)
+    @Column(name = "health_insurance_amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal healthInsuranceAmount;
 
-    @Column(precision = 19, scale = 4)
+    @Column(name = "dental_insurance_amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal dentalInsuranceAmount;
 
-    @Column(precision = 19, scale = 4)
+    @Column(name = "profit_sharing_amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal profitSharingAmount;
+    
 }
