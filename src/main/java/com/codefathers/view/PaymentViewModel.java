@@ -92,6 +92,8 @@ public class PaymentViewModel {
 
             System.out.println("✅ Payment created successfully!");
             System.out.println(currentPayment);
+            BigDecimal netIncome = paymentService.calculateNetIncome(currentPayment);
+            System.out.println("💰 Net Income: " + netIncome);
 
         } catch (Exception e) {
             System.out.println("❌ Error creating payment: " + e.getMessage());

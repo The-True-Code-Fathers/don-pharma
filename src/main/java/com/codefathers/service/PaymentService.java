@@ -20,26 +20,56 @@ public class PaymentService {
         this.employeeRepository = employeeRepository;
     }
 
-    public Payment createPayment(Employee employee, 
-    BigDecimal amountInTaxes, 
-    BigDecimal grossIncome,  
-    BigDecimal mealVoucherAmount, 
-    BigDecimal foodVoucherAmount, 
-    BigDecimal healthInsuranceAmount, 
-    BigDecimal dentalInsuranceAmount, 
-    BigDecimal profitSharingAmount) {
-        Payment payment = Payment.builder().
-        employee(employee).
-        amountInTaxes(amountInTaxes).
-        grossIncome(grossIncome).
-        mealVoucherAmount(mealVoucherAmount).
-        foodVoucherAmount(foodVoucherAmount).
-        healthInsuranceAmount(healthInsuranceAmount).
-        dentalInsuranceAmount(dentalInsuranceAmount).
-        profitSharingAmount(profitSharingAmount).
-        build();
+    public Payment createPayment(Employee employee,
+            BigDecimal amountInTaxes,
+            BigDecimal grossIncome,
+            BigDecimal mealVoucherAmount,
+            BigDecimal foodVoucherAmount,
+            BigDecimal healthInsuranceAmount,
+            BigDecimal dentalInsuranceAmount,
+            BigDecimal profitSharingAmount) {
+
+        if (isNegative(grossIncome, amountInTaxes, mealVoucherAmount, foodVoucherAmount,
+                healthInsuranceAmount, dentalInsuranceAmount, profitSharingAmount)) {
+            throw new IllegalArgumentException("Negative value");
+        }
+
+        BigDecimal totalDiscounts = amountInTaxes
+                .add(mealVoucherAmount)
+                .add(foodVoucherAmount)
+                .add(healthInsuranceAmount)
+                .add(dentalInsuranceAmount);
+
+        if (grossIncome.compareTo(totalDiscounts) < 0) {
+            throw new IllegalArgumentException("Gross income needs to be higher than total discounts");
+        }
+
+        Payment payment = Payment.builder().employee(employee).amountInTaxes(amountInTaxes).grossIncome(grossIncome)
+                .mealVoucherAmount(mealVoucherAmount).foodVoucherAmount(foodVoucherAmount)
+                .healthInsuranceAmount(healthInsuranceAmount).dentalInsuranceAmount(dentalInsuranceAmount)
+                .profitSharingAmount(profitSharingAmount).build();
+
         paymentRepository.save(payment);
         return payment;
+    }
+
+    private boolean isNegative(BigDecimal... values) {
+        for (BigDecimal value : values) {
+            if (value.compareTo(BigDecimal.ZERO) < 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public BigDecimal calculateNetIncome(Payment payment) {
+        BigDecimal totalDiscounts = payment.getAmountInTaxes()
+                .add(payment.getMealVoucherAmount())
+                .add(payment.getFoodVoucherAmount())
+                .add(payment.getHealthInsuranceAmount())
+                .add(payment.getDentalInsuranceAmount());
+
+        return payment.getGrossIncome().subtract(totalDiscounts);
     }
 
     public Optional<Payment> findPaymentByEmployee(Employee employee) {
