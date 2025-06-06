@@ -1,17 +1,18 @@
 package com.codefathers.repository;
 
-import com.codefathers.model.entity.Product;
-import com.codefathers.util.HibernateUtil;
+import java.util.List;
+
 import org.hibernate.exception.ConstraintViolationException;
 
-
-import java.util.List;
+import com.codefathers.model.entity.Product;
+import com.codefathers.util.HibernateUtil;
 
 public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public Product findBySKU(String sku) {
-        try( var session = HibernateUtil.getSessionFactory().openSession() ) {
-            return session.createQuery("from product where sku = :sku", Product.class).setParameter("sku", sku).uniqueResult();
+        try (var session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("from product where sku = :sku", Product.class).setParameter("sku", sku)
+                    .uniqueResult();
         }
     }
 
@@ -28,8 +29,7 @@ public class ProductRepositoryImpl implements ProductRepository {
             session.beginTransaction();
             session.save(product);
             session.getTransaction().commit();
-        }
-        catch (ConstraintViolationException e) {
+        } catch (ConstraintViolationException e) {
             System.out.println(e.getMessage());
         }
     }
@@ -37,9 +37,9 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public Product update(String sku) {
         try (var session = HibernateUtil.getSessionFactory().openSession()) {
-            return  session.createQuery("from product where sku = :sku", Product.class).setParameter("sku", sku).uniqueResult();
+            return session.createQuery("from product where sku = :sku", Product.class).setParameter("sku", sku)
+                    .uniqueResult();
         }
     }
-
 
 }
