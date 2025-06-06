@@ -4,9 +4,12 @@ import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.dto.UpdateProductDTO;
 import com.codefathers.model.entity.Product;
 import com.codefathers.repository.ProductRepository;
+import com.codefathers.repository.ProductRepositoryImpl;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
+
+import java.util.List;
 
 
 public class ProductService {
@@ -43,6 +46,7 @@ public class ProductService {
     }
 
     public void updateProduct(@Valid String sku, UpdateProductDTO dto) {
+
         Product product = productRepository.update(sku);
 
         var violations = validator.validate(dto);
@@ -64,4 +68,13 @@ public class ProductService {
             System.out.println(e.getMessage());
         }
     }
+
+    public Product findProductBySKU(String sku) {
+        return productRepository.findBySKU(sku);
+    }
+
+    public List<Product> findAllProducts() {
+        return productRepository.listAllProducts();
+    }
+
 }

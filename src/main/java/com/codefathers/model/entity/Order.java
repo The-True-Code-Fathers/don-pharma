@@ -24,7 +24,7 @@ public class Order {
     @JoinColumn(name = "seller_id", nullable = false)
     private Employee seller;
 
-    @OneToMany(mappedBy = "\"order\"", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items;
 
     @Column(name = "products_price", precision = 19, scale = 4, nullable = false)
