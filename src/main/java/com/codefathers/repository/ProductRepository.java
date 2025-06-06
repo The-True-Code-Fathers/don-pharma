@@ -1,0 +1,14 @@
+package com.codefathers.repository;
+
+import com.codefathers.model.entity.Product;
+
+import java.util.List;
+
+public interface ProductRepository {
+    Product findBySKU(String  sku);
+    List<Product> listAllProducts();
+    void save(Product product);
+    Product update(String sku);
+}
+
+

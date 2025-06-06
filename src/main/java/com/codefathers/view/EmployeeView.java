@@ -15,6 +15,7 @@ import java.util.UUID;
 
 public class EmployeeView {
     private final EmployeeService employeeService;
+    private final Scanner scanner = new Scanner(System.in);
 
     public EmployeeView(EmployeeService employeeService) {
         this.employeeService = employeeService;
@@ -28,7 +29,7 @@ public class EmployeeView {
     }
 
     public void menu() {
-        Scanner sc = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
         int option;
 
         do {
@@ -38,7 +39,7 @@ public class EmployeeView {
             System.out.printf("3 - Buscar Funcionario pelo Id \n");
             System.out.println("4 - Remover Funcionario pelo Id ");
             System.out.println("0 - Sair.\n");
-            option = sc.nextInt();
+            option = scanner.nextInt();
             switch (option) {
                 case 1:
                     System.out.println("--- Cadastrar Funcionario ---");
@@ -65,11 +66,9 @@ public class EmployeeView {
             }
 
         } while (option != 0);
-        sc.close();
     }
 
     public void cadastrarFuncionario() {
-        Scanner scanner = new Scanner(System.in);
         try {
             System.out.print("Nome para cadastro: ");
             String name = scanner.nextLine();
@@ -95,32 +94,28 @@ public class EmployeeView {
                     build();
             employeeService.createEmployee(createEmployeeDTO);
         } catch (Exception e) {
-            e.getMessage();
+            System.out.println("Erro: " + e.getMessage());
         }
-        scanner.close();
     }
 
     public void listarFuncionarios() {
         List<Employee> employeeListService = employeeService.employeeList();
-
         employeeService.employeeList().forEach(System.out::println);
     }
 
     public void acharFuncionarioPeloID() {
-        Scanner scanner = new Scanner(System.in);
         try {
             System.out.println("Informe um id para buscarmos: ");
             String id = scanner.nextLine();
             UUID uuid = UUID.fromString(id);
             employeeService.findEmployeeById(uuid);
         } catch (Exception e) {
-            e.getMessage();
+            System.out.println("Erro: " + e.getMessage());
         }
     }
 
     public void removerFuncionarioPeloID() {
         try {
-            Scanner scanner = new Scanner(System.in);
             System.out.println("Informe o id do funcionario para removermos: ");
             String id = scanner.nextLine();
             UUID uuid = UUID.fromString(id);
@@ -128,6 +123,5 @@ public class EmployeeView {
         } catch (Exception e) {
             e.getMessage();
         }
-        scanner.close();
     }
 }
