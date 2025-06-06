@@ -48,11 +48,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public Employee findById(UUID sellerId) {
-        return null;
-    }
-
-    @Override
     public Employee searchEmployeePerId(UUID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Employee.class, id);
