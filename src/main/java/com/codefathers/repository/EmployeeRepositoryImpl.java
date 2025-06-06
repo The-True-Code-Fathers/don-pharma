@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 
+
     @Override
     public void saveEmployee(Employee employee) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -48,11 +49,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public Employee findById(UUID sellerId) {
-        return null;
-    }
-
-    @Override
     public Employee searchEmployeePerId(UUID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Employee.class, id);
@@ -62,3 +58,4 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         }
     }
 }
+
