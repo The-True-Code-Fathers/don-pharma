@@ -1,6 +1,7 @@
 package com.codefathers.model.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,5 +42,12 @@ public class Order {
     private BigDecimal totalAmount;
     
     @Column(nullable = false)
-    private boolean invoiced;
+    private boolean invoiced = false;
+
+    @Column(nullable = false)
+    private boolean cancelled = false;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
 }
