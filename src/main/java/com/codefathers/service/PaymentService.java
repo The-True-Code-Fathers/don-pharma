@@ -72,8 +72,8 @@ public class PaymentService {
         return payment.getGrossIncome().subtract(totalDiscounts);
     }
 
-    public Optional<Payment> findPaymentByEmployee(Employee employee) {
-        return paymentRepository.findPaymentByEmployee(employee);
+    public List<Payment> findPaymentsByEmployee(Employee employee) {
+        return paymentRepository.findPaymentsByEmployee(employee);
     }
 
     public List<Payment> getAllPayments() {

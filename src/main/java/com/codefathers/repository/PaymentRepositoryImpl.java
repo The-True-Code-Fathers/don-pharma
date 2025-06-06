@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
+import com.codefathers.util.HibernateUtil;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -27,38 +29,41 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     @Override
-    public Optional<Payment> findPaymentByEmployee(Employee employee) {
-        try (Session session = sessionFactory.openSession()) {
-            String hql = "FROM Payment p WHERE p.employee = :employee";
-            Payment payment = session.createQuery(hql, Payment.class)
-                    .setParameter("employee", employee)
-                    .uniqueResult();
-            return Optional.ofNullable(payment);
-        }
+    public List<Payment> findPaymentsByEmployee(Employee employee) {
+    try (Session session = sessionFactory.openSession()) {
+        String hql = "select p from payment p where p.employee = :employee";
+        return session.createQuery(hql, Payment.class)
+                .setParameter("employee", employee)
+                .list();
     }
+}
 
     @Override
     public List<Payment> getAllPayments() {
-        try (Session session = sessionFactory.openSession()) {
-            String hql = "FROM Payment";
+        try (Session session = HibernateUtil.sessionFactory.openSession()) {
+            String hql = "select p from payment p";
             return session.createQuery(hql, Payment.class).list();
+        } catch (Exception e) {
+            e.getMessage();
+            return List.of();
         }
     }
 
     @Override
-public void save(Payment payment) {
-    Transaction transaction = null;
-    try (Session session = sessionFactory.openSession()) {
-        transaction = session.beginTransaction();
+    public void save(Payment payment) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
 
-        payment.setEmployee(session.merge(payment.getEmployee()));
+            payment.setEmployee(session.merge(payment.getEmployee()));
 
-        session.persist(payment);
-        transaction.commit();
-    } catch (Exception e) {
-        if (transaction != null) transaction.rollback();
-        throw e;
+            session.persist(payment);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null)
+                transaction.rollback();
+            throw e;
+        }
     }
-}
 
 }

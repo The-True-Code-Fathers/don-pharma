@@ -134,11 +134,11 @@ public class PaymentViewModel {
                 return;
             }
 
-            Optional<Payment> payment = paymentService.findPaymentByEmployee(employee);
+            List<Payment> payment = paymentService.findPaymentsByEmployee(employee);
 
-            if (payment.isPresent()) {
+            if (!payment.isEmpty()) {
                 System.out.println("✅ Payment found for employee:");
-                System.out.println(payment.get());
+                payment.forEach(System.out::println);
             } else {
                 System.out.println("❌ No payment found for this employee.");
             }

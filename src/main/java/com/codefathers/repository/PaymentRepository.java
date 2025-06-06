@@ -10,6 +10,6 @@ import com.codefathers.model.entity.Payment;
 public interface PaymentRepository {
     List<Payment> getAllPayments();
     Optional<Payment> findById(UUID id);
-    Optional<Payment> findPaymentByEmployee(Employee employee);
+    List<Payment> findPaymentsByEmployee(Employee employee);
     void save(Payment payment);
 }
