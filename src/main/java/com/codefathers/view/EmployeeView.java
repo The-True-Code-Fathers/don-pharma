@@ -7,6 +7,9 @@ import com.codefathers.model.enums.EmployeeRole;
 import com.codefathers.repository.EmployeeRepository;
 import com.codefathers.repository.EmployeeRepositoryImpl;
 import com.codefathers.service.EmployeeService;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,8 +25,10 @@ public class EmployeeView {
     }
 
     public static void main(String[] args) {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
         EmployeeRepository employeeRepository = new EmployeeRepositoryImpl();
-        EmployeeService employeeService = new EmployeeService(employeeRepository);
+        EmployeeService employeeService = new EmployeeService(employeeRepository, validator);
         EmployeeView view = new EmployeeView(employeeService);
         view.menu();
     }
