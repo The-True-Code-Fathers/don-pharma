@@ -5,6 +5,7 @@ import com.codefathers.model.entity.Employee;
 import com.codefathers.repository.EmployeeRepository;
 
 import java.util.List;
+import java.util.Scanner;
 import java.util.UUID;
 
 public class EmployeeService {
@@ -30,12 +31,20 @@ public class EmployeeService {
     }
 
     public void findEmployeeById(UUID id) {
-        Employee employee = employeeRepository.searchEmployeePerId(id);
-        if (employee != null) {
-            System.out.println("Funcionário encontrado: " + employee);
-        } else {
-            System.out.println("Funcionário não encontrado com o ID informado.");
+        try {
+            employeeList()
+                    .stream()
+                    .filter(employee -> employee.getId()
+                    .equals(id))
+                    .findFirst().
+                    ifPresentOrElse(employee -> System.out.println("Encontrado: " + employee),
+                            () -> System.out.println("Não foi possível encontrar o funcionário pelo id."));
+        } catch (Exception e) {
+            e.getMessage();
         }
     }
 
+    public void deleteEmployeeByID(UUID uuid) {
+        employeeRepository.deleteEmployeeByID(uuid);
+    }
 }

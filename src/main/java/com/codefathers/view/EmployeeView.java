@@ -21,12 +21,10 @@ public class EmployeeView {
     }
 
     public static void main(String[] args) {
-
         EmployeeRepository employeeRepository = new EmployeeRepositoryImpl();
         EmployeeService employeeService = new EmployeeService(employeeRepository);
         EmployeeView view = new EmployeeView(employeeService);
         view.menu();
-
     }
 
     public void menu() {
@@ -34,29 +32,35 @@ public class EmployeeView {
         int option;
 
         do {
-            System.out.printf("--------------Menu de Funcionario--------------\n");
-            System.out.printf("1-Cadastrar Funcionario\n");
-            System.out.printf("2-Listar Funcionarios\n");
-            System.out.printf("3-Buscar Funcionario por Id\n");
+            System.out.printf("- Menu de Funcionario -\n");
+            System.out.printf("1 - Cadastrar Funcionario \n");
+            System.out.printf("2 - Listar Funcionarios \n");
+            System.out.printf("3 - Buscar Funcionario pelo Id \n");
+            System.out.println("4 - Remover Funcionario pelo Id ");
+            System.out.println("0 - Sair.\n");
             option = sc.nextInt();
             switch (option) {
                 case 1:
-                    System.out.println("Cadastrar Funcionario");
+                    System.out.println("--- Cadastrar Funcionario ---");
                     cadastrarFuncionario();
                     break;
                 case 2:
-                    System.out.print("----------------Lista de Funcionarios-----------------");
+                    System.out.print("--- Lista de Funcionarios ---");
                     listarFuncionarios();
                     break;
                 case 3:
                     System.out.println("-- Usuários buscados pelo ID --");
                     acharFuncionarioPeloID();
                     break;
+                case 4:
+                    System.out.println("-- Removendo usuário pelo ID --");
+                    removerFuncionarioPeloID();
+                    break;
                 case 0:
-                    System.out.printf("Saindo...........");
+                    System.out.printf("Saindo...");
                     break;
                 default:
-                    System.out.printf("Opçao imvalida, tente novamente!");
+                    System.out.printf("Opção imvalida, tente novamente!");
                     break;
             }
 
@@ -108,13 +112,19 @@ public class EmployeeView {
             System.out.println("Informe um id para buscarmos: ");
             String id = scanner.nextLine();
             UUID uuid = UUID.fromString(id);
-            employeeService.employeeList()
-                    .stream()
-                    .filter(employee -> employee.getId()
-                    .equals(uuid))
-                    .findFirst().
-                    ifPresentOrElse(employee -> System.out.println("Encontrado: " + employee),
-                    () -> System.out.println("Não foi possível encontrar o funcionário pelo id."));
+            employeeService.findEmployeeById(uuid);
+        } catch (Exception e) {
+            e.getMessage();
+        }
+    }
+
+    public void removerFuncionarioPeloID() {
+        try {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Informe o id do funcionario para removermos: ");
+            String id = scanner.nextLine();
+            UUID uuid = UUID.fromString(id);
+            employeeService.deleteEmployeeByID(uuid);
         } catch (Exception e) {
             e.getMessage();
         }

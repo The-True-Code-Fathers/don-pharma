@@ -24,7 +24,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     public List<Employee> listAllEmployees() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("select e from employee e", Employee.class).list();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.getMessage();
             return List.of();
         }
@@ -51,7 +51,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     public Employee searchEmployeePerId(UUID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Employee.class, id);
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Erro ao buscar funcionário por ID: " + e.getMessage());
             return null;
         }
