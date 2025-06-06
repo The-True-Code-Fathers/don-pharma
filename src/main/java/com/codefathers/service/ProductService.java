@@ -4,18 +4,32 @@ import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.dto.UpdateProductDTO;
 import com.codefathers.model.entity.Product;
 import com.codefathers.repository.ProductRepository;
-import org.hibernate.exception.ConstraintViolationException;
+import com.codefathers.repository.ProductRepositoryImpl;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
+import jakarta.validation.Validator;
+
+import java.util.List;
 
 
 public class ProductService {
 
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+    private final Validator validator;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, Validator validator) {
+        this.validator = validator;
         this.productRepository = productRepository;
     }
 
-    public void createProduct(CreateProductDTO products) {
+    public void createProduct(@Valid CreateProductDTO products) {
+
+        var violations = validator.validate(products);
+
+        if (!violations.isEmpty()) {
+            throw new jakarta.validation.ConstraintViolationException(violations);
+        }
+
         Product product = Product.builder()
                     .sku(products.getSku())
                     .buyPrice(products.getBuyPrice())
@@ -31,8 +45,15 @@ public class ProductService {
         }
     }
 
-    public void updateProduct(String sku, UpdateProductDTO dto) {
+    public void updateProduct(@Valid String sku, UpdateProductDTO dto) {
+
         Product product = productRepository.update(sku);
+
+        var violations = validator.validate(dto);
+
+        if (!violations.isEmpty()) {
+            throw new jakarta.validation.ConstraintViolationException(violations);
+        }
 
         if (product == null) {
             throw new RuntimeException("Produto com SKU '" + sku + "' não encontrado.");
@@ -47,4 +68,13 @@ public class ProductService {
             System.out.println(e.getMessage());
         }
     }
+
+    public Product findProductBySKU(String sku) {
+        return productRepository.findBySKU(sku);
+    }
+
+    public List<Product> findAllProducts() {
+        return productRepository.listAllProducts();
+    }
+
 }

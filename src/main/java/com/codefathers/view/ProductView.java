@@ -3,6 +3,7 @@ package com.codefathers.view;
 import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.repository.ProductRepositoryImpl;
 import com.codefathers.service.ProductService;
+import com.codefathers.util.ValidationUtil;
 
 import java.util.Scanner;
 
@@ -21,7 +22,7 @@ public class ProductView {
     }
 
     public static void main(String[] args) {
-        new ProductView(new ProductService(new ProductRepositoryImpl())).render();
+        new ProductView(new ProductService(new ProductRepositoryImpl(), ValidationUtil.getValidator())).render();
     }
 
 }
