@@ -28,8 +28,16 @@ public class ProductRepositoryImpl implements ProductRepository {
             session.beginTransaction();
             session.save(product);
             session.getTransaction().commit();
-        } catch (ConstraintViolationException e) {
+        }
+        catch (ConstraintViolationException e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    @Override
+    public Product update(String sku) {
+        try (var session = HibernateUtil.getSessionFactory().openSession()) {
+            return  session.createQuery("from product where sku = :sku", Product.class).setParameter("sku", sku).uniqueResult();
         }
     }
 
