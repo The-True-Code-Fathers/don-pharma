@@ -34,9 +34,9 @@ public class StorageRepositoryImpl implements StorageRepository {
     @Override
     public Optional<Storage> findByProductSku(String productSku) {
         try (Session session = HibernateUtil.sessionFactory.openSession()) {
-            String hql = "select s from storage s where s.product.sku = :productId";
+            String hql = "select s from storage s where s.product.sku = :productSku";
             Storage storage = session.createQuery(hql, Storage.class)
-                    .setParameter("productId", productSku)
+                    .setParameter("productSku", productSku)
                     .uniqueResult();
             return Optional.ofNullable(storage);
         }
