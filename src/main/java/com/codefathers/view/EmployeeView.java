@@ -33,10 +33,10 @@ public class EmployeeView {
         int option;
 
         do {
-            System.out.printf("- Menu de Funcionario -\n");
-            System.out.printf("1 - Cadastrar Funcionario \n");
-            System.out.printf("2 - Listar Funcionarios \n");
-            System.out.printf("3 - Buscar Funcionario pelo Id \n");
+            System.out.print("- Menu de Funcionario -\n");
+            System.out.print("1 - Cadastrar Funcionario \n");
+            System.out.print("2 - Listar Funcionarios \n");
+            System.out.print("3 - Buscar Funcionario pelo Id \n");
             System.out.println("4 - Remover Funcionario pelo Id ");
             System.out.println("0 - Sair.\n");
             option = scanner.nextInt();

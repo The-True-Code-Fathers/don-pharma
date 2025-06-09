@@ -2,7 +2,7 @@ package com.codefathers.model.dto;
 
 import jakarta.validation.constraints.Pattern;
 
-public class CreateTruckingCompany {
+public class CreateShippingProviderDTO {
 
     @Pattern (
             regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",

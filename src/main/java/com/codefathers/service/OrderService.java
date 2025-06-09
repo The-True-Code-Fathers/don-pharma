@@ -32,7 +32,7 @@ public class OrderService {
             throw new ConstraintViolationException(violations);
         }
 
-        Employee emp = employeeRepository.findById(createOrderDTO.getSellerId());
+        Employee emp = employeeRepository.searchEmployeePerId(createOrderDTO.getSellerId());
         Order order = Order.builder()
                 .seller(emp)
                 .build();
