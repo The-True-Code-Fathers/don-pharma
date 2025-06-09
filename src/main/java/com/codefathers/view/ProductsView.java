@@ -19,20 +19,18 @@ import com.vaadin.flow.router.Route;
 @Route("products")
 public class ProductsView extends VerticalLayout {
 
-
     private ProductService productService;
-
-    private Grid<Product> grid = new Grid<>(Product.class, false);
 
     private TextField sku = new TextField("SKU");
     private TextField name = new TextField("Name");
-    private TextArea description = new TextArea("Description");
+    private TextArea description = new TextArea("Description", "Optional");
     private BigDecimalField buyPrice = new BigDecimalField("Buy Price");
     private BigDecimalField sellPrice = new BigDecimalField("Sell Price");
 
     private Button saveButton = new Button("Save");
-    private Button deleteButton = new Button("Delete");
     private Button clearButton = new Button("Clear");
+
+    private Grid<Product> grid = new Grid<>(Product.class, false);
 
     private Product currentProduct;
 
@@ -42,10 +40,10 @@ public class ProductsView extends VerticalLayout {
 
         this.productService = new ProductService(productRepository, ValidationUtil.getValidator());
 
-        setupGrid();
         setupForm();
+        setupGrid();
 
-        add(grid, createFormLayout());
+        add(createFormLayout(), grid);
         updateGrid();
     }
 
@@ -70,16 +68,17 @@ public class ProductsView extends VerticalLayout {
 
     private void setupForm() {
         sku.setReadOnly(false);
+        name.setReadOnly(false);
         saveButton.addClickListener(e -> saveProduct());
         clearButton.addClickListener(e -> clearForm());
-
-        deleteButton.setEnabled(false);
     }
 
     private HorizontalLayout createFormLayout() {
-        HorizontalLayout buttons = new HorizontalLayout(saveButton, deleteButton, clearButton);
-        VerticalLayout formLayout = new VerticalLayout(sku, name, description, buyPrice, sellPrice, buttons);
+
+        HorizontalLayout buttons = new HorizontalLayout(saveButton, clearButton);
+        HorizontalLayout formLayout = new HorizontalLayout(sku, name, description, buyPrice, sellPrice, buttons);
         formLayout.setWidth("400px");
+
         return new HorizontalLayout(formLayout);
     }
 
@@ -87,10 +86,10 @@ public class ProductsView extends VerticalLayout {
         sku.setValue(product.getSku());
         sku.setReadOnly(true);
         name.setValue(product.getName());
+        name.setReadOnly(true);
         description.setValue(product.getDescription() != null ? product.getDescription() : "");
         buyPrice.setValue(product.getBuyPrice());
         sellPrice.setValue(product.getSellPrice());
-        deleteButton.setEnabled(true);
     }
 
     private void clearForm() {
@@ -98,10 +97,10 @@ public class ProductsView extends VerticalLayout {
         sku.clear();
         sku.setReadOnly(false);
         name.clear();
+        name.setReadOnly(false);
         description.clear();
         buyPrice.clear();
         sellPrice.clear();
-        deleteButton.setEnabled(false);
         grid.asSingleSelect().clear();
     }
 

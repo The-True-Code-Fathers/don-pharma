@@ -26,7 +26,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     public void save(Product product) {
         try (var session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
-            session.save(product);
+            session.saveOrUpdate(product);
             session.getTransaction().commit();
         }
         catch (ConstraintViolationException e) {
