@@ -27,7 +27,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     public void save(Product product) {
         try (var session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
-            session.persist(product);
+            session.save(product);
             session.getTransaction().commit();
         } catch (ConstraintViolationException e) {
             System.out.println(e.getMessage());
@@ -41,5 +41,6 @@ public class ProductRepositoryImpl implements ProductRepository {
                     .uniqueResult();
         }
     }
+
 
 }
