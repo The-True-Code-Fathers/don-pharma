@@ -36,3 +36,6 @@ build/
 
 ### Arch Linux ###
 .tool-versions
+
+### Aquivos gerados pelo vaadin
+src/main/frontend/generated/*
