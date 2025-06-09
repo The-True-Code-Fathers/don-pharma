@@ -5,8 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import lombok.Builder;
 import lombok.Data;
 
+@Builder
 @Data
 @Entity(name = "storage")
 public class Storage {
@@ -19,7 +21,7 @@ public class Storage {
     @JoinColumn(name = "product_sku", referencedColumnName = "sku")
     private Product product;
 
-    @Column(nullable = false)
-    private int quantity;
+    @Column(name = "product_quantity", nullable = false)
+    private int productQuantity;
 
 }

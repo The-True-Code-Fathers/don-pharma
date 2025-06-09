@@ -22,6 +22,7 @@ public class StorageViewModel {
             System.out.println("\n========= MENU ESTOQUE =========");
             System.out.println("1 - Adicionar produto ao estoque");
             System.out.println("2 - Consultar quantidade em estoque");
+            System.out.println("3 - Consultar estoque inteiro");
             System.out.println("0 - Sair");
             System.out.print("Escolha uma opção: ");
             String opcao = scanner.nextLine();
@@ -29,6 +30,7 @@ public class StorageViewModel {
             switch (opcao) {
                 case "1" -> adicionarProduto();
                 case "2" -> consultarEstoque();
+                case "3" -> consultarEstoqueInteiro();
                 case "0" -> {
                     System.out.println("Saindo...");
                     return;
@@ -63,6 +65,10 @@ public class StorageViewModel {
         } catch (Exception e) {
             System.out.println("Erro ao consultar estoque: " + e.getMessage());
         }
+    }
+
+    private void consultarEstoqueInteiro() {
+        System.out.println(storageService.getAllStorages());
     }
 
     public static void main(String[] args) {

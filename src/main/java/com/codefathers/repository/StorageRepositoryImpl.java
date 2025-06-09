@@ -1,5 +1,6 @@
 package com.codefathers.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.hibernate.Session;
@@ -25,7 +26,7 @@ public class StorageRepositoryImpl implements StorageRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.persist(storage);
+            session.merge(storage);
             transaction.commit();
         }
     }
@@ -38,6 +39,17 @@ public class StorageRepositoryImpl implements StorageRepository {
                     .setParameter("productId", productSku)
                     .uniqueResult();
             return Optional.ofNullable(storage);
+        }
+    }
+
+    @Override
+    public List<Storage> getAllStorages() {
+        try (Session session = HibernateUtil.sessionFactory.openSession()) {
+            String hql = "from storage";
+            return session.createQuery(hql, Storage.class).list();
+        } catch (Exception e) {
+            e.getMessage();
+            return List.of();
         }
     }
 

@@ -1,6 +1,7 @@
 package com.codefathers.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import com.codefathers.model.entity.Product;
@@ -25,14 +26,15 @@ public class StorageService {
 
         Product product = findProductBySku(productSku);
 
-        Optional<Storage> optionalStorage = storageRepository.findByProductSku(product.getSku());
+        Optional<Storage> optionalStorage = storageRepository.findByProductSku(productSku);
+
         if (optionalStorage.isPresent()) {
-            Storage storage = optionalStorage.get();
+            var storage = optionalStorage.get();
             storage.setProductQuantity(storage.getProductQuantity() + productQuantity);
             storageRepository.update(storage);
         }
         if (!optionalStorage.isPresent()) {
-            var storage = Storage.builder().product(product).productQuantity(productQuantity).productStorageCost(BigDecimal.ZERO).build();
+            var storage = Storage.builder().product(product).productQuantity(productQuantity).build();
             storageRepository.save(storage);
         }
     }
@@ -41,10 +43,14 @@ public class StorageService {
         return productRepository.findBySKU(productSku);
     }
 
-    public int getQuantityStock(String productId) {
-        Storage storage = storageRepository.findByProductSku(productId)
+    public int getQuantityStock(String productSku) {
+        Storage storage = storageRepository.findByProductSku(productSku)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
         return storage.getProductQuantity();
+    }
+
+    public List<Storage> getAllStorages() {
+        return storageRepository.getAllStorages();
     }
 
 }
