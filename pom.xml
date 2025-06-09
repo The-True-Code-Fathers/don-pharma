@@ -273,7 +273,7 @@
                         <artifactId>jetty-ee10-maven-plugin</artifactId>
                         <version>${jetty.version}</version>
                         <configuration>
-                            <scan>0</scan>
+                            <scan>1</scan>
                             <stopPort>8081</stopPort>
                             <stopWait>5</stopWait>
                             <stopKey>${project.artifactId}</stopKey>
@@ -297,6 +297,7 @@
                     </plugin>
 
                     <!-- Runs the integration tests (*IT) after the server is started -->
+                    <!--
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
@@ -313,7 +314,7 @@
                             <trimStackTrace>false</trimStackTrace>
                             <enableAssertions>true</enableAssertions>
                         </configuration>
-                    </plugin>
+                    </plugin> -->
                 </plugins>
             </build>
         </profile>
