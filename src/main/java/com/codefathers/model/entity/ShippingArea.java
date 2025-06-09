@@ -2,10 +2,12 @@
 
     import java.util.UUID;
     import jakarta.persistence.*;
+    import lombok.Builder;
     import lombok.Data;
 
     @Data
     @Entity(name = "shipping_area")
+    @Builder
     public class ShippingArea {
         @Id
         private UUID id;
