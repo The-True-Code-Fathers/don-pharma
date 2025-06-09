@@ -36,3 +36,5 @@ build/
 
 ### Arch Linux ###
 .tool-versions
+
+src/main/frontend/generated/
