@@ -22,7 +22,6 @@ public class ShippingAreaView {
     }
 
     public static void main(String[] args) {
-
         ShippingAreaRepository repository = new ShippingAreaRepositoryImpl();
         var validator = Validation.buildDefaultValidatorFactory().getValidator();
         ShippingAreaService service = new ShippingAreaService(repository,validator);
