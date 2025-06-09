@@ -6,9 +6,7 @@ import org.hibernate.Session;
 import java.util.List;
 import java.util.UUID;
 
-
 public class EmployeeRepositoryImpl implements EmployeeRepository {
-
 
     @Override
     public void saveEmployee(Employee employee) {
@@ -58,4 +56,3 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         }
     }
 }
-

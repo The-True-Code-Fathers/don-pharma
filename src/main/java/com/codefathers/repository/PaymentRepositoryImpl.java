@@ -23,13 +23,13 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 
     @Override
     public List<Payment> findPaymentsByEmployee(Employee employee) {
-    try (Session session = HibernateUtil.sessionFactory.openSession()) {
-        String hql = "select p from payment p where p.employee = :employee";
-        return session.createQuery(hql, Payment.class)
-                .setParameter("employee", employee)
-                .list();
+        try (Session session = HibernateUtil.sessionFactory.openSession()) {
+            String hql = "select p from payment p where p.employee = :employee";
+            return session.createQuery(hql, Payment.class)
+                    .setParameter("employee", employee)
+                    .list();
+        }
     }
-}
 
     @Override
     public List<Payment> getAllPayments() {

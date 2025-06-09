@@ -14,10 +14,11 @@ public class OrderRepositoryImpl implements OrderRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.save(order);
+            session.persist(order);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (transaction != null)
+                transaction.rollback();
             e.printStackTrace(); // melhor usar logger
         }
     }
@@ -30,7 +31,8 @@ public class OrderRepositoryImpl implements OrderRepository {
             session.update(order);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (transaction != null)
+                transaction.rollback();
             e.printStackTrace();
         }
     }
@@ -43,7 +45,8 @@ public class OrderRepositoryImpl implements OrderRepository {
             session.delete(order);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (transaction != null)
+                transaction.rollback();
             e.printStackTrace();
         }
     }
