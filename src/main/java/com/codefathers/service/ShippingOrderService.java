@@ -1,19 +1,54 @@
 package com.codefathers.service;
 
+import com.codefathers.model.dto.CreateShippingOrderDTO;
 import com.codefathers.model.entity.ShippingOrder;
+import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.repository.ShippingOrderRepository;
+import com.codefathers.repository.ShippingProviderRepository;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
+
 import java.util.List;
 import java.util.UUID;
 
 public class ShippingOrderService {
-    private ShippingOrderRepository shippingOrderRepository;
+    private final ShippingOrderRepository shippingOrderRepository;
+    private final ShippingProviderRepository shippingProviderRepository;
+    private final Validator validator;
 
-    public ShippingOrderService(ShippingOrderRepository shippingOrderRepository) {
+    public ShippingOrderService(ShippingOrderRepository shippingOrderRepository, ShippingProviderRepository shippingProviderRepository, Validator validator) {
         this.shippingOrderRepository = shippingOrderRepository;
+        this.shippingProviderRepository = shippingProviderRepository;
+        this.validator = validator;
     }
 
-    public void saveShippingOrder(ShippingOrder shippingOrder) {
+    public void saveShippingOrder(ShippingOrder shippingOrder){
         shippingOrderRepository.saveShippingOrder(shippingOrder);
+    }
+
+    public void createOrder(CreateShippingOrderDTO dto){
+        var violations = validator.validate(dto);
+        if (!violations.isEmpty()){
+            throw new ConstraintViolationException(violations);
+        }
+        ShippingProvider provider = shippingProviderRepository.searchShippingProviderPerId(dto.getShippingProviderId());
+        if (provider == null) {
+            throw new IllegalArgumentException("ShippingProvider não encontrado para o id: " + dto.getShippingProviderId());
+        }
+
+        ShippingOrder order = ShippingOrder.builder()
+                .shippingProvider(provider)
+                .destinationState(dto.getDestinationState())
+                .destinationCity(dto.getDestinationCity())
+                .weight(dto.getWeight())
+                .status(dto.getStatus())
+                .estimatedDeliveryDays(dto.getEstimatedDeliveryDays())
+                .shipmentDate(dto.getShipmentDate())
+                .deliveryDate(dto.getDeliveryDate())
+                .shippingCost(dto.getShippingCost())
+                .build();
+
+        saveShippingOrder(order);
     }
 
     public ShippingOrder searchShippingOrder(UUID orderId) {

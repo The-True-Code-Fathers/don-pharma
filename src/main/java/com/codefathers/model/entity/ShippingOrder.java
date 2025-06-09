@@ -2,6 +2,7 @@ package com.codefathers.model.entity;
 
 import com.codefathers.model.enums.ShippingServiceStatus;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 @Entity(name = "shipping_order")
 @Data
+@Builder
 public class ShippingOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
