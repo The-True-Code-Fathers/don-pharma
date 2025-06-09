@@ -20,10 +20,9 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final Validator validator;
 
-    public EmployeeService(EmployeeRepository employeeRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, Validator validator) {
         this.employeeRepository = employeeRepository;
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        this.validator = Validation.buildDefaultValidatorFactory().getValidator();
+        this.validator = validator;
     }
 
     public void createEmployee(CreateEmployeeDTO dto) {
