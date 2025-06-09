@@ -1,29 +1,31 @@
-package com.codefathers.model.entity;
+    package com.codefathers.model.entity;
 
-import java.util.UUID;
+    import java.util.UUID;
+    import java.util.regex.Pattern;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import lombok.Data;
+    import jakarta.persistence.*;
+    import lombok.AllArgsConstructor;
+    import lombok.Builder;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
 
-@Data
-@Entity(name = "shipping_area")
-public class ShippingArea {
-    
-    @Id
-    private UUID id;
+    @Data
+    @Entity(name = "shipping_area")
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public class ShippingArea {
+        @GeneratedValue(strategy = GenerationType.UUID)
+        @Id
+        private UUID id;
 
-    @OneToOne
-    @JoinColumn(name = "id")
-    private ShippingProvider shippingProvider;
+        @ManyToOne
+        @JoinColumn(name = "shipping_provider_id")
+        private ShippingProvider shippingProvider;
 
-    @Column(columnDefinition = "text")
-    private String description;
+        @Column(columnDefinition = "text")
+        private String description;
 
-    @Column(nullable = false)
-    private String states;
-
-}
+        @Column(nullable = false)
+        private String states;
+    }
