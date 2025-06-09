@@ -24,15 +24,15 @@ public class ShippingProviderRepositoryImpl implements ShippingProviderRepositor
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(ShippingProvider.class, shippingId);
         } catch (Exception e) {
-            System.out.println("Erro ao buscar a transportadora: " + e.getMessage());
+           System.out.println("Erro ao buscar a transportadora: " + e.getMessage());
+           return null;
         }
-        return null;
     }
 
     @Override
     public List<ShippingProvider> listAllShippingProviders() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select p from ShippingProvider p", ShippingProvider.class).getResultList();
+            return session.createQuery("select p from shipping_provider p", ShippingProvider.class).getResultList();
         }
     }
 

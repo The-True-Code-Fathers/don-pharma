@@ -34,9 +34,7 @@ public class ShippingOrderRepositoryImpl implements ShippingOrderRepository{
     @Override
     public List<ShippingOrder> listAllShippingOrders() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select o from ShippingOrder o", ShippingOrder.class).getResultList();
-        } catch (Exception e) {
-            System.out.println("Erro: " + e.getMessage());
+            return session.createQuery("select o from shipping_order o", ShippingOrder.class).getResultList();
         }
     }
 

@@ -6,13 +6,19 @@ import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity(name = "shipping_provider")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ShippingProvider {
-    @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
     private UUID id;
 
     @Column(nullable = false)
@@ -31,5 +37,5 @@ public class ShippingProvider {
     private int averageDeliveryDays;
 
     @OneToMany(mappedBy = "shippingProvider", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ShippingArea> shippingAreas = new ArrayList<>();
+    private List<ShippingArea> shippingAreas;
 }

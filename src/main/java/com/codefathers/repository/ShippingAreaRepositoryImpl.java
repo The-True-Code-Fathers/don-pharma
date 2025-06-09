@@ -32,7 +32,7 @@ public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
     @Override
     public List<ShippingArea> listAllShippingAreas() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select a from ShippingArea a", ShippingArea.class).getResultList();
+            return session.createQuery("select a from shipping_area a", ShippingArea.class).getResultList();
         }
     }
 
