@@ -1,16 +1,16 @@
 package com.codefathers.service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import com.codefathers.model.dto.CreateStorageDTO;
 import com.codefathers.model.entity.Product;
 import com.codefathers.model.entity.Storage;
 import com.codefathers.repository.ProductRepositoryImpl;
 import com.codefathers.repository.StorageRepositoryImpl;
 
 public class StorageService {
-    
+
     StorageRepositoryImpl storageRepository;
     ProductRepositoryImpl productRepository;
 
@@ -34,7 +34,10 @@ public class StorageService {
             storageRepository.update(storage);
         }
         if (!optionalStorage.isPresent()) {
-            var storage = Storage.builder().product(product).productQuantity(productQuantity).build();
+            var storage = Storage.builder()
+                    .product(product)
+                    .productQuantity(productQuantity)
+                    .build();
             storageRepository.save(storage);
         }
     }
@@ -49,8 +52,9 @@ public class StorageService {
         return storage.getProductQuantity();
     }
 
-    public List<Storage> getAllStorages() {
-        return storageRepository.getAllStorages();
+    public List<CreateStorageDTO> getAllStorages() {
+        return storageRepository.getAllStorages().stream().map(storage -> CreateStorageDTO.builder()
+                .productQuantity(storage.getProductQuantity()).build()).toList();
     }
 
 }
