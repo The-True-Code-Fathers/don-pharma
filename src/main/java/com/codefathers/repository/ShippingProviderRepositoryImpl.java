@@ -7,8 +7,7 @@ import org.hibernate.Session;
 import java.util.List;
 import java.util.UUID;
 
-public class ShippingProviderImpl implements ShippingProviderRepository {
-
+public class ShippingProviderRepositoryImpl implements ShippingProviderRepository {
     @Override
     public void saveShippingProvider(ShippingProvider shippingProvider) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

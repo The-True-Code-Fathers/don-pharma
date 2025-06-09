@@ -3,7 +3,6 @@ package com.codefathers.model.entity;
 import com.codefathers.model.enums.ShippingServiceStatus;
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -43,6 +42,4 @@ public class ShippingOrder {
 
     @Column(name = "shipping_cost")
     private BigDecimal shippingCost;
-
-
 }

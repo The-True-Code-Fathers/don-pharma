@@ -1,7 +1,6 @@
     package com.codefathers.model.entity;
 
     import java.util.UUID;
-
     import jakarta.persistence.*;
     import lombok.Data;
 
@@ -20,5 +19,4 @@
 
         @Column(nullable = false)
         private String states;
-
     }
