@@ -6,11 +6,36 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
 
+import com.codefathers.model.dto.CreatePaymentDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
+import com.codefathers.repository.EmployeeRepositoryImpl;
+import com.codefathers.repository.PaymentRepositoryImpl;
 import com.codefathers.service.PaymentService;
 
 public class PaymentViewModel {
+
+    public static void main(String[] args) {
+        PaymentRepositoryImpl paymentRepository = new PaymentRepositoryImpl();
+        EmployeeRepositoryImpl employeeRepository = new EmployeeRepositoryImpl();
+        PaymentService paymentService = new PaymentService(paymentRepository, employeeRepository);
+        PaymentViewModel paymentViewModel = new PaymentViewModel(paymentService);
+
+        paymentViewModel.showMenu();
+
+        // UUID uuid = UUID.fromString("f0ff69dd-1256-4d84-889b-6306810c4d9e");
+
+        // CreatePaymentDTO createPaymentDTO = new CreatePaymentDTO();
+        // createPaymentDTO.setEmployee(employeeRepository.searchEmployeePerId(uuid));
+        // createPaymentDTO.setAmountInTaxes(new BigDecimal("100.00"));
+        // createPaymentDTO.setDentalInsuranceAmount(new BigDecimal("100.00"));
+        // createPaymentDTO.setFoodVoucherAmount(new BigDecimal("100.00"));
+        // createPaymentDTO.setGrossIncome(new BigDecimal("20000.00"));
+        // createPaymentDTO.setProfitSharingAmount(new BigDecimal("100.00"));
+        // createPaymentDTO.setHealthInsuranceAmount(new BigDecimal("100.00"));
+        // createPaymentDTO.setMealVoucherAmount(new BigDecimal("100.00"));
+        // paymentService.createPayment(createPaymentDTO);
+    }
 
     private final PaymentService paymentService;
     private final Scanner scanner = new Scanner(System.in);
@@ -80,15 +105,18 @@ public class PaymentViewModel {
             System.out.print("Enter Profit Sharing Amount: ");
             BigDecimal profitSharingAmount = new BigDecimal(scanner.nextLine());
             
-            currentPayment = paymentService.createPayment(
-                    employee,
-                    amountInTaxes,
-                    grossIncome,
-                    mealVoucherAmount,
-                    foodVoucherAmount,
-                    healthInsuranceAmount,
-                    dentalInsuranceAmount,
-                    profitSharingAmount);
+            var createPaymentDTO = CreatePaymentDTO.builder()
+            .employee(employee)
+            .amountInTaxes(amountInTaxes)
+            .grossIncome(grossIncome)
+            .mealVoucherAmount(mealVoucherAmount)
+            .foodVoucherAmount(foodVoucherAmount)
+            .healthInsuranceAmount(healthInsuranceAmount)
+            .dentalInsuranceAmount(dentalInsuranceAmount)
+            .profitSharingAmount(profitSharingAmount)
+            .build();
+
+            currentPayment = paymentService.createPayment(createPaymentDTO);
 
             System.out.println("✅ Payment created successfully!");
             System.out.println(currentPayment);

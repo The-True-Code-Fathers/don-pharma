@@ -47,15 +47,8 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-
-            payment.setEmployee(session.merge(payment.getEmployee()));
-
             session.persist(payment);
             transaction.commit();
-        } catch (Exception e) {
-            if (transaction != null)
-                transaction.rollback();
-            throw e;
         }
     }
 

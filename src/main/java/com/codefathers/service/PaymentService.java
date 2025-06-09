@@ -5,52 +5,62 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.codefathers.model.dto.CreatePaymentDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
+import com.codefathers.repository.EmployeeRepository;
 import com.codefathers.repository.EmployeeRepositoryImpl;
 import com.codefathers.repository.PaymentRepository;
+import com.codefathers.repository.PaymentRepositoryImpl;
 
 public class PaymentService {
 
     PaymentRepository paymentRepository;
-    EmployeeRepositoryImpl employeeRepository;
+    EmployeeRepository employeeRepository;
 
-    public PaymentService(PaymentRepository paymentRepository, EmployeeRepositoryImpl employeeRepository) {
+    public PaymentService(PaymentRepositoryImpl paymentRepository, EmployeeRepositoryImpl employeeRepository) {
         this.paymentRepository = paymentRepository;
         this.employeeRepository = employeeRepository;
     }
 
-    public Payment createPayment(Employee employee,
-            BigDecimal amountInTaxes,
-            BigDecimal grossIncome,
-            BigDecimal mealVoucherAmount,
-            BigDecimal foodVoucherAmount,
-            BigDecimal healthInsuranceAmount,
-            BigDecimal dentalInsuranceAmount,
-            BigDecimal profitSharingAmount) {
+    public Payment createPayment(CreatePaymentDTO createPaymentDTO) {
+        try {
+            Employee employee = employeeRepository.searchEmployeePerId(createPaymentDTO.getEmployee().getId());
 
-        if (isNegative(grossIncome, amountInTaxes, mealVoucherAmount, foodVoucherAmount,
-                healthInsuranceAmount, dentalInsuranceAmount, profitSharingAmount)) {
+        if (isNegative(createPaymentDTO.getGrossIncome(), createPaymentDTO.getAmountInTaxes(),
+                createPaymentDTO.getMealVoucherAmount(), createPaymentDTO.getFoodVoucherAmount(),
+                createPaymentDTO.getHealthInsuranceAmount(), createPaymentDTO.getDentalInsuranceAmount(),
+                createPaymentDTO.getProfitSharingAmount())) {
             throw new IllegalArgumentException("Negative value");
         }
 
-        BigDecimal totalDiscounts = amountInTaxes
-                .add(mealVoucherAmount)
-                .add(foodVoucherAmount)
-                .add(healthInsuranceAmount)
-                .add(dentalInsuranceAmount);
+        BigDecimal totalDiscounts = createPaymentDTO.getAmountInTaxes()
+                .add(createPaymentDTO.getMealVoucherAmount())
+                .add(createPaymentDTO.getFoodVoucherAmount())
+                .add(createPaymentDTO.getHealthInsuranceAmount())
+                .add(createPaymentDTO.getDentalInsuranceAmount());
 
-        if (grossIncome.compareTo(totalDiscounts) < 0) {
+        if (createPaymentDTO.getGrossIncome().compareTo(totalDiscounts) < 0) {
             throw new IllegalArgumentException("Gross income needs to be higher than total discounts");
         }
 
-        Payment payment = Payment.builder().employee(employee).amountInTaxes(amountInTaxes).grossIncome(grossIncome)
-                .mealVoucherAmount(mealVoucherAmount).foodVoucherAmount(foodVoucherAmount)
-                .healthInsuranceAmount(healthInsuranceAmount).dentalInsuranceAmount(dentalInsuranceAmount)
-                .profitSharingAmount(profitSharingAmount).build();
+        Payment payment = Payment.builder()
+                .employee(employee)
+                .amountInTaxes(createPaymentDTO.getAmountInTaxes())
+                .grossIncome(createPaymentDTO.getGrossIncome())
+                .mealVoucherAmount(createPaymentDTO.getMealVoucherAmount())
+                .foodVoucherAmount(createPaymentDTO.getFoodVoucherAmount())
+                .healthInsuranceAmount(createPaymentDTO.getHealthInsuranceAmount())
+                .dentalInsuranceAmount(createPaymentDTO.getDentalInsuranceAmount())
+                .profitSharingAmount(createPaymentDTO.getProfitSharingAmount())
+                .build();
 
         paymentRepository.save(payment);
         return payment;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 
     private boolean isNegative(BigDecimal... values) {

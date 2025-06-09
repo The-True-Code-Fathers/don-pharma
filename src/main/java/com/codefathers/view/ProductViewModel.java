@@ -24,11 +24,11 @@ public class ProductViewModel {
 
     public void createSampleProduct() {
         CreateProductDTO dto = new CreateProductDTO();
-        dto.setSku("SKU123");
+        dto.setSku("DIPIROCA123");
         dto.setBuyPrice(new BigDecimal("10.00"));
         dto.setSellPrice(new BigDecimal("15.00"));
-        dto.setName("Produto de Teste");
-        dto.setDescription("Descrição do produto de teste");
+        dto.setName("Produto de Test");
+        dto.setDescription("Descrição do produto de");
 
         productService.createProduct(dto);
         System.out.println("Produto criado com sucesso!");
