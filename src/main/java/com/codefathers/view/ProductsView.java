@@ -96,7 +96,6 @@ public class ProductsView extends VerticalLayout {
 
 
     private HorizontalLayout createFormLayout() {
-
         HorizontalLayout buttons = new HorizontalLayout(saveButton, clearButton, closeDialog);
         VerticalLayout formLayout = new VerticalLayout(sku, name, description, buyPrice, sellPrice, buttons);
         formLayout.setWidth("400px");

@@ -11,6 +11,16 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 
     @Override
+    public void update(Employee employee) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.merge(employee);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @Override
     public void saveEmployee(Employee employee) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
