@@ -9,12 +9,10 @@ import java.util.stream.Collectors;
 
 import com.codefathers.model.dto.CreateEmployeeDTO;
 import com.codefathers.model.entity.Employee;
-import com.codefathers.repository.EmployeeRepository;
+import com.codefathers.repository.interfaces.EmployeeRepository;
 
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;

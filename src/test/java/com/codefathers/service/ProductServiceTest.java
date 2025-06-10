@@ -3,7 +3,7 @@ package com.codefathers.service;
 import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.dto.UpdateProductDTO;
 import com.codefathers.model.entity.Product;
-import com.codefathers.repository.ProductRepository;
+import com.codefathers.repository.interfaces.ProductRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;

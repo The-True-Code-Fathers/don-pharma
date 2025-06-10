@@ -2,7 +2,7 @@ package com.codefathers.service;
 
 import com.codefathers.model.dto.CreateShippingAreaDTO;
 import com.codefathers.model.entity.ShippingArea;
-import com.codefathers.repository.ShippingAreaRepository;
+import com.codefathers.repository.interfaces.ShippingAreaRepository;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;

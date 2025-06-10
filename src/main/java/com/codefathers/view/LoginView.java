@@ -1,7 +1,7 @@
 package com.codefathers.view;
 
 import com.codefathers.model.entity.SystemUser;
-import com.codefathers.repository.SystemUserRepositoryImpl;
+import com.codefathers.repository.implementations.SystemUserRepositoryImpl;
 import com.codefathers.service.AuthService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.login.AbstractLogin;

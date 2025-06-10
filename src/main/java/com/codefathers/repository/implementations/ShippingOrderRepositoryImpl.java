@@ -1,14 +1,14 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.ShippingOrder;
-import com.codefathers.model.entity.ShippingProvider;
+import com.codefathers.repository.interfaces.ShippingOrderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
 
 import java.util.List;
 import java.util.UUID;
 
-public class ShippingOrderRepositoryImpl implements ShippingOrderRepository{
+public class ShippingOrderRepositoryImpl implements ShippingOrderRepository {
 
     @Override
     public void saveShippingOrder(ShippingOrder shippingOrder) {

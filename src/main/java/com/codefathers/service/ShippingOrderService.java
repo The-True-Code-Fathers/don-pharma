@@ -3,8 +3,8 @@ package com.codefathers.service;
 import com.codefathers.model.dto.CreateShippingOrderDTO;
 import com.codefathers.model.entity.ShippingOrder;
 import com.codefathers.model.entity.ShippingProvider;
-import com.codefathers.repository.ShippingOrderRepository;
-import com.codefathers.repository.ShippingProviderRepository;
+import com.codefathers.repository.interfaces.ShippingOrderRepository;
+import com.codefathers.repository.interfaces.ShippingProviderRepository;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 

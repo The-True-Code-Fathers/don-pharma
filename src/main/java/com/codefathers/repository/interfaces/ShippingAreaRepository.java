@@ -1,7 +1,6 @@
-package com.codefathers.repository;
+package com.codefathers.repository.interfaces;
 
 import com.codefathers.model.entity.ShippingArea;
-import com.codefathers.model.entity.ShippingProvider;
 
 import java.util.List;
 import java.util.UUID;

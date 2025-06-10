@@ -1,8 +1,8 @@
 package com.codefathers.util;
 
 import com.codefathers.model.entity.SystemUser;
-import com.codefathers.repository.SystemUserRepository;
-import com.codefathers.repository.SystemUserRepositoryImpl;
+import com.codefathers.repository.interfaces.SystemUserRepository;
+import com.codefathers.repository.implementations.SystemUserRepositoryImpl;
 
 public class DataInitializer {
 

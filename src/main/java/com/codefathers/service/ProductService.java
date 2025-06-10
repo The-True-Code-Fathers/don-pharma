@@ -5,7 +5,7 @@ import java.util.List;
 import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.dto.UpdateProductDTO;
 import com.codefathers.model.entity.Product;
-import com.codefathers.repository.ProductRepository;
+import com.codefathers.repository.interfaces.ProductRepository;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;

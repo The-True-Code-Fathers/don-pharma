@@ -1,6 +1,7 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.Employee;
+import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.codefathers.service;
 
 import com.codefathers.model.entity.SystemUser;
-import com.codefathers.repository.SystemUserRepository;
+import com.codefathers.repository.interfaces.SystemUserRepository;
 import com.codefathers.util.PasswordUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;

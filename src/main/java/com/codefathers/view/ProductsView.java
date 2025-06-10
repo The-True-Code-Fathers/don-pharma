@@ -3,7 +3,7 @@ package com.codefathers.view;
 import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.dto.UpdateProductDTO;
 import com.codefathers.model.entity.Product;
-import com.codefathers.repository.ProductRepositoryImpl;
+import com.codefathers.repository.implementations.ProductRepositoryImpl;
 import com.codefathers.service.ProductService;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
@@ -26,7 +26,6 @@ import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 @Route("products")
 public class ProductsView extends VerticalLayout {

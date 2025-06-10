@@ -1,6 +1,7 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.PurchaseOrder;
+import com.codefathers.repository.interfaces.PurchaseOrderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;

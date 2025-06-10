@@ -1,7 +1,8 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import java.util.List;
 
+import com.codefathers.repository.interfaces.ProductRepository;
 import org.hibernate.exception.ConstraintViolationException;
 
 import com.codefathers.model.entity.Product;
