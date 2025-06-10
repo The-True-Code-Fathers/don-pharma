@@ -27,7 +27,6 @@ public class LoginView extends VerticalLayout {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
-        loginForm.setAction("login");
         loginForm.addLoginListener(this::authenticate);
 
         add(loginForm);
