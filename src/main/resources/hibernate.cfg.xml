@@ -27,5 +27,6 @@
         <mapping class="com.codefathers.model.entity.ShippingArea" />
         <mapping class="com.codefathers.model.entity.Storage"/>
         <mapping class="com.codefathers.model.entity.Payment" />
+        <mapping class="com.codefathers.model.entity.SystemUser" />
     </session-factory>
 </hibernate-configuration>
