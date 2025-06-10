@@ -36,6 +36,7 @@ public class ProductService {
                     .sellPrice(products.getSellPrice())
                     .name(products.getName())
                     .description(products.getDescription())
+                    .active(true)
                     .build();
         try {
             productRepository.save(product);
@@ -61,6 +62,7 @@ public class ProductService {
         product.setDescription(dto.getDescription());
         product.setBuyPrice(dto.getBuyPrice());
         product.setSellPrice(dto.getSellPrice());
+        product.setActive(dto.isActive());
         try {
             productRepository.save(product);
         }

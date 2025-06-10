@@ -4,129 +4,200 @@ import com.codefathers.model.dto.CreateEmployeeDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.enums.EmployeeGender;
 import com.codefathers.model.enums.EmployeeRole;
-import com.codefathers.repository.EmployeeRepository;
 import com.codefathers.repository.EmployeeRepositoryImpl;
 import com.codefathers.service.EmployeeService;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
-
+import com.codefathers.util.ValidationUtil;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.lumo.Lumo;
+import com.vaadin.flow.theme.lumo.LumoUtility;
+import javassist.runtime.Inner;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Scanner;
-import java.util.UUID;
 
-public class EmployeeView {
-    private final EmployeeService employeeService;
-    private final Scanner scanner = new Scanner(System.in);
+import static org.jsoup.helper.ValidationException.Validator;
 
-    public EmployeeView(EmployeeService employeeService) {
-        this.employeeService = employeeService;
+@Route("employee")
+public class EmployeeView extends VerticalLayout {
+    private EmployeeService employeeService;
+
+    private TextField fullname = new TextField("Nome completo");
+    private DatePicker birthDate = new DatePicker("Data de nascimento");
+    private ComboBox<EmployeeGender> gender = new ComboBox<>("Gênero");
+    private ComboBox<EmployeeRole> role = new ComboBox<>("Cargo");
+
+    private Button createEmployeeButton = new Button("Criar Funcionário");
+    private Button saveButton = new Button("Salvar");
+    private Button removeButton = new Button("Remover");
+    private Button closeDialogButton = new Button("Fechar");
+
+    private Grid<Employee> grid = new Grid<>(Employee.class, false);
+    private Dialog dialog = new Dialog();
+    private Employee currentEmployee;
+
+    public EmployeeView() {
+        var employeeRepository = new EmployeeRepositoryImpl();
+        this.employeeService = new EmployeeService(employeeRepository, ValidationUtil.getValidator());
+
+        configureFormFields();
+        setUpForm();
+        setUpGrid();
+        setUpDialog();
+        setSizeFull();
+        setAlignItems(Alignment.CENTER);
+
+        HorizontalLayout contentWrapper = new HorizontalLayout();
+        contentWrapper.setWidth("100%");
+        contentWrapper.setMaxWidth("1200px");
+        contentWrapper.setJustifyContentMode(JustifyContentMode.CENTER);
+
+        contentWrapper.addClassNames(
+            LumoUtility.Padding.Horizontal.LARGE,
+            LumoUtility.Padding.Top.LARGE,
+            LumoUtility.Padding.Bottom.LARGE
+        );
+
+        VerticalLayout innerContent = new VerticalLayout();
+        innerContent.setAlignItems(Alignment.STRETCH);
+        innerContent.add (
+                new H1("Gerenciamento de funcionários"),
+                createEmployeeButton,
+                grid
+        );
+        innerContent.setSpacing(true);
+        contentWrapper.add(innerContent);
+        add(contentWrapper);
+        updateGrid();
     }
 
-    public static void main(String[] args) {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        EmployeeRepository employeeRepository = new EmployeeRepositoryImpl();
-        EmployeeService employeeService = new EmployeeService(employeeRepository, validator);
-        EmployeeView view = new EmployeeView(employeeService);
-        view.menu();
+    private void configureFormFields() {
+        gender.setItems(EmployeeGender.values());
+        gender.setItemLabelGenerator(EmployeeGender::name);
+
+        role.setItems(EmployeeRole.values());
+        role.setItemLabelGenerator(EmployeeRole::name);
+
+        birthDate.setPlaceholder("YYYY-MM-DD");
     }
 
-    public void menu() {
-        Scanner scanner = new Scanner(System.in);
-        int option;
-
-        do {
-            System.out.printf("- Menu de Funcionario -\n");
-            System.out.printf("1 - Cadastrar Funcionario \n");
-            System.out.printf("2 - Listar Funcionarios \n");
-            System.out.printf("3 - Buscar Funcionario pelo Id \n");
-            System.out.println("4 - Remover Funcionario pelo Id ");
-            System.out.println("0 - Sair.\n");
-            option = scanner.nextInt();
-            switch (option) {
-                case 1:
-                    System.out.println("--- Cadastrar Funcionario ---");
-                    cadastrarFuncionario();
-                    break;
-                case 2:
-                    System.out.print("--- Lista de Funcionarios ---");
-                    listarFuncionarios();
-                    break;
-                case 3:
-                    System.out.println("-- Usuários buscados pelo ID --");
-                    acharFuncionarioPeloID();
-                    break;
-                case 4:
-                    System.out.println("-- Removendo usuário pelo ID --");
-                    removerFuncionarioPeloID();
-                    break;
-                case 0:
-                    System.out.printf("Saindo...");
-                    break;
-                default:
-                    System.out.printf("Opção imvalida, tente novamente!");
-                    break;
+    private void saveEmployee() {
+        String fullName = fullname.getValue();
+        LocalDate employeeBirthDate = birthDate.getValue();
+        EmployeeGender employeeGender = gender.getValue();
+        EmployeeRole employeeRole = role.getValue();
+        try {
+            if (fullName.isEmpty() || employeeBirthDate == null || employeeGender == null || employeeRole == null) {
+                Notification.show("Todos os campos são obrigatórios!", 3000, Notification.Position.MIDDLE);
+                return;
             }
 
-        } while (option != 0);
-    }
+            if (currentEmployee == null) {
+                CreateEmployeeDTO createEmployeeDTO = CreateEmployeeDTO.builder()
+                        .fullName(fullName)
+                        .birthDate(employeeBirthDate)
+                        .gender(employeeGender)
+                        .role(employeeRole)
+                        .build();
 
-    public void cadastrarFuncionario() {
-        try {
-            System.out.print("Nome para cadastro: ");
-            String name = scanner.nextLine();
-
-            System.out.print("Cargo (opções: LOCAL_MANAGER, SAC, HR, FINANCIAL, SALES, STORAGE, SHIPPING): ");
-            String roleInput = scanner.nextLine().toUpperCase();
-            EmployeeRole role = EmployeeRole.valueOf(roleInput);
-
-            System.out.println("Data de nascimento (YYYY-MM-DD): ");
-            String birth = scanner.nextLine();
-            LocalDate birthDate = LocalDate.parse(birth);
-
-            System.out.println("Gênero (MALE/FEMALE/NON-BINARY/UNDECLARED): ");
-            String genderInput = scanner.nextLine().toUpperCase();
-            EmployeeGender gender = EmployeeGender.valueOf(genderInput);
-
-            CreateEmployeeDTO createEmployeeDTO = CreateEmployeeDTO.
-                    builder().
-                    fullName(name).
-                    birthDate(birthDate).
-                    gender(gender).
-                    role(role).
-                    build();
-            employeeService.createEmployee(createEmployeeDTO);
-        } catch (Exception e) {
-            System.out.println("Erro: " + e.getMessage());
+                employeeService.createEmployee(createEmployeeDTO);
+                Notification.show("Funcionário criado com sucesso!", 3000, Notification.Position.MIDDLE);
+            } else {
+                Notification.show("O funcionário já existe.", 3000, Notification.Position.MIDDLE);
+            }
+            updateGrid();
+            clearForm();
+            dialog.close();
+        } catch (IllegalArgumentException ex) {
+            Notification.show("Erro de validação: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            Notification.show("Erro ao salvar funcionário: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            ex.printStackTrace();
         }
     }
 
-    public void listarFuncionarios() {
-        List<Employee> employeeListService = employeeService.employeeList();
-        employeeService.employeeList().forEach(System.out::println);
+    private void setUpForm() {
+        saveButton.addClickListener(e -> saveEmployee());
+        removeButton.addClickListener(e -> removeEmployee());
+        createEmployeeButton.addClickListener(e -> {
+            clearForm();
+            currentEmployee = null;
+            dialog.open();
+        });
+        closeDialogButton.addClickListener(e -> dialog.close());
     }
 
-    public void acharFuncionarioPeloID() {
-        try {
-            System.out.println("Informe um id para buscarmos: ");
-            String id = scanner.nextLine();
-            UUID uuid = UUID.fromString(id);
-            employeeService.findEmployeeById(uuid);
-        } catch (Exception e) {
-            System.out.println("Erro: " + e.getMessage());
-        }
+    private void setUpGrid() {
+        grid.addColumn(Employee::getFullName).setHeader("Nome completo").setAutoWidth(true);
+        grid.addColumn(Employee::getBirthDate).setHeader("Data de nascimento").setAutoWidth(true);
+        grid.addColumn(Employee::getGender).setHeader("Gênero").setAutoWidth(true);
+        grid.addColumn(Employee::getRole).setHeader("Cargo").setAutoWidth(true);
+
+        grid.asSingleSelect().addValueChangeListener(event -> {
+            currentEmployee = event.getValue();
+            if (currentEmployee != null) {
+                populateForm(currentEmployee);
+                dialog.open();
+            } else {
+                clearForm();
+            }
+        });
+        grid.setHeight("300px");
     }
 
-    public void removerFuncionarioPeloID() {
-        try {
-            System.out.println("Informe o id do funcionario para removermos: ");
-            String id = scanner.nextLine();
-            UUID uuid = UUID.fromString(id);
-            employeeService.deleteEmployeeByID(uuid);
-        } catch (Exception e) {
-            e.getMessage();
+    private void setUpDialog() {
+        dialog.setHeaderTitle("Cadastrar ou Editar Funcionário");
+        dialog.setTop("50px");
+        dialog.setLeft("50px");
+        dialog.setResizable(true);
+        dialog.setDraggable(true);
+        dialog.getElement().getStyle().set("width", "400px");
+        dialog.getElement().getStyle().set("height", "400px");
+
+        HorizontalLayout buttons = new HorizontalLayout(saveButton, removeButton, closeDialogButton);
+        VerticalLayout formLayout = new VerticalLayout(fullname, birthDate, gender, role, buttons);
+        formLayout.setWidth("400px");
+
+        dialog.add(formLayout);
+    }
+
+    private void updateGrid() {
+        grid.setItems(employeeService.employeeList());
+    }
+
+    private void clearForm() {
+        fullname.clear();
+        birthDate.clear();
+        gender.clear();
+        role.clear();
+        currentEmployee = null;
+    }
+
+    private void populateForm(Employee employee) {
+        fullname.setValue(employee.getFullName());
+        birthDate.setValue(employee.getBirthDate());
+        gender.setValue(employee.getGender());
+        role.setValue(employee.getRole());
+    }
+
+    private void removeEmployee() {
+        if (currentEmployee != null) {
+            employeeService.deleteEmployeeByID(currentEmployee.getId());
+            Notification.show("Funcionário removido com sucesso!", 3000, Notification.Position.MIDDLE);
+            updateGrid();
+            clearForm();
+            dialog.close();
+        } else {
+            Notification.show("Selecione um funcionário para remover.", 3000, Notification.Position.MIDDLE);
         }
     }
 }
