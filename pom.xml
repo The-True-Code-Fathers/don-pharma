@@ -177,6 +177,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- (just) Crypto from Spring Security -->
+        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>6.5.0</version>
+        </dependency>
+
     </dependencies>
 
     <repositories>
