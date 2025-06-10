@@ -16,6 +16,7 @@ public class ValidatorUtil {
         // Utility class – prevent instantiation
     }
 
+    @SuppressWarnings("unused")
     public static void shutdown() {
         factory.close();
     }
