@@ -2,159 +2,139 @@ package com.codefathers.view;
 
 import com.codefathers.model.dto.CreateShippingOrderDTO;
 import com.codefathers.model.entity.ShippingOrder;
+import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.model.enums.ShippingServiceStatus;
-import com.codefathers.repository.ShippingOrderRepository;
 import com.codefathers.repository.ShippingOrderRepositoryImpl;
-import com.codefathers.repository.ShippingProviderRepository;
 import com.codefathers.repository.ShippingProviderRepositoryImpl;
 import com.codefathers.service.ShippingOrderService;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
+import com.codefathers.service.ShippingProviderService;
+import com.codefathers.util.ValidatorUtil;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.BigDecimalField;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.Route;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Scanner;
 import java.util.UUID;
 
-public class ShippingOrderView {
-    private final ShippingOrderService shippingOrderService;
-    private final Scanner scanner = new Scanner(System.in);
+@Route("shipping-orders")
+public class ShippingOrderView extends VerticalLayout {
 
-    public ShippingOrderView(ShippingOrderService shippingOrderService) {
-        this.shippingOrderService = shippingOrderService;
+    private ShippingOrderService shippingOrderService;
+    private ShippingProviderService shippingProviderService;
+
+    private final ComboBox<ShippingProvider> providerComboBox = new ComboBox<>("Provedor");
+    private final TextField destinationState = new TextField("Estado de Destino");
+    private final TextField destinationCity = new TextField("Cidade de Destino");
+    private final BigDecimalField weight = new BigDecimalField("Peso (kg)");
+    private final ComboBox<ShippingServiceStatus> status = new ComboBox<>("Status");
+    private final TextField estimatedDays = new TextField("Dias Estimados");
+    private final DatePicker shipmentDate = new DatePicker("Data de Envio");
+    private final DatePicker deliveryDate = new DatePicker("Data Prevista");
+    private final BigDecimalField shippingCost = new BigDecimalField("Custo do Frete");
+
+    private final Button saveButton = new Button("Salvar");
+    private final Button clearButton = new Button("Limpar");
+
+    private final Grid<ShippingOrder> grid = new Grid<>(ShippingOrder.class, false);
+
+    public ShippingOrderView() {
+        ShippingProviderRepositoryImpl providerRepository = new ShippingProviderRepositoryImpl();
+        ShippingOrderRepositoryImpl orderRepository = new ShippingOrderRepositoryImpl();
+        this.shippingProviderService = new ShippingProviderService(providerRepository);
+
+        this.shippingOrderService = new ShippingOrderService(
+                orderRepository,
+                providerRepository,
+                ValidatorUtil.getValidator()
+        );
+
+        status.setItems(ShippingServiceStatus.values());
+
+        loadProviders();
+        setupGrid();
+        setupForm();
+
+        add(createFormLayout(), grid);
+        updateGrid();
     }
 
-    public static void main(String[] args) {
-        ShippingOrderRepository orderRepository = new ShippingOrderRepositoryImpl();
-        ShippingProviderRepository providerRepository = new ShippingProviderRepositoryImpl();
-        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-
-        ShippingOrderService service = new ShippingOrderService(orderRepository, providerRepository, validator);
-        ShippingOrderView view = new ShippingOrderView(service);
-
-        view.menu();
+    private void loadProviders() {
+        providerComboBox.setItems(shippingProviderService.listAllShippingProviders());
+        providerComboBox.setItemLabelGenerator(ShippingProvider::getName);
     }
 
-    public void menu() {
-        int option;
-        do {
-            System.out.println("\n--- Menu de Pedidos de Entrega ---");
-            System.out.println("1 - Cadastrar Pedido de Entrega");
-            System.out.println("2 - Listar Pedidos de Entrega");
-            System.out.println("3 - Remover Pedido por Id");
-            System.out.println("4 - Buscar Pedido por Id");
-            System.out.println("0 - Sair");
-            System.out.print("Escolha uma opção: ");
-            option = scanner.nextInt();
-            scanner.nextLine(); // consumir enter
-
-            switch (option) {
-                case 1 -> cadastrarPedidoEntrega();
-                case 2 -> listarPedidosEntrega();
-                case 3 -> removerPedidoPorId();
-                case 4 -> buscarPedidoPorId();
-                case 0 -> System.out.println("Saindo...");
-                default -> System.out.println("Opção inválida.");
-            }
-        } while (option != 0);
+    private void setupGrid() {
+        grid.addColumn(order -> order.getId()).setHeader("ID");
+        grid.addColumn(order -> order.getShippingProvider().getName()).setHeader("Provedor");
+        grid.addColumn(ShippingOrder::getDestinationCity).setHeader("Cidade");
+        grid.addColumn(ShippingOrder::getDestinationState).setHeader("Estado");
+        grid.addColumn(ShippingOrder::getWeight).setHeader("Peso");
+        grid.addColumn(ShippingOrder::getStatus).setHeader("Status");
+        grid.setHeight("300px");
     }
-    private void listarPedidosEntrega() {
+
+    private void setupForm() {
+        saveButton.addClickListener(e -> saveShippingOrder());
+        clearButton.addClickListener(e -> clearForm());
+    }
+
+    private HorizontalLayout createFormLayout() {
+        HorizontalLayout form = new HorizontalLayout(
+                providerComboBox, destinationState, destinationCity, weight,
+                status, estimatedDays, shipmentDate, deliveryDate, shippingCost,
+                saveButton, clearButton
+        );
+        form.setWrap(true);
+        return form;
+    }
+
+    private void saveShippingOrder() {
         try {
-            List<ShippingOrder> orders = shippingOrderService.listAllShippingOrders();
-            if (orders.isEmpty()) {
-                System.out.println("Nenhum pedido de entrega cadastrado.");
-            } else {
-                System.out.println("\n--- Pedidos de Entrega ---");
-                orders.forEach(System.out::println);
-            }
-        } catch (Exception e) {
-            System.out.println("Erro ao listar pedidos: " + e.getMessage());
-        }
-    }
-    private void cadastrarPedidoEntrega() {
-        try {
-            System.out.print("ID do provedor de entrega: ");
-            UUID providerId = UUID.fromString(scanner.nextLine());
-
-            System.out.print("Estado de destino (ex: SP): ");
-            String destinationState = scanner.nextLine();
-
-            System.out.print("Cidade de destino: ");
-            String destinationCity = scanner.nextLine();
-
-            System.out.print("Peso da encomenda (kg): ");
-            BigDecimal weight = new BigDecimal(scanner.nextLine());
-
-            System.out.print("Status (PENDING, SHIPPED, DELIVERED): ");
-            ShippingServiceStatus status = ShippingServiceStatus.valueOf(scanner.nextLine().toUpperCase());
-
-            System.out.print("Dias estimados para entrega (opcional): ");
-            String estDaysInput = scanner.nextLine();
-            Integer estimatedDeliveryDays = estDaysInput.isBlank() ? null : Integer.valueOf(estDaysInput);
-
-            System.out.print("Data de envio (yyyy-MM-dd) (opcional): ");
-            String shipmentDateInput = scanner.nextLine();
-            LocalDate shipmentDate = shipmentDateInput.isBlank() ? null : LocalDate.parse(shipmentDateInput);
-
-            System.out.print("Data prevista de entrega (yyyy-MM-dd) (opcional): ");
-            String deliveryDateInput = scanner.nextLine();
-            LocalDate deliveryDate = deliveryDateInput.isBlank() ? null : LocalDate.parse(deliveryDateInput);
-
-            System.out.print("Custo do frete (opcional): ");
-            String costInput = scanner.nextLine();
-            BigDecimal shippingCost = costInput.isBlank() ? null : new BigDecimal(costInput);
+            UUID provId = providerComboBox.getValue().getId();
+            Integer days = estimatedDays.isEmpty() ? null : Integer.parseInt(estimatedDays.getValue());
 
             CreateShippingOrderDTO dto = CreateShippingOrderDTO.builder()
-                    .shippingProviderId(providerId)
-                    .destinationState(destinationState)
-                    .destinationCity(destinationCity)
-                    .weight(weight)
-                    .status(status)
-                    .estimatedDeliveryDays(estimatedDeliveryDays)
-                    .shipmentDate(shipmentDate)
-                    .deliveryDate(deliveryDate)
-                    .shippingCost(shippingCost)
+                    .shippingProviderId(provId)
+                    .destinationState(destinationState.getValue())
+                    .destinationCity(destinationCity.getValue())
+                    .weight(weight.getValue())
+                    .status(status.getValue())
+                    .estimatedDeliveryDays(days)
+                    .shipmentDate(shipmentDate.getValue())
+                    .deliveryDate(deliveryDate.getValue())
+                    .shippingCost(shippingCost.getValue())
                     .build();
 
             shippingOrderService.createOrder(dto);
-            System.out.println("Pedido de entrega cadastrado com sucesso!");
-        } catch (ConstraintViolationException e) {
-            e.getConstraintViolations().forEach(v -> System.out.println("Erro: " + v.getMessage()));
-        } catch (IllegalArgumentException e) {
-            System.out.println("Erro: " + e.getMessage());
+            Notification.show("Pedido criado com sucesso!");
+            updateGrid();
+            clearForm();
+
         } catch (Exception e) {
-            System.out.println("Erro inesperado: " + e.getMessage());
-        }
-    }
-    private void buscarPedidoPorId() {
-        try {
-            System.out.print("Informe o ID do pedido: ");
-            UUID id = UUID.fromString(scanner.nextLine());
-            ShippingOrder order = shippingOrderService.searchShippingOrder(id);
-            if (order == null) {
-                System.out.println("Pedido não encontrado.");
-            } else {
-                System.out.println("Pedido encontrado: " + order);
-            }
-        } catch (Exception e) {
-            System.out.println("Erro: " + e.getMessage());
+            Notification.show("Erro ao salvar: " + e.getMessage(), 4000, Notification.Position.MIDDLE);
+            e.printStackTrace();
         }
     }
 
-    private void removerPedidoPorId() {
-        try {
-            System.out.print("Informe o ID do pedido para remover: ");
-            UUID id = UUID.fromString(scanner.nextLine());
-            ShippingOrder removed = shippingOrderService.removeShippingOrder(id);
-            if (removed != null) {
-                System.out.println("Pedido removido com sucesso.");
-            } else {
-                System.out.println("Pedido não encontrado.");
-            }
-        } catch (Exception e) {
-            System.out.println("Erro: " + e.getMessage());
-        }
+    private void clearForm() {
+        providerComboBox.clear();
+        destinationState.clear();
+        destinationCity.clear();
+        weight.clear();
+        status.clear();
+        estimatedDays.clear();
+        shipmentDate.clear();
+        deliveryDate.clear();
+        shippingCost.clear();
+    }
+
+    private void updateGrid() {
+        grid.setItems(shippingOrderService.listAllShippingOrders());
     }
 }

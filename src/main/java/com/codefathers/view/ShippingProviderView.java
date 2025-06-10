@@ -6,139 +6,173 @@ import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.repository.ShippingProviderRepository;
 import com.codefathers.repository.ShippingProviderRepositoryImpl;
 import com.codefathers.service.ShippingProviderService;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.Route;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
-import java.util.UUID;;
+import java.util.UUID;
 
-public class ShippingProviderView {
-    private final ShippingProviderService shippingProviderService;
-    private final Scanner scanner = new Scanner(System.in);
+@Route("shipping-provider")
+public class ShippingProviderView extends VerticalLayout {
+    private  ShippingProviderService shippingProviderService;
+    private Grid<ShippingProvider> grid = new Grid<>(ShippingProvider.class, false);
 
-    public ShippingProviderView(ShippingProviderService shippingProviderService) {
-        this.shippingProviderService = shippingProviderService;
+    public ShippingProviderView() {  // Remove o 'void' aqui
+        // Instancia a cadeia de dependências corretamente
+        ShippingProviderRepository repository = new ShippingProviderRepositoryImpl();
+        this.shippingProviderService = new ShippingProviderService(repository);
+
+        setupGrid();
+        add(grid, createButtonsLayout());
+        updateGrid();
     }
 
-    public static void main(String[] args) {
-        ShippingProviderRepository shippingProviderRepository = new ShippingProviderRepositoryImpl();
-        ShippingProviderService shippingProviderService = new ShippingProviderService(shippingProviderRepository);
-        ShippingProviderView shippingProviderView = new ShippingProviderView(shippingProviderService);
-        shippingProviderView.menu();
+    private void setupGrid() {
+        grid.addColumn(ShippingProvider::getId).setHeader("ID").setAutoWidth(true);
+        grid.addColumn(ShippingProvider::getName).setHeader("Nome").setAutoWidth(true);
+        grid.addColumn(ShippingProvider::getCnpj).setHeader("CNPJ").setAutoWidth(true);
+        grid.setWidthFull();
     }
 
-    public void menu() {
-        while (true) {
-            System.out.println("\n=== Sistema Transportadora ===");
-            System.out.println("1 - Listar transportadoras");
-            System.out.println("2 - Cadastrar transportadora");
-            System.out.println("3 - Buscar transportadora por ID");
-            System.out.println("4 - Remover transportadora por ID");
-            System.out.println("0 - Sair");
-            System.out.print("Escolha uma opção: ");
+    private HorizontalLayout createButtonsLayout() {
+        Button addButton = new Button("Cadastrar Transportadora", e -> openCreateDialog());
+        Button searchButton = new Button("Buscar por ID", e -> openSearchDialog());
+        Button removeButton = new Button("Remover por ID", e -> openRemoveDialog());
 
-            String option = scanner.nextLine();
-
-            switch (option) {
-                case "1" -> listAll();
-                case "2" -> register();
-                case "3" -> searchById();
-                case "4" -> removeById();
-                case "0" -> {
-                    System.out.println("Saindo...");
-                    return;
-                }
-                default -> System.out.println("Opção inválida!");
-            }
-        }
+        return new HorizontalLayout(addButton, searchButton, removeButton);
     }
 
-    private void listAll() {
+    private void updateGrid() {
         List<ShippingProvider> providers = shippingProviderService.listAllShippingProviders();
-        if (providers.isEmpty()) {
-            System.out.println("Nenhuma transportadora cadastrada.");
-            return;
-        }
-        providers.forEach(sp -> {
-            System.out.printf("ID: %s, Nome: %s, CNPJ: %s, Capacidade diária: %s\n",
-                    sp.getId(), sp.getName(), sp.getCnpj(), sp.getDailyCapacity());
-        });
+        grid.setItems(providers);
     }
 
-    private void register() {
-        try {
-            System.out.print("Nome: ");
-            String name = scanner.nextLine();
+    private void openCreateDialog() {
+        Dialog dialog = new Dialog();
+        dialog.setWidth("600px");
 
-            System.out.print("CNPJ: ");
-            String cnpj = scanner.nextLine();
+        TextField nameField = new TextField("Nome");
+        TextField cnpjField = new TextField("CNPJ");
+        TextField basePriceField = new TextField("Preço Base");
+        TextField dailyCapacityField = new TextField("Capacidade Diária");
 
-            System.out.print("Preço base (decimal): ");
-            BigDecimal basePrice = new BigDecimal(scanner.nextLine());
+        TextArea shippingAreasField = new TextArea("Áreas de Atendimento");
+        shippingAreasField.setPlaceholder("Exemplo: Área 1: SP, RJ; Área 2: MG, ES\nSepare cada área por ponto e vírgula ';' e os estados por vírgula ','");
 
-            System.out.print("Capacidade diária (decimal): ");
-            BigDecimal dailyCapacity = new BigDecimal(scanner.nextLine());
+        Button saveButton = new Button("Salvar", e -> {
+            try {
+                String name = nameField.getValue();
+                String cnpj = cnpjField.getValue();
+                BigDecimal basePrice = new BigDecimal(basePriceField.getValue());
+                BigDecimal dailyCapacity = new BigDecimal(dailyCapacityField.getValue());
 
-            List<ShippingArea> areas = new ArrayList<>();
-            System.out.print("Quantas áreas de atendimento deseja cadastrar? ");
-            int areasCount = Integer.parseInt(scanner.nextLine());
-            for (int i = 0; i < areasCount; i++) {
-                System.out.printf("Descrição área %d: ", i + 1);
-                String desc = scanner.nextLine();
+                List<ShippingArea> areas = parseShippingAreas(shippingAreasField.getValue());
 
-                System.out.printf("Estados atendidos (ex: SP, RJ): ");
-                String states = scanner.nextLine();
+                CreateShippingProviderDTO dto = CreateShippingProviderDTO.builder()
+                        .name(name)
+                        .cnpj(cnpj)
+                        .basePrice(basePrice)
+                        .dailyCapacity(dailyCapacity)
+                        .shippingAreas(areas)
+                        .build();
 
+                shippingProviderService.registerShippingProvider(dto);
+                Notification.show("Transportadora cadastrada com sucesso!", 3000, Notification.Position.MIDDLE);
+                updateGrid();
+                dialog.close();
+            } catch (Exception ex) {
+                Notification.show("Erro ao cadastrar: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            }
+        });
+
+        Button cancelButton = new Button("Cancelar", e -> dialog.close());
+
+        HorizontalLayout buttons = new HorizontalLayout(saveButton, cancelButton);
+
+        VerticalLayout layout = new VerticalLayout(
+                nameField, cnpjField, basePriceField, dailyCapacityField, shippingAreasField, buttons
+        );
+
+        dialog.add(layout);
+        dialog.open();
+    }
+
+    private List<ShippingArea> parseShippingAreas(String input) {
+        List<ShippingArea> areas = new ArrayList<>();
+        if (input == null || input.trim().isEmpty()) {
+            return areas;
+        }
+        // Exemplo de input:
+        // Área 1: SP, RJ; Área 2: MG, ES
+        String[] parts = input.split(";");
+        for (String part : parts) {
+            String[] descAndStates = part.split(":");
+            if (descAndStates.length == 2) {
+                String desc = descAndStates[0].trim();
+                String states = descAndStates[1].trim();
                 ShippingArea area = new ShippingArea();
                 area.setDescription(desc);
                 area.setStates(states);
                 areas.add(area);
             }
-
-            CreateShippingProviderDTO dto = CreateShippingProviderDTO.builder()
-                    .name(name)
-                    .cnpj(cnpj)
-                    .basePrice(basePrice)
-                    .dailyCapacity(dailyCapacity)
-                    .shippingAreas(areas)
-                    .build();
-
-            shippingProviderService.registerShippingProvider(dto);
-            System.out.println("Transportadora cadastrada com sucesso!");
-        } catch (Exception e) {
-            System.out.println("Erro ao cadastrar transportadora: " + e.getMessage());
         }
+        return areas;
     }
 
-    private void searchById() {
-        try {
-            System.out.print("Informe o ID da transportadora: ");
-            UUID id = UUID.fromString(scanner.nextLine());
-            ShippingProvider sp = shippingProviderService.searchShippingProviderPerId(id);
-            if (sp != null) {
-                System.out.println("Transportadora encontrada:");
-                System.out.println(sp);
-            } else {
-                System.out.println("Transportadora não encontrada.");
+    private void openSearchDialog() {
+        Dialog dialog = new Dialog();
+        TextField idField = new TextField("Informe o ID da transportadora");
+        Button searchButton = new Button("Buscar", e -> {
+            try {
+                UUID id = UUID.fromString(idField.getValue());
+                ShippingProvider sp = shippingProviderService.searchShippingProviderPerId(id);
+                if (sp != null) {
+                    Notification.show("Transportadora encontrada: " + sp.toString(), 5000, Notification.Position.MIDDLE);
+                } else {
+                    Notification.show("Transportadora não encontrada.", 3000, Notification.Position.MIDDLE);
+                }
+                dialog.close();
+            } catch (Exception ex) {
+                Notification.show("ID inválido.", 3000, Notification.Position.MIDDLE);
             }
-        } catch (Exception e) {
-            System.out.println("ID inválido.");
-        }
+        });
+        Button cancelButton = new Button("Cancelar", e -> dialog.close());
+
+        dialog.add(new VerticalLayout(idField, new HorizontalLayout(searchButton, cancelButton)));
+        dialog.open();
     }
 
-    private void removeById() {
-        try {
-            System.out.print("Informe o ID da transportadora para remover: ");
-            UUID id = UUID.fromString(scanner.nextLine());
-            ShippingProvider removed = shippingProviderService.removeShippingProvider(id);
-            if (removed != null) {
-                System.out.println("Transportadora removida com sucesso.");
-            } else {
-                System.out.println("Transportadora não encontrada para remoção.");
+    private void openRemoveDialog() {
+        Dialog dialog = new Dialog();
+        TextField idField = new TextField("Informe o ID da transportadora para remover");
+        Button removeButton = new Button("Remover", e -> {
+            try {
+                UUID id = UUID.fromString(idField.getValue());
+                ShippingProvider removed = shippingProviderService.removeShippingProvider(id);
+                if (removed != null) {
+                    Notification.show("Transportadora removida com sucesso.", 3000, Notification.Position.MIDDLE);
+                    updateGrid();
+                } else {
+                    Notification.show("Transportadora não encontrada.", 3000, Notification.Position.MIDDLE);
+                }
+                dialog.close();
+            } catch (Exception ex) {
+                Notification.show("ID inválido.", 3000, Notification.Position.MIDDLE);
             }
-        } catch (Exception e) {
-            System.out.println("ID inválido.");
-        }
+        });
+        Button cancelButton = new Button("Cancelar", e -> dialog.close());
+
+        dialog.add(new VerticalLayout(idField, new HorizontalLayout(removeButton, cancelButton)));
+        dialog.open();
     }
 }
+
