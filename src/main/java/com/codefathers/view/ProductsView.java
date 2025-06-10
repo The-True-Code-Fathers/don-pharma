@@ -5,7 +5,7 @@ import com.codefathers.model.dto.UpdateProductDTO;
 import com.codefathers.model.entity.Product;
 import com.codefathers.repository.ProductRepositoryImpl;
 import com.codefathers.service.ProductService;
-import com.codefathers.util.ValidationUtil;
+import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -65,7 +65,7 @@ public class ProductsView extends VerticalLayout {
     public ProductsView() {
         // Instanciar repositório e service manualmente
         var productRepository = new ProductRepositoryImpl();
-        this.productService = new ProductService(productRepository, ValidationUtil.getValidator());
+        this.productService = new ProductService(productRepository, ValidatorUtil.getValidator());
 
         setupSearchField();
         setupPageSizeSelect();
