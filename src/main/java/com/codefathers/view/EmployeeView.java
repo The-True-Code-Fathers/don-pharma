@@ -6,7 +6,7 @@ import com.codefathers.model.enums.EmployeeGender;
 import com.codefathers.model.enums.EmployeeRole;
 import com.codefathers.repository.implementations.EmployeeRepositoryImpl;
 import com.codefathers.service.EmployeeService;
-import com.codefathers.util.ValidationUtil;
+import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -42,7 +42,7 @@ public class EmployeeView extends VerticalLayout {
 
     public EmployeeView() {
         var employeeRepository = new EmployeeRepositoryImpl();
-        this.employeeService = new EmployeeService(employeeRepository, ValidationUtil.getValidator());
+        this.employeeService = new EmployeeService(employeeRepository, ValidatorUtil.getValidator());
 
         configureFormFields();
         setUpForm();

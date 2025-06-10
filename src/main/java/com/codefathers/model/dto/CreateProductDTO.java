@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class CreateProductDTO {
     @Pattern(
             regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
