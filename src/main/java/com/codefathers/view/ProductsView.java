@@ -90,6 +90,20 @@ public class ProductsView extends VerticalLayout {
 
         add(headerLayout, grid, pageSizeLayout);
         setupLazyDataProvider();
+
+        // Listener para o checkbox de produtos inativos
+        showInactiveCheckbox.addValueChangeListener(e -> {
+            currentShowInactive = e.getValue();
+            dataView.refreshAll(); // 🔁 Recria o data provider
+        });
+        searchField.addValueChangeListener(e -> {
+            currentSearchTerm = e.getValue().trim();
+            dataView.refreshAll(); // 🔁 Recria o data provider
+        });
+        pageSizeSelect.addValueChangeListener(e -> {
+            grid.setPageSize(e.getValue());
+            dataView.refreshAll();
+        });
     }
 
     private void setupSearchField() {
@@ -102,7 +116,7 @@ public class ProductsView extends VerticalLayout {
         // Adicionar delay para evitar muitas consultas
         searchField.addValueChangeListener(e -> {
             currentSearchTerm = e.getValue().trim();
-            dataView.refreshAll();
+            setupLazyDataProvider();
         });
     }
 
@@ -111,7 +125,7 @@ public class ProductsView extends VerticalLayout {
         pageSizeSelect.setItems(5, 10, 20, 50);
         pageSizeSelect.addValueChangeListener(e -> {
             grid.setPageSize(e.getValue());
-            dataView.refreshAll();
+            setupLazyDataProvider();
         });
     }
 
@@ -146,38 +160,24 @@ public class ProductsView extends VerticalLayout {
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
     }
 
+    private List<Product> allProducts;
+
     private void setupLazyDataProvider() {
+        allProducts = productService.findAllProducts();
+
         CallbackDataProvider<Product, Void> dataProvider = DataProvider.fromCallbacks(
-                // Fetch callback
-                query -> {
-                    int offset = query.getOffset();
-                    int limit = query.getLimit();
-
-                    // 🔁 Chama o service dinamicamente
-                    List<Product> allProducts = productService.findAllProducts();
-
-                    return allProducts.stream()
-                            .filter(this::matchesCurrentFilters)
-                            .skip(offset)
-                            .limit(limit);
-                },
-                // Count callback
-                query -> {
-                    List<Product> allProducts = productService.findAllProducts();
-                    return (int) allProducts.stream()
-                            .filter(this::matchesCurrentFilters)
-                            .count();
-                }
+                query -> allProducts.stream()
+                        .filter(this::matchesCurrentFilters)
+                        .skip(query.getOffset())
+                        .limit(query.getLimit()),
+                query -> (int) allProducts.stream()
+                        .filter(this::matchesCurrentFilters)
+                        .count()
         );
 
         dataView = grid.setItems(dataProvider);
-
-        // Listener para o checkbox de produtos inativos
-        showInactiveCheckbox.addValueChangeListener(e -> {
-            currentShowInactive = e.getValue();
-            dataView.refreshAll();
-        });
     }
+
 
     private boolean matchesCurrentFilters(Product product) {
         // Filtro para produtos inativos
@@ -275,6 +275,7 @@ public class ProductsView extends VerticalLayout {
                         .description(description.getValue())
                         .buyPrice(buyPrice.getValue())
                         .sellPrice(sellPrice.getValue())
+                        .active(true)
                         .build();
 
                 productService.createProduct(dto);
@@ -291,7 +292,7 @@ public class ProductsView extends VerticalLayout {
             }
 
             // Refresh dos dados após salvar
-            dataView.refreshAll();
+            setupLazyDataProvider();
             clearForm();
             dialog.close();
 
