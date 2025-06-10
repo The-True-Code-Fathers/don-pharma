@@ -15,6 +15,8 @@ import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.dialog.Dialog;
+
 
 @Route("products")
 public class ProductsView extends VerticalLayout {
@@ -29,8 +31,13 @@ public class ProductsView extends VerticalLayout {
 
     private Button saveButton = new Button("Save");
     private Button clearButton = new Button("Clear");
+    private Button dialogButton = new Button("Create");
+    private Button closeDialog = new Button("Close");
 
     private Grid<Product> grid = new Grid<>(Product.class, false);
+
+    private Dialog dialog = new Dialog();
+
 
     private Product currentProduct;
 
@@ -42,9 +49,21 @@ public class ProductsView extends VerticalLayout {
 
         setupForm();
         setupGrid();
+        setupDialog();
 
-        add(createFormLayout(), grid);
+        add(dialogButton, grid);
         updateGrid();
+    }
+
+    private void setupDialog() {
+        dialog.setHeaderTitle("Create or Update Product");
+        dialog.setTop("50px");
+        dialog.setLeft("50px");
+        dialog.setResizable(true);
+        dialog.setDraggable(true);
+        dialog.getElement().getStyle().set("width", "400px");
+        dialog.getElement().getStyle().set("height", "200px");
+        dialog.add(createFormLayout());
     }
 
     private void setupGrid() {
@@ -69,18 +88,22 @@ public class ProductsView extends VerticalLayout {
     private void setupForm() {
         sku.setReadOnly(false);
         name.setReadOnly(false);
+        dialogButton.addClickListener(e -> dialog.open());
+        closeDialog.addClickListener(e -> dialog.close());
         saveButton.addClickListener(e -> saveProduct());
         clearButton.addClickListener(e -> clearForm());
     }
 
+
     private HorizontalLayout createFormLayout() {
 
-        HorizontalLayout buttons = new HorizontalLayout(saveButton, clearButton);
-        HorizontalLayout formLayout = new HorizontalLayout(sku, name, description, buyPrice, sellPrice, buttons);
+        HorizontalLayout buttons = new HorizontalLayout(saveButton, clearButton, closeDialog);
+        VerticalLayout formLayout = new VerticalLayout(sku, name, description, buyPrice, sellPrice, buttons);
         formLayout.setWidth("400px");
 
         return new HorizontalLayout(formLayout);
     }
+
 
     private void populateForm(Product product) {
         sku.setValue(product.getSku());
@@ -91,6 +114,7 @@ public class ProductsView extends VerticalLayout {
         buyPrice.setValue(product.getBuyPrice());
         sellPrice.setValue(product.getSellPrice());
     }
+
 
     private void clearForm() {
         currentProduct = null;
