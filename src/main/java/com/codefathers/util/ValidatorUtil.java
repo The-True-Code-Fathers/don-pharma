@@ -5,14 +5,14 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import lombok.Getter;
 
-public class ValidationUtil {
+public class ValidatorUtil {
 
     private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 
     @Getter
     private static final Validator validator = factory.getValidator();
 
-    private ValidationUtil() {
+    private ValidatorUtil() {
         // Utility class – prevent instantiation
     }
 
