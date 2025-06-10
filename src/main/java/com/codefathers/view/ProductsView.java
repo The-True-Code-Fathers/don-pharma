@@ -8,15 +8,25 @@ import com.codefathers.service.ProductService;
 import com.codefathers.util.ValidationUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.grid.dataview.GridLazyDataView;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.data.provider.CallbackDataProvider;
+import com.vaadin.flow.data.provider.DataProvider;
 
+import java.util.List;
+import java.util.stream.Stream;
 
 @Route("products")
 public class ProductsView extends VerticalLayout {
@@ -29,6 +39,9 @@ public class ProductsView extends VerticalLayout {
     private BigDecimalField buyPrice = new BigDecimalField("Buy Price");
     private BigDecimalField sellPrice = new BigDecimalField("Sell Price");
 
+    private TextField searchField = new TextField();
+    private Select<Integer> pageSizeSelect = new Select<>();
+
     private Button saveButton = new Button("Save");
     private Button clearButton = new Button("Clear");
     private Button setInactive = new Button("Set Inactive");
@@ -36,25 +49,70 @@ public class ProductsView extends VerticalLayout {
     private Button dialogButtonUpdateProduct = new Button("Update");
     private Button closeDialog = new Button("Close");
 
-
     private Grid<Product> grid = new Grid<>(Product.class, false);
+    private GridLazyDataView<Product> dataView;
+
+    private com.vaadin.flow.component.checkbox.Checkbox showInactiveCheckbox =
+            new com.vaadin.flow.component.checkbox.Checkbox("Show inactive products");
 
     private Dialog dialog = new Dialog();
-
     private Product currentProduct;
+
+    // Cache para evitar consultas desnecessárias
+    private String currentSearchTerm = "";
+    private Boolean currentShowInactive = false;
 
     public ProductsView() {
         // Instanciar repositório e service manualmente
         var productRepository = new ProductRepositoryImpl();
-
         this.productService = new ProductService(productRepository, ValidationUtil.getValidator());
 
+        setupSearchField();
+        setupPageSizeSelect();
         setupForm();
         setupGrid();
         setupDialog();
 
-        add(dialogButtonCreateProduct, dialogButtonUpdateProduct, grid);
-        updateGrid();
+        HorizontalLayout searchLayout = new HorizontalLayout(searchField, showInactiveCheckbox);
+        searchLayout.setAlignItems(Alignment.CENTER);
+
+        HorizontalLayout controlsLayout = new HorizontalLayout(dialogButtonCreateProduct, dialogButtonUpdateProduct);
+        controlsLayout.setAlignItems(Alignment.CENTER);
+
+        HorizontalLayout pageSizeLayout = new HorizontalLayout(pageSizeSelect);
+        pageSizeLayout.setAlignItems(Alignment.CENTER);
+        pageSizeLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+        pageSizeLayout.setWidthFull();
+
+        HorizontalLayout headerLayout = new HorizontalLayout(controlsLayout, searchLayout);
+        headerLayout.setAlignItems(Alignment.CENTER);
+        headerLayout.setJustifyContentMode(JustifyContentMode.EVENLY);
+
+        add(headerLayout, grid, pageSizeLayout);
+        setupLazyDataProvider();
+    }
+
+    private void setupSearchField() {
+        searchField.setWidth("400px");
+        searchField.setPlaceholder("Search for SKU, name...");
+        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+        searchField.setValueChangeMode(ValueChangeMode.LAZY);
+        searchField.setClearButtonVisible(true);
+
+        // Adicionar delay para evitar muitas consultas
+        searchField.addValueChangeListener(e -> {
+            currentSearchTerm = e.getValue().trim();
+            dataView.refreshAll();
+        });
+    }
+
+    private void setupPageSizeSelect() {
+        pageSizeSelect.setLabel("Items per page");
+        pageSizeSelect.setItems(5, 10, 20, 50);
+        pageSizeSelect.addValueChangeListener(e -> {
+            grid.setPageSize(e.getValue());
+            dataView.refreshAll();
+        });
     }
 
     private void setupDialog() {
@@ -75,8 +133,6 @@ public class ProductsView extends VerticalLayout {
         grid.addColumn(Product::isActive).setHeader("Active").setAutoWidth(true);
 
         grid.asSingleSelect().addValueChangeListener(event -> {
-//          anyTableItemSelected = currentProduct != null;
-
             currentProduct = event.getValue();
             if (currentProduct != null) {
                 populateForm(currentProduct);
@@ -85,7 +141,67 @@ public class ProductsView extends VerticalLayout {
             }
         });
 
-        grid.setHeight("300px");
+        grid.setHeight("400px");
+        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+    }
+
+    private void setupLazyDataProvider() {
+        CallbackDataProvider<Product, Void> dataProvider = DataProvider.fromCallbacks(
+                // Fetch callback
+                query -> {
+                    int offset = query.getOffset();
+                    int limit = query.getLimit();
+
+                    // 🔁 Chama o service dinamicamente
+                    List<Product> allProducts = productService.findAllProducts();
+
+                    return allProducts.stream()
+                            .filter(this::matchesCurrentFilters)
+                            .skip(offset)
+                            .limit(limit);
+                },
+                // Count callback
+                query -> {
+                    List<Product> allProducts = productService.findAllProducts();
+                    return (int) allProducts.stream()
+                            .filter(this::matchesCurrentFilters)
+                            .count();
+                }
+        );
+
+        dataView = grid.setItems(dataProvider);
+
+        // Listener para o checkbox de produtos inativos
+        showInactiveCheckbox.addValueChangeListener(e -> {
+            currentShowInactive = e.getValue();
+            dataView.refreshAll();
+        });
+    }
+
+    private boolean matchesCurrentFilters(Product product) {
+        // Filtro para produtos inativos
+        if (!showInactiveCheckbox.getValue() && !product.isActive()) {
+            return false;
+        }
+
+        // Filtro de busca
+        if (currentSearchTerm.isEmpty()) {
+            return true;
+        }
+
+        String searchTermLower = currentSearchTerm.toLowerCase();
+
+        boolean matchesSku = matchesTerm(product.getSku(), searchTermLower);
+        boolean matchesName = matchesTerm(product.getName(), searchTermLower);
+        boolean matchesDescription = matchesTerm(product.getDescription(), searchTermLower);
+
+        boolean matchesBuyPrice = product.getBuyPrice() != null &&
+                product.getBuyPrice().toString().toLowerCase().contains(searchTermLower);
+        boolean matchesSellPrice = product.getSellPrice() != null &&
+                product.getSellPrice().toString().toLowerCase().contains(searchTermLower);
+
+        return matchesSku || matchesName || matchesDescription || matchesBuyPrice || matchesSellPrice;
     }
 
     private void setupForm() {
@@ -97,6 +213,7 @@ public class ProductsView extends VerticalLayout {
 
         sku.setReadOnly(false);
         name.setReadOnly(false);
+
         dialogButtonCreateProduct.addClickListener(e -> {
             clearForm();
             dialog.open();
@@ -110,14 +227,15 @@ public class ProductsView extends VerticalLayout {
         });
 
         closeDialog.addClickListener(e -> dialog.close());
-        setInactive.addClickListener(e -> {currentProduct.setActive(false); saveProduct();});
+        setInactive.addClickListener(e -> {
+            currentProduct.setActive(false);
+            saveProduct();
+        });
         saveButton.addClickListener(e -> saveProduct());
         clearButton.addClickListener(e -> clearForm());
     }
 
-
     private HorizontalLayout createFormLayout() {
-
         HorizontalLayout buttonsCreate = new HorizontalLayout(saveButton, clearButton, closeDialog);
         HorizontalLayout buttonsUpdate = new HorizontalLayout(saveButton, clearButton, closeDialog, setInactive);
         VerticalLayout formLayout = new VerticalLayout(sku, name, description, buyPrice, sellPrice, buttonsCreate, buttonsUpdate);
@@ -125,7 +243,6 @@ public class ProductsView extends VerticalLayout {
 
         return new HorizontalLayout(formLayout);
     }
-
 
     private void populateForm(Product product) {
         sku.setValue(product.getSku());
@@ -136,7 +253,6 @@ public class ProductsView extends VerticalLayout {
         buyPrice.setValue(product.getBuyPrice());
         sellPrice.setValue(product.getSellPrice());
     }
-
 
     private void clearForm() {
         currentProduct = null;
@@ -153,7 +269,6 @@ public class ProductsView extends VerticalLayout {
     private void saveProduct() {
         try {
             if (currentProduct == null) {
-                // Criar novo produto
                 CreateProductDTO dto = CreateProductDTO.builder()
                         .sku(sku.getValue())
                         .name(name.getValue())
@@ -165,7 +280,6 @@ public class ProductsView extends VerticalLayout {
                 productService.createProduct(dto);
                 Notification.show("Product created");
             } else {
-                // Atualizar produto existente
                 UpdateProductDTO dto = UpdateProductDTO.builder()
                         .description(description.getValue())
                         .buyPrice(buyPrice.getValue())
@@ -175,8 +289,11 @@ public class ProductsView extends VerticalLayout {
                 productService.updateProduct(currentProduct.getSku(), dto);
                 Notification.show("Product updated");
             }
-            updateGrid();
+
+            // Refresh dos dados após salvar
+            dataView.refreshAll();
             clearForm();
+            dialog.close();
 
         } catch (Exception ex) {
             Notification.show("Error: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
@@ -184,9 +301,7 @@ public class ProductsView extends VerticalLayout {
         }
     }
 
-    private void updateGrid() {
-        grid.setItems(productService.findAllProducts());
+    private boolean matchesTerm(String value, String searchTerm) {
+        return value != null && value.toLowerCase().contains(searchTerm);
     }
 }
-
-
