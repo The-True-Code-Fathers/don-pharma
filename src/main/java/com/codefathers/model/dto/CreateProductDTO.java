@@ -35,4 +35,6 @@ public class CreateProductDTO {
 
     @Positive (message = "O valor deve ser positivo")
     private BigDecimal sellPrice;
+
+    private boolean active = true;
 }

@@ -31,13 +31,15 @@ public class ProductsView extends VerticalLayout {
 
     private Button saveButton = new Button("Save");
     private Button clearButton = new Button("Clear");
-    private Button dialogButton = new Button("Create");
+    private Button setInactive = new Button("Set Inactive");
+    private Button dialogButtonCreateProduct = new Button("Create");
+    private Button dialogButtonUpdateProduct = new Button("Update");
     private Button closeDialog = new Button("Close");
+
 
     private Grid<Product> grid = new Grid<>(Product.class, false);
 
     private Dialog dialog = new Dialog();
-
 
     private Product currentProduct;
 
@@ -51,17 +53,15 @@ public class ProductsView extends VerticalLayout {
         setupGrid();
         setupDialog();
 
-        add(dialogButton, grid);
+        add(dialogButtonCreateProduct, dialogButtonUpdateProduct, grid);
         updateGrid();
     }
 
     private void setupDialog() {
         dialog.setHeaderTitle("Create or Update Product");
-        dialog.setTop("50px");
-        dialog.setLeft("50px");
         dialog.setResizable(true);
         dialog.setDraggable(true);
-        dialog.getElement().getStyle().set("width", "400px");
+        dialog.getElement().getStyle().set("width", "300px");
         dialog.getElement().getStyle().set("height", "200px");
         dialog.add(createFormLayout());
     }
@@ -72,8 +72,11 @@ public class ProductsView extends VerticalLayout {
         grid.addColumn(Product::getDescription).setHeader("Description").setAutoWidth(true);
         grid.addColumn(Product::getBuyPrice).setHeader("Buy Price").setAutoWidth(true);
         grid.addColumn(Product::getSellPrice).setHeader("Sell Price").setAutoWidth(true);
+        grid.addColumn(Product::isActive).setHeader("Active").setAutoWidth(true);
 
         grid.asSingleSelect().addValueChangeListener(event -> {
+//          anyTableItemSelected = currentProduct != null;
+
             currentProduct = event.getValue();
             if (currentProduct != null) {
                 populateForm(currentProduct);
@@ -86,10 +89,28 @@ public class ProductsView extends VerticalLayout {
     }
 
     private void setupForm() {
+        sku.setWidth("350px");
+        name.setWidth("350px");
+        description.setWidth("350px");
+        buyPrice.setWidth("350px");
+        sellPrice.setWidth("350px");
+
         sku.setReadOnly(false);
         name.setReadOnly(false);
-        dialogButton.addClickListener(e -> dialog.open());
+        dialogButtonCreateProduct.addClickListener(e -> {
+            clearForm();
+            dialog.open();
+        });
+
+        dialogButtonUpdateProduct.addClickListener(e -> {
+            if (currentProduct != null) {
+                dialog.open();
+                populateForm(currentProduct);
+            }
+        });
+
         closeDialog.addClickListener(e -> dialog.close());
+        setInactive.addClickListener(e -> {currentProduct.setActive(false); saveProduct();});
         saveButton.addClickListener(e -> saveProduct());
         clearButton.addClickListener(e -> clearForm());
     }
@@ -97,8 +118,9 @@ public class ProductsView extends VerticalLayout {
 
     private HorizontalLayout createFormLayout() {
 
-        HorizontalLayout buttons = new HorizontalLayout(saveButton, clearButton, closeDialog);
-        VerticalLayout formLayout = new VerticalLayout(sku, name, description, buyPrice, sellPrice, buttons);
+        HorizontalLayout buttonsCreate = new HorizontalLayout(saveButton, clearButton, closeDialog);
+        HorizontalLayout buttonsUpdate = new HorizontalLayout(saveButton, clearButton, closeDialog, setInactive);
+        VerticalLayout formLayout = new VerticalLayout(sku, name, description, buyPrice, sellPrice, buttonsCreate, buttonsUpdate);
         formLayout.setWidth("400px");
 
         return new HorizontalLayout(formLayout);

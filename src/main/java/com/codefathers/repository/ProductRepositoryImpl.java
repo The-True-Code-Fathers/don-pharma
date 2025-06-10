@@ -40,6 +40,4 @@ public class ProductRepositoryImpl implements ProductRepository {
             return  session.createQuery("from product where sku = :sku", Product.class).setParameter("sku", sku).uniqueResult();
         }
     }
-
-
 }
