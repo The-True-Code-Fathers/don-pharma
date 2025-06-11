@@ -1,6 +1,7 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.Order;
+import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Transaction;
 import org.hibernate.Session;
@@ -28,7 +29,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.update(order);
+            session.merge(order);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null)

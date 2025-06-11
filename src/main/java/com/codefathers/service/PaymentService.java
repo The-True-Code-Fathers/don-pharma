@@ -8,17 +8,15 @@ import java.util.UUID;
 import com.codefathers.model.dto.CreatePaymentDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
-import com.codefathers.repository.EmployeeRepository;
-import com.codefathers.repository.EmployeeRepositoryImpl;
-import com.codefathers.repository.PaymentRepository;
-import com.codefathers.repository.PaymentRepositoryImpl;
+import com.codefathers.repository.interfaces.EmployeeRepository;
+import com.codefathers.repository.interfaces.PaymentRepository;
 
 public class PaymentService {
 
     PaymentRepository paymentRepository;
     EmployeeRepository employeeRepository;
 
-    public PaymentService(PaymentRepositoryImpl paymentRepository, EmployeeRepositoryImpl employeeRepository) {
+    public PaymentService(PaymentRepository paymentRepository, EmployeeRepository employeeRepository) {
         this.paymentRepository = paymentRepository;
         this.employeeRepository = employeeRepository;
     }

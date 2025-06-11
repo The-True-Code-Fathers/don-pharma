@@ -2,8 +2,11 @@ package com.codefathers.model.entity;
 
 import com.codefathers.model.enums.ShippingServiceStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -11,6 +14,8 @@ import java.util.UUID;
 @Entity(name = "shipping_order")
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ShippingOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -44,28 +49,5 @@ public class ShippingOrder {
 
     @Column(name = "shipping_cost")
     private BigDecimal shippingCost;
-
-    public ShippingOrder() {}
-    public ShippingOrder(UUID id,
-                         ShippingProvider shippingProvider,
-                         String destinationState,
-                         String destinationCity,
-                         BigDecimal weight,
-                         ShippingServiceStatus status,
-                         Integer estimatedDeliveryDays,
-                         LocalDate shipmentDate,
-                         LocalDate deliveryDate,
-                         BigDecimal shippingCost) {
-        this.id = id;
-        this.shippingProvider = shippingProvider;
-        this.destinationState = destinationState;
-        this.destinationCity = destinationCity;
-        this.weight = weight;
-        this.status = status;
-        this.estimatedDeliveryDays = estimatedDeliveryDays;
-        this.shipmentDate = shipmentDate;
-        this.deliveryDate = deliveryDate;
-        this.shippingCost = shippingCost;
-    }
 
 }

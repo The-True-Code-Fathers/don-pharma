@@ -1,6 +1,7 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.ShippingArea;
+import com.codefathers.repository.interfaces.ShippingAreaRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
 
@@ -32,7 +33,7 @@ public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
     @Override
     public List<ShippingArea> listAllShippingAreas() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select a from shipping_area a", ShippingArea.class).getResultList();
+            return session.createQuery("FROM shipping_area", ShippingArea.class).getResultList();
         }
     }
 

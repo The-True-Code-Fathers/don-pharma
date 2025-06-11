@@ -5,7 +5,7 @@ import java.util.List;
 import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.dto.UpdateProductDTO;
 import com.codefathers.model.entity.Product;
-import com.codefathers.repository.ProductRepository;
+import com.codefathers.repository.interfaces.ProductRepository;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -22,20 +22,21 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public void createProduct(@Valid CreateProductDTO products) {
+    public void createProduct(@Valid CreateProductDTO createProductDTO) {
 
-        var violations = validator.validate(products);
+        var violations = validator.validate(createProductDTO);
 
         if (!violations.isEmpty()) {
             throw new jakarta.validation.ConstraintViolationException(violations);
         }
 
         Product product = Product.builder()
-                    .sku(products.getSku())
-                    .buyPrice(products.getBuyPrice())
-                    .sellPrice(products.getSellPrice())
-                    .name(products.getName())
-                    .description(products.getDescription())
+                    .sku(createProductDTO.getSku())
+                    .buyPrice(createProductDTO.getBuyPrice())
+                    .sellPrice(createProductDTO.getSellPrice())
+                    .name(createProductDTO.getName())
+                    .description(createProductDTO.getDescription())
+                    .active(true)
                     .build();
         try {
             productRepository.save(product);
@@ -45,32 +46,32 @@ public class ProductService {
         }
     }
 
-    public void updateProduct(@Valid String sku, UpdateProductDTO dto) {
+    public void updateProduct(@Valid String productSku, UpdateProductDTO updateProductDTO) {
 
-        Product product = productRepository.update(sku);
+        //var violations = validator.validate(updateProductDTO);
 
-        var violations = validator.validate(dto);
+        Product product = productRepository.findBySKU(productSku);
 
-        if (!violations.isEmpty()) {
-            throw new jakarta.validation.ConstraintViolationException(violations);
-        }
+        // if (!violations.isEmpty()) {
+        //     throw new jakarta.validation.ConstraintViolationException(violations);
+        // }
 
         if (product == null) {
-            throw new RuntimeException("Produto com SKU '" + sku + "' não encontrado.");
+            throw new RuntimeException("Produto com SKU '" + productSku + "' não encontrado.");
         }
-        product.setDescription(dto.getDescription());
-        product.setBuyPrice(dto.getBuyPrice());
-        product.setSellPrice(dto.getSellPrice());
+        product.setDescription(updateProductDTO.getDescription());
+        product.setBuyPrice(updateProductDTO.getBuyPrice());
+        product.setSellPrice(updateProductDTO.getSellPrice());
+        product.setActive(updateProductDTO.isActive());
         try {
-            productRepository.save(product);
-        }
-        catch (ConstraintViolationException e) {
+            productRepository.update(product);
+        } catch (ConstraintViolationException e) {
             System.out.println(e.getMessage());
         }
     }
 
-    public Product findProductBySKU(String sku) {
-        return productRepository.findBySKU(sku);
+    public Product findProductBySKU(String productSku) {
+        return productRepository.findBySKU(productSku);
     }
 
     public List<Product> findAllProducts() {

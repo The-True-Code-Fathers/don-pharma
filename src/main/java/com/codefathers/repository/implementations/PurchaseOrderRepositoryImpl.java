@@ -1,6 +1,7 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.PurchaseOrder;
+import com.codefathers.repository.interfaces.PurchaseOrderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -15,7 +16,7 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.save(purchaseOrder);
+            session.persist(purchaseOrder);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
@@ -28,7 +29,7 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.update(purchaseOrder);
+            session.merge(purchaseOrder);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();

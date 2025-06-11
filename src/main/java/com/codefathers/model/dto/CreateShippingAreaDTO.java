@@ -1,7 +1,7 @@
 package com.codefathers.model.dto;
 
 import com.codefathers.model.entity.ShippingProvider;
-import jakarta.validation.constraints.NotBlank;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,5 +19,5 @@ public class CreateShippingAreaDTO {
     private String description;
 
     @NotNull
-    private String states;
+    private String[] states;
 }

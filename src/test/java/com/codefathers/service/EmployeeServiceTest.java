@@ -4,7 +4,7 @@ import com.codefathers.model.dto.CreateEmployeeDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.enums.EmployeeGender;
 import com.codefathers.model.enums.EmployeeRole;
-import com.codefathers.repository.EmployeeRepository;
+import com.codefathers.repository.interfaces.EmployeeRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;

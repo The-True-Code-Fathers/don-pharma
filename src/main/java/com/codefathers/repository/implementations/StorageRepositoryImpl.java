@@ -1,8 +1,9 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import java.util.List;
 import java.util.Optional;
 
+import com.codefathers.repository.interfaces.StorageRepository;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 

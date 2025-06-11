@@ -22,4 +22,7 @@ public class UpdateProductDTO {
     @NotNull(message = "Campo obrigatório")
     @Positive(message = "O valor deve ser maior que zero")
     private BigDecimal sellPrice;
+
+    @NotNull(message = "Campo obrigatório")
+    private boolean active;
 }

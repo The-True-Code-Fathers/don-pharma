@@ -1,10 +1,11 @@
-package com.codefathers.repository;
+package com.codefathers.repository.interfaces;
 
 import com.codefathers.model.entity.ShippingArea;
-import com.codefathers.model.entity.ShippingProvider;
 
 import java.util.List;
 import java.util.UUID;
+
+import com.codefathers.model.entity.ShippingArea;
 
 public interface ShippingAreaRepository {
     void saveShippingArea(ShippingArea shippingArea);

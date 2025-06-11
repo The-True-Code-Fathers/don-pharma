@@ -1,4 +1,4 @@
-package com.codefathers.repository;
+package com.codefathers.repository.interfaces;
 
 import com.codefathers.model.entity.Product;
 
@@ -8,7 +8,7 @@ public interface ProductRepository {
     Product findBySKU(String  sku);
     List<Product> listAllProducts();
     void save(Product product);
-    Product update(String sku);
+    void update(Product product);
 }
 
 

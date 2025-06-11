@@ -1,21 +1,24 @@
-package com.codefathers.repository;
-
-import com.codefathers.model.entity.ShippingOrder;
-import com.codefathers.model.entity.ShippingProvider;
-import com.codefathers.util.HibernateUtil;
-import org.hibernate.Session;
+package com.codefathers.repository.implementations;
 
 import java.util.List;
 import java.util.UUID;
 
-public class ShippingOrderRepositoryImpl implements ShippingOrderRepository{
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+import com.codefathers.model.entity.ShippingOrder;
+import com.codefathers.repository.interfaces.ShippingOrderRepository;
+import com.codefathers.util.HibernateUtil;
+
+public class ShippingOrderRepositoryImpl implements ShippingOrderRepository {
 
     @Override
     public void saveShippingOrder(ShippingOrder shippingOrder) {
+        Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            session.save(shippingOrder);
-            session.getTransaction().commit();
+            transaction = session.beginTransaction();
+            session.persist(shippingOrder);
+            transaction.commit();
         } catch (Exception e) {
             System.out.println("Erro: " + e.getMessage());
         }

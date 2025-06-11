@@ -1,7 +1,9 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import java.util.List;
 
+import com.codefathers.repository.interfaces.ProductRepository;
+import org.hibernate.Session;
 import org.hibernate.exception.ConstraintViolationException;
 
 import com.codefathers.model.entity.Product;
@@ -18,8 +20,12 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public List<Product> listAllProducts() {
-        try (var session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("from product", Product.class).list();
+        try (Session session = HibernateUtil.sessionFactory.openSession()) {
+            String hql = "select p from product p";
+            return session.createQuery(hql, Product.class).list();
+        } catch (Exception e) {
+            e.getMessage();
+            return List.of();
         }
     }
 
@@ -27,7 +33,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     public void save(Product product) {
         try (var session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
-            session.save(product);
+            session.persist(product);
             session.getTransaction().commit();
         } catch (ConstraintViolationException e) {
             System.out.println(e.getMessage());
@@ -35,12 +41,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public Product update(String sku) {
+    public void update(Product product) {
         try (var session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("from product where sku = :sku", Product.class).setParameter("sku", sku)
-                    .uniqueResult();
+            session.beginTransaction();
+            session.merge(product);
+            session.getTransaction().commit();
+        } catch (ConstraintViolationException e) {
+            System.out.println(e.getMessage());
         }
     }
-
 
 }

@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class CreateProductDTO {
     @Pattern(
             regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
@@ -35,4 +34,6 @@ public class CreateProductDTO {
 
     @Positive (message = "O valor deve ser positivo")
     private BigDecimal sellPrice;
+
+    private boolean active = true;
 }

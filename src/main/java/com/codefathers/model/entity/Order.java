@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.codefathers.model.enums.OrderStatus;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,10 +22,12 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    
+
     @ManyToOne
     @JoinColumn(name = "seller_id", nullable = false)
     private Employee seller;
+
+    private String description;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items;
@@ -40,14 +44,12 @@ public class Order {
 
     @Column(name = "total_amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal totalAmount;
-    
-    @Column(nullable = false)
-    private boolean invoiced = false;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean cancelled = false;
+    private OrderStatus orderStatus;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
 }

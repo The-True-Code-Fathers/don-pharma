@@ -1,9 +1,10 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.codefathers.repository.interfaces.PaymentRepository;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
