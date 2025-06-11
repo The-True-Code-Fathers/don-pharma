@@ -208,12 +208,13 @@ public class ProductsView extends VerticalLayout {
             if (currentProduct != null) {
                 dialog.open();
                 populateForm(currentProduct);
+                currentProduct.setActive(true);
             }
         });
 
         closeDialog.addClickListener(e -> dialog.close());
         setInactive.addClickListener(e -> {
-            currentProduct.setActive(false);
+            currentProduct.setActive(!currentProduct.isActive());
             saveProduct();
         });
         saveButton.addClickListener(e -> saveProduct());
@@ -260,6 +261,7 @@ public class ProductsView extends VerticalLayout {
                         .description(description.getValue())
                         .buyPrice(buyPrice.getValue())
                         .sellPrice(sellPrice.getValue())
+                        .active(currentProduct.isActive())
                         .build();
 
                 productService.createProduct(dto);
@@ -269,6 +271,7 @@ public class ProductsView extends VerticalLayout {
                         .description(description.getValue())
                         .buyPrice(buyPrice.getValue())
                         .sellPrice(sellPrice.getValue())
+                        .active(currentProduct.isActive())
                         .build();
 
                 productService.updateProduct(currentProduct.getSku(), dto);
