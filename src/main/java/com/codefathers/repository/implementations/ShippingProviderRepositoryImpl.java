@@ -4,7 +4,9 @@ import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
+import java.awt.event.HierarchyBoundsAdapter;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,19 +41,31 @@ public class ShippingProviderRepositoryImpl implements ShippingProviderRepositor
 
     @Override
     public ShippingProvider removeShippingProviderPerId(UUID shippingId) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            ShippingProvider shippingProvider = session.get(ShippingProvider.class, shippingId);
+        Session session = null;
+        Transaction transaction = null;
 
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
+            transaction = session.beginTransaction();
+
+            ShippingProvider shippingProvider = session.get(ShippingProvider.class, shippingId);
             if (shippingProvider != null) {
                 session.remove(shippingProvider);
-                session.getTransaction().commit();
+                transaction.commit();
+                System.out.println("Transportadora removida com sucesso!");
                 return shippingProvider;
             } else {
+                transaction.rollback();
                 System.out.println("Transportadora não encontrada.");
+                return null;
             }
         } catch (Exception e) {
-            System.out.println("Não foi possivel remover a transportadora pelo ID: " + e.getMessage());
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            } else {
+                System.out.println("Não foi possivel remover a transportadora pelo ID: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
         return null;
     }

@@ -154,9 +154,18 @@ public class ShippingProviderView extends VerticalLayout {
     private void openRemoveDialog() {
         Dialog dialog = new Dialog();
         TextField idField = new TextField("Informe o ID da transportadora para remover");
+        idField.setPlaceholder("Ex: 123e4567-e89b-12d3-a456-426614174000");
+
         Button removeButton = new Button("Remover", e -> {
+            String idValue = idField.getValue();
+
+            if (idValue == null || idValue.trim().isEmpty()) {
+                Notification.show("Informe um ID válido.", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+
             try {
-                UUID id = UUID.fromString(idField.getValue());
+                UUID id = UUID.fromString(idValue.trim());
                 ShippingProvider removed = shippingProviderService.removeShippingProvider(id);
                 if (removed != null) {
                     Notification.show("Transportadora removida com sucesso.", 3000, Notification.Position.MIDDLE);
