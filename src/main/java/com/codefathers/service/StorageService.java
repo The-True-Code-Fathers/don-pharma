@@ -52,9 +52,8 @@ public class StorageService {
         return storage.getProductQuantity();
     }
 
-    public List<CreateStorageDTO> getAllStorages() {
-        return storageRepository.getAllStorages().stream().map(storage -> CreateStorageDTO.builder()
-                .productQuantity(storage.getProductQuantity()).build()).toList();
+    public List<Storage> getAllStorages() {
+        return storageRepository.getAllStorages();
     }
 
 }

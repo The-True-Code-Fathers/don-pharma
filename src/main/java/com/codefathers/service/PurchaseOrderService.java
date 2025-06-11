@@ -77,9 +77,9 @@ public class PurchaseOrderService {
                 storageRepository.update(existingStorage);
             }, () -> {
                 Storage newStorage = Storage.builder()
-                .product(item.getProduct())
-                .productQuantity(item.getQuantity())
-                .build();
+                        .product(item.getProduct())
+                        .productQuantity(item.getQuantity())
+                        .build();
                 storageRepository.save(newStorage);
             });
         }
@@ -100,4 +100,7 @@ public class PurchaseOrderService {
         return purchaseOrderRepository.findById(purchaseOrderId);
     }
 
+    public List<PurchaseOrder> getAllPurchaseOrders() {
+        return purchaseOrderRepository.findAll();
+    }
 }

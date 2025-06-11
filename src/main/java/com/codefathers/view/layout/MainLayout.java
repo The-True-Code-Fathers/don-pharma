@@ -1,6 +1,8 @@
 package com.codefathers.view.layout;
 
 import com.codefathers.view.*;
+import com.codefathers.view.PurchaseOrderView;
+import com.codefathers.view.StorageView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.H1;
@@ -16,19 +18,19 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 @Layout
 public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
-    public MainLayout() {
-        DrawerToggle toggle = new DrawerToggle();
+        public MainLayout() {
+                DrawerToggle toggle = new DrawerToggle();
 
-        H1 title = new H1("Don Pharma");
-        title.getStyle().set("font-size", "var(--lumo-font-size-l)")
-                .set("margin", "0");
+                H1 title = new H1("Don Pharma");
+                title.getStyle().set("font-size", "var(--lumo-font-size-l)")
+                                .set("margin", "0");
 
-        SideNav nav = new SideNav();
+                SideNav nav = new SideNav();
 
-        SideNavItem employeeLink = new SideNavItem("Employees",
-                EmployeeView.class, VaadinIcon.GROUP.create());
+                SideNavItem employeeLink = new SideNavItem("Employees",
+                                EmployeeView.class, VaadinIcon.GROUP.create());
 
-        SideNavItem productLink = new SideNavItem("Products",
+                SideNavItem productLink = new SideNavItem("Products",
                 ProductsView.class, VaadinIcon.STOCK.create());
 
         SideNavItem shippingLink = new SideNavItem("Shipping");
@@ -44,16 +46,25 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
         nav.addItem(employeeLink, productLink, shippingLink);
 
-        Scroller scroller = new Scroller(nav);
-        scroller.setClassName(LumoUtility.Padding.SMALL);
+                SideNavItem storageLink = new SideNavItem("Armazenamento",
+                                StorageView.class, VaadinIcon.PACKAGE.create());
 
-        addToDrawer(scroller);
-        addToNavbar(toggle, title);
+                nav.addItem(storageLink);
+                SideNavItem purchaseOrderLink = new SideNavItem("Ordem de Compra",
+                                PurchaseOrderView.class, VaadinIcon.CART.create());
 
-    }
+                nav.addItem(purchaseOrderLink);
 
-    @Override
-    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+                Scroller scroller = new Scroller(nav);
+                scroller.setClassName(LumoUtility.Padding.SMALL);
 
-    }
+                addToDrawer(scroller);
+                addToNavbar(toggle, title);
+
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+
+        }
 }
