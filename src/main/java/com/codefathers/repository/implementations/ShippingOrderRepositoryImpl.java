@@ -60,4 +60,15 @@ public class ShippingOrderRepositoryImpl implements ShippingOrderRepository {
         }
         return null;
     }
+
+    @Override
+    public void updateShippingOrder(ShippingOrder shippingOrder) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.update(shippingOrder);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            System.out.println("Erro ao atualizar pedido: " + e.getMessage());
+        }
+    }
 }
