@@ -26,6 +26,7 @@ import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Route("products")
@@ -68,10 +69,11 @@ public class ProductsView extends VerticalLayout {
         this.productService = new ProductService(productRepository, ValidationUtil.getValidator());
 
         setupSearchField();
-        setupPageSizeSelect();
+//        setupPageSizeSelect();
         setupForm();
         setupGrid();
         setupDialog();
+        setupLazyDataProvider();
 
         HorizontalLayout searchLayout = new HorizontalLayout(searchField, showInactiveCheckbox);
         searchLayout.setAlignItems(Alignment.CENTER);
@@ -79,17 +81,13 @@ public class ProductsView extends VerticalLayout {
         HorizontalLayout controlsLayout = new HorizontalLayout(dialogButtonCreateProduct, dialogButtonUpdateProduct);
         controlsLayout.setAlignItems(Alignment.CENTER);
 
-        HorizontalLayout pageSizeLayout = new HorizontalLayout(pageSizeSelect);
-        pageSizeLayout.setAlignItems(Alignment.CENTER);
-        pageSizeLayout.setJustifyContentMode(JustifyContentMode.CENTER);
-        pageSizeLayout.setWidthFull();
 
         HorizontalLayout headerLayout = new HorizontalLayout(controlsLayout, searchLayout);
         headerLayout.setAlignItems(Alignment.CENTER);
         headerLayout.setJustifyContentMode(JustifyContentMode.EVENLY);
 
-        add(headerLayout, grid, pageSizeLayout);
-        setupLazyDataProvider();
+        add(headerLayout, grid);
+
 
         // Listener para o checkbox de produtos inativos
         showInactiveCheckbox.addValueChangeListener(e -> {
@@ -108,7 +106,7 @@ public class ProductsView extends VerticalLayout {
 
     private void setupSearchField() {
         searchField.setWidth("400px");
-        searchField.setPlaceholder("Search for SKU, name...");
+        searchField.setPlaceholder("Search by SKU, name...");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
         searchField.setClearButtonVisible(true);
@@ -116,15 +114,6 @@ public class ProductsView extends VerticalLayout {
         // Adicionar delay para evitar muitas consultas
         searchField.addValueChangeListener(e -> {
             currentSearchTerm = e.getValue().trim();
-            setupLazyDataProvider();
-        });
-    }
-
-    private void setupPageSizeSelect() {
-        pageSizeSelect.setLabel("Items per page");
-        pageSizeSelect.setItems(5, 10, 20, 50);
-        pageSizeSelect.addValueChangeListener(e -> {
-            grid.setPageSize(e.getValue());
             setupLazyDataProvider();
         });
     }
@@ -144,7 +133,7 @@ public class ProductsView extends VerticalLayout {
         grid.addColumn(Product::getDescription).setHeader("Description").setAutoWidth(true);
         grid.addColumn(Product::getBuyPrice).setHeader("Buy Price").setAutoWidth(true);
         grid.addColumn(Product::getSellPrice).setHeader("Sell Price").setAutoWidth(true);
-        grid.addColumn(Product::isActive).setHeader("Active").setAutoWidth(true);
+//        grid.addColumn(Product::isActive).setHeader("Active").setAutoWidth(true);
 
         grid.asSingleSelect().addValueChangeListener(event -> {
             currentProduct = event.getValue();
@@ -155,27 +144,42 @@ public class ProductsView extends VerticalLayout {
             }
         });
 
-        grid.setHeight("400px");
+        grid.setAllRowsVisible(true);
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+        grid.addThemeVariants(GridVariant.LUMO_COMPACT);
     }
 
     private List<Product> allProducts;
 
     private void setupLazyDataProvider() {
+
         allProducts = productService.findAllProducts();
 
+        // Create the data provider with filtering and pagination logic
         CallbackDataProvider<Product, Void> dataProvider = DataProvider.fromCallbacks(
-                query -> allProducts.stream()
-                        .filter(this::matchesCurrentFilters)
-                        .skip(query.getOffset())
-                        .limit(query.getLimit()),
-                query -> (int) allProducts.stream()
-                        .filter(this::matchesCurrentFilters)
-                        .count()
+                query -> {
+                    // Apply filtering on the full list first
+                    Stream<Product> filteredStream = allProducts.stream()
+                            .filter(this::matchesCurrentFilters); // Apply the current filters
+
+                    // Paginate the filtered stream (skip and limit) within the context of the full dataset
+                    return filteredStream
+                            .skip(query.getOffset())  // Skip items based on the current page offset
+                            .limit(query.getLimit())  // Limit the items according to the page size
+                            .collect(Collectors.toList()) // Collect to a list so Vaadin can handle it
+                            .stream(); // Convert the list back to a stream for the data provider
+                },
+                query -> {
+                    // Count only the filtered items for pagination purposes
+                    return (int) allProducts.stream()
+                            .filter(this::matchesCurrentFilters) // Apply the same filters for counting
+                            .count();
+                }
         );
 
         dataView = grid.setItems(dataProvider);
+        grid.getDataProvider().refreshAll();
     }
 
 
