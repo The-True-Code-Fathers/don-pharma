@@ -51,7 +51,7 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
     @Override
     public List<PurchaseOrder> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select Order o from purchase_order", PurchaseOrder.class).list();
+            return session.createQuery("select o from purchase_order o", PurchaseOrder.class).getResultList();
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
