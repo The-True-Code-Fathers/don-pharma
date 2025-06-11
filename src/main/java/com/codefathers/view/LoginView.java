@@ -39,7 +39,7 @@ public class LoginView extends VerticalLayout {
         Optional<SystemUser> user = authService.authenticate(username, password);
 
         if (user.isPresent()) {
-            UI.getCurrent().navigate(MainView.class); // Go to Main View
+            UI.getCurrent().navigate(DashboardView.class); // Go to Main View
             return;
         }
         // Login failed
