@@ -4,9 +4,13 @@ import com.codefathers.model.entity.Employee;
 import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.UUID;
 
+@Repository
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override
@@ -54,6 +58,17 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             }
         } catch (Exception e) {
             e.getMessage();
+        }
+    }
+
+    @Override
+    public long count() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<Long> query = session.createQuery("select count(*) from employee", Long.class);
+            return query.getSingleResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
         }
     }
 

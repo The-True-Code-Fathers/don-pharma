@@ -5,10 +5,12 @@ import com.codefathers.repository.interfaces.PurchaseOrderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
 
+@Repository
 public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
 
     @Override

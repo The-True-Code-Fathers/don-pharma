@@ -9,7 +9,9 @@ import org.hibernate.Transaction;
 
 import com.codefathers.model.entity.Storage;
 import com.codefathers.util.HibernateUtil;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class StorageRepositoryImpl implements StorageRepository {
 
     @Override

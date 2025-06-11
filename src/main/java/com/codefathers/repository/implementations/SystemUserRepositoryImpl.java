@@ -6,9 +6,11 @@ import com.codefathers.util.HibernateUtil;
 
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public class SystemUserRepositoryImpl implements SystemUserRepository {
     @Override
     public Optional<SystemUser> findByUsername(String username) {

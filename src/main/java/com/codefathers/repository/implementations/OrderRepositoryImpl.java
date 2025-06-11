@@ -5,10 +5,13 @@ import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Transaction;
 import org.hibernate.Session;
+import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+@Repository
 public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public void save(Order order) {
@@ -69,6 +72,28 @@ public class OrderRepositoryImpl implements OrderRepository {
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
+        }
+    }
+
+    @Override
+    public Long count() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("select count(*) from \"order\"", Long.class).uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
+
+    @Override
+    public BigDecimal getTotalRevenue() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("select sum(revenue) from \"order\"", BigDecimal.class)
+                    .uniqueResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return BigDecimal.ZERO;
         }
     }
 }
