@@ -67,7 +67,6 @@ public class ProductsView extends VerticalLayout {
         this.productService = new ProductService(productRepository, ValidatorUtil.getValidator());
 
         setupSearchField();
-        setupPageSizeSelect();
         setupForm();
         setupGrid();
         setupDialog();
@@ -78,16 +77,11 @@ public class ProductsView extends VerticalLayout {
         HorizontalLayout controlsLayout = new HorizontalLayout(dialogButtonCreateProduct, dialogButtonUpdateProduct);
         controlsLayout.setAlignItems(Alignment.CENTER);
 
-        HorizontalLayout pageSizeLayout = new HorizontalLayout(pageSizeSelect);
-        pageSizeLayout.setAlignItems(Alignment.CENTER);
-        pageSizeLayout.setJustifyContentMode(JustifyContentMode.CENTER);
-        pageSizeLayout.setWidthFull();
-
         HorizontalLayout headerLayout = new HorizontalLayout(controlsLayout, searchLayout);
         headerLayout.setAlignItems(Alignment.CENTER);
         headerLayout.setJustifyContentMode(JustifyContentMode.EVENLY);
 
-        add(headerLayout, grid, pageSizeLayout);
+        add(headerLayout, grid);
         setupLazyDataProvider();
     }
 
@@ -105,14 +99,6 @@ public class ProductsView extends VerticalLayout {
         });
     }
 
-    private void setupPageSizeSelect() {
-        pageSizeSelect.setLabel("Items per page");
-        pageSizeSelect.setItems(5, 10, 20, 50);
-        pageSizeSelect.addValueChangeListener(e -> {
-            grid.setPageSize(e.getValue());
-            dataView.refreshAll();
-        });
-    }
 
     private void setupDialog() {
         dialog.setHeaderTitle("Create or Update Product");
@@ -129,7 +115,6 @@ public class ProductsView extends VerticalLayout {
         grid.addColumn(Product::getDescription).setHeader("Description").setAutoWidth(true);
         grid.addColumn(Product::getBuyPrice).setHeader("Buy Price").setAutoWidth(true);
         grid.addColumn(Product::getSellPrice).setHeader("Sell Price").setAutoWidth(true);
-        grid.addColumn(Product::isActive).setHeader("Active").setAutoWidth(true);
 
         grid.asSingleSelect().addValueChangeListener(event -> {
             currentProduct = event.getValue();
