@@ -35,14 +35,6 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
         SideNavItem shippingLink = new SideNavItem("Shipping");
         shippingLink.setPrefixComponent(VaadinIcon.TRUCK.create());
-        shippingLink.addItem(new SideNavItem("Shipping Area", ShippingAreaView.class,
-                VaadinIcon.GLOBE.create()));
-        shippingLink.addItem(new SideNavItem("Shipping Order",
-                ShippingOrderView.class, VaadinIcon.FILE_O.create()));
-        shippingLink.addItem(new SideNavItem("Shipping Provider",
-                ShippingProviderView.class, VaadinIcon.USER.create()));
-
-
 
         nav.addItem(employeeLink, productLink, shippingLink);
 

@@ -29,13 +29,10 @@ public class PurchaseOrderItemService {
     public void createPurchaseOrderItem(CreatePurchaseOrderItemDTO createPurchaseOrderItemDTO) {
         validateDTO(createPurchaseOrderItemDTO);
 
-        var purchaseOrder = purchaseOrderRepository.findById(createPurchaseOrderItemDTO.getPurchaseOrderId());
-
         PurchaseOrderItem item = PurchaseOrderItem.builder()
                 .product(createPurchaseOrderItemDTO.getProduct())
                 .quantity(createPurchaseOrderItemDTO.getQuantity())
                 .price(createPurchaseOrderItemDTO.getPrice())
-                .purchaseOrder(purchaseOrder)
                 .build();
 
         purchaseOrderItemRepository.save(item);

@@ -1,65 +1,27 @@
-// package com.codefathers.view;
+package com.codefathers.view;
 
-// import java.math.BigDecimal;
-// import java.time.LocalDate;
-// import java.util.ArrayList;
-// import java.util.Arrays;
-// import java.util.List;
-// import java.util.Optional;
-// import java.util.Scanner;
-// import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.UUID;
 
-// import com.codefathers.model.dto.CreateEmployeeDTO;
-// import com.codefathers.model.dto.CreateOrderDTO;
-// import com.codefathers.model.dto.CreatePaymentDTO;
-// import com.codefathers.model.dto.CreateProductDTO;
-// import com.codefathers.model.dto.CreatePurchaseOrderDTO;
-// import com.codefathers.model.dto.CreateShippingAreaDTO;
-// import com.codefathers.model.dto.CreateShippingOrderDTO;
-// import com.codefathers.model.dto.CreateShippingProviderDTO;
-// import com.codefathers.model.dto.CreateStorageDTO;
-// import com.codefathers.model.dto.UpdateProductDTO;
-// import com.codefathers.model.entity.Employee;
-// import com.codefathers.model.entity.Order;
-// import com.codefathers.model.entity.Payment;
-// import com.codefathers.model.entity.Product;
-// import com.codefathers.model.entity.ShippingArea;
-// import com.codefathers.model.entity.ShippingOrder;
-// import com.codefathers.model.entity.ShippingProvider;
-// import com.codefathers.model.enums.EmployeeGender;
-// import com.codefathers.model.enums.EmployeeRole;
-// import com.codefathers.model.enums.ShippingServiceStatus;
-// import com.codefathers.repository.implementations.EmployeeRepositoryImpl;
-// import com.codefathers.repository.implementations.OrderRepositoryImpl;
-// import com.codefathers.repository.implementations.PaymentRepositoryImpl;
-// import com.codefathers.repository.implementations.ProductRepositoryImpl;
-// import com.codefathers.repository.implementations.PurchaseOrderRepositoryImpl;
-// import com.codefathers.repository.implementations.ShippingAreaRepositoryImpl;
-// import com.codefathers.repository.implementations.ShippingOrderRepositoryImpl;
-// import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
-// import com.codefathers.repository.implementations.StorageRepositoryImpl;
-// import com.codefathers.repository.interfaces.EmployeeRepository;
-// import com.codefathers.repository.interfaces.OrderRepository;
-// import com.codefathers.repository.interfaces.PaymentRepository;
-// import com.codefathers.repository.interfaces.ProductRepository;
-// import com.codefathers.repository.interfaces.PurchaseOrderRepository;
-// import com.codefathers.repository.interfaces.ShippingAreaRepository;
-// import com.codefathers.repository.interfaces.ShippingOrderRepository;
-// import com.codefathers.repository.interfaces.ShippingProviderRepository;
-// import com.codefathers.repository.interfaces.StorageRepository;
-// import com.codefathers.service.EmployeeService;
-// import com.codefathers.service.OrderService;
-// import com.codefathers.service.PaymentService;
-// import com.codefathers.service.ProductService;
-// import com.codefathers.service.PurchaseOrderService;
-// import com.codefathers.service.ShippingAreaService;
-// import com.codefathers.service.ShippingOrderService;
-// import com.codefathers.service.ShippingProviderService;
-// import com.codefathers.service.StorageService;
-// import com.codefathers.util.ValidatorUtil;
+import com.codefathers.model.dto.CreatePurchaseOrderDTO;
+import com.codefathers.model.dto.CreatePurchaseOrderItemDTO;
+import com.codefathers.model.entity.Product;
+import com.codefathers.repository.implementations.EmployeeRepositoryImpl;
+import com.codefathers.repository.implementations.ProductRepositoryImpl;
+import com.codefathers.repository.implementations.PurchaseOrderRepositoryImpl;
+import com.codefathers.repository.implementations.StorageRepositoryImpl;
+import com.codefathers.repository.interfaces.EmployeeRepository;
+import com.codefathers.repository.interfaces.ProductRepository;
+import com.codefathers.repository.interfaces.PurchaseOrderRepository;
+import com.codefathers.repository.interfaces.StorageRepository;
+import com.codefathers.service.PurchaseOrderService;
+import com.codefathers.util.ValidatorUtil;
 
 
-// public class Main {
+public class Main {
 
 //     public static void shippingOrderFunctions() {
 //         Scanner scanner = new Scanner(System.in);
@@ -766,126 +728,126 @@
 //         }
 //     }
 
-//     public static void purchaseOrderFunctions() {
-//         StorageRepository storageRepository = new StorageRepositoryImpl();
-//         ProductRepository productRepository = new ProductRepositoryImpl();
-//         EmployeeRepository employeeRepository = new EmployeeRepositoryImpl();
-//         PurchaseOrderRepository purchaseOrderRepository = new PurchaseOrderRepositoryImpl();
-//         PurchaseOrderService purchaseOrderService = new PurchaseOrderService(purchaseOrderRepository,
-//                 employeeRepository, storageRepository, ValidatorUtil.getValidator());
-//         Scanner scanner = new Scanner(System.in);
+    public static void purchaseOrderFunctions() {
+        StorageRepository storageRepository = new StorageRepositoryImpl();
+        ProductRepository productRepository = new ProductRepositoryImpl();
+        EmployeeRepository employeeRepository = new EmployeeRepositoryImpl();
+        PurchaseOrderRepository purchaseOrderRepository = new PurchaseOrderRepositoryImpl();
+        PurchaseOrderService purchaseOrderService = new PurchaseOrderService(purchaseOrderRepository,
+                employeeRepository, storageRepository, ValidatorUtil.getValidator());
+        Scanner scanner = new Scanner(System.in);
 
-//         while (true) {
-//             System.out.println("\n--- PURCHASE ORDER MENU ---");
-//             System.out.println("1 - Criar pedido de compra");
-//             System.out.println("2 - Buscar pedido de compra por ID");
-//             System.out.println("0 - Voltar ao menu principal");
-//             System.out.print("Opção: ");
+        while (true) {
+            System.out.println("\n--- PURCHASE ORDER MENU ---");
+            System.out.println("1 - Criar pedido de compra");
+            System.out.println("2 - Buscar pedido de compra por ID");
+            System.out.println("0 - Voltar ao menu principal");
+            System.out.print("Opção: ");
 
-//             String opcao = scanner.nextLine();
+            String opcao = scanner.nextLine();
 
-//             try {
-//                 switch (opcao) {
-//                     case "1" -> {
-//                         System.out.print("ID do comprador (UUID - deve ser STORAGE ou LOCAL_MANAGER): ");
-//                         UUID purchaserId = UUID.fromString(scanner.nextLine());
+            try {
+                switch (opcao) {
+                    case "1" -> {
+                        System.out.print("ID do comprador (UUID - deve ser STORAGE ou LOCAL_MANAGER): ");
+                        UUID purchaserId = UUID.fromString(scanner.nextLine());
 
-//                         // Captura dos itens do pedido de compra
-//                         List<CreatePurchaseOrderDTO.CreatePurchaseOrderItemDTO> items = new ArrayList<>();
-//                         while (true) {
-//                             System.out.print("Adicionar item? (s/n): ");
-//                             String resp = scanner.nextLine().trim().toLowerCase();
-//                             if (!resp.equals("s"))
-//                                 break;
+                        // Captura dos itens do pedido de compra
+                        List<CreatePurchaseOrderItemDTO> items = new ArrayList<>();
+                        while (true) {
+                            System.out.print("Adicionar item? (s/n): ");
+                            String resp = scanner.nextLine().trim().toLowerCase();
+                            if (!resp.equals("s"))
+                                break;
 
-//                             System.out.print("SKU do Produto: ");
-//                             String productSku = scanner.nextLine();
-//                             Product product = productRepository.findBySKU(productSku);
-//                             if (product == null) {
-//                                 System.out.println("Produto não encontrado, tente novamente.");
-//                                 continue;
-//                             }
+                            System.out.print("SKU do Produto: ");
+                            String productSku = scanner.nextLine();
+                            Product product = productRepository.findBySKU(productSku);
+                            if (product == null) {
+                                System.out.println("Produto não encontrado, tente novamente.");
+                                continue;
+                            }
 
-//                             System.out.print("Quantidade: ");
-//                             int quantity = Integer.parseInt(scanner.nextLine());
+                            System.out.print("Quantidade: ");
+                            int quantity = Integer.parseInt(scanner.nextLine());
 
-//                             System.out.print("Preço unitário: ");
-//                             BigDecimal price = new BigDecimal(scanner.nextLine());
+                            System.out.print("Preço unitário: ");
+                            BigDecimal price = new BigDecimal(scanner.nextLine());
 
-//                             CreatePurchaseOrderDTO.CreatePurchaseOrderItemDTO itemDTO = CreatePurchaseOrderDTO.CreatePurchaseOrderItemDTO
-//                                     .builder()
-//                                     .product(product)
-//                                     .quantity(quantity)
-//                                     .price(price)
-//                                     .build();
+                            CreatePurchaseOrderItemDTO itemDTO = CreatePurchaseOrderItemDTO
+                                    .builder()
+                                    .product(product)
+                                    .quantity(quantity)
+                                    .price(price)
+                                    .build();
 
-//                             items.add(itemDTO);
-//                         }
+                            items.add(itemDTO);
+                        }
 
-//                         CreatePurchaseOrderDTO createPurchaseOrderDTO = CreatePurchaseOrderDTO.builder()
-//                                 .purchaserId(purchaserId)
-//                                 .item(items)
-//                                 .build();
+                        CreatePurchaseOrderDTO createPurchaseOrderDTO = CreatePurchaseOrderDTO.builder()
+                                .purchaserId(purchaserId)
+                                .item(items)
+                                .build();
 
-//                         purchaseOrderService.createPurchaseOrder(createPurchaseOrderDTO);
-//                         System.out.println("Pedido de compra criado com sucesso!");
-//                     }
-//                     case "2" -> {
-//                         System.out.print("ID do pedido de compra: ");
-//                         UUID orderId = UUID.fromString(scanner.nextLine());
+                        purchaseOrderService.createPurchaseOrder(createPurchaseOrderDTO);
+                        System.out.println("Pedido de compra criado com sucesso!");
+                    }
+                    case "2" -> {
+                        System.out.print("ID do pedido de compra: ");
+                        UUID orderId = UUID.fromString(scanner.nextLine());
 
-//                         // PurchaseOrder order = purchaseOrderService.findPurchaseOrderById(orderId);
-//                         // if (order == null) {
-//                         //     System.out.println("Pedido de compra não encontrado.");
-//                         // } else {
-//                         //     System.out.println(order);
-//                         // }
-//                     }
-//                     case "0" -> {
-//                         return;
-//                     }
-//                     default -> System.out.println("Opção inválida.");
-//                 }
-//             } catch (Exception e) {
-//                 System.out.println("Erro: " + e.getMessage());
-//             }
-//         }
-//     }
+                        // PurchaseOrder order = purchaseOrderService.findPurchaseOrderById(orderId);
+                        // if (order == null) {
+                        //     System.out.println("Pedido de compra não encontrado.");
+                        // } else {
+                        //     System.out.println(order);
+                        // }
+                    }
+                    case "0" -> {
+                        return;
+                    }
+                    default -> System.out.println("Opção inválida.");
+                }
+            } catch (Exception e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
+        }
+    }
 
-//     public static void main(String[] args) {
+    public static void main(String[] args) {
 
-//         Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
 
-//         while (true) {
-//             System.out.println("EMPLOYEE: 1");
-//             System.out.println("ORDER: 2");
-//             System.out.println("PAYMENT: 3");
-//             System.out.println("PRODUCT: 4");
-//             System.out.println("SHIPPING AREA: 5");
-//             System.out.println("SHIPPING PROVIDER: 6");
-//             System.out.println("STORAGE: 7");
-//             System.out.println("SHIPPING ORDER: 8");
-//             System.out.println("PURCHASE ORDER: 9");
-//             System.out.println("ENCERRAR: 0");
+        while (true) {
+            System.out.println("EMPLOYEE: 1");
+            System.out.println("ORDER: 2");
+            System.out.println("PAYMENT: 3");
+            System.out.println("PRODUCT: 4");
+            System.out.println("SHIPPING AREA: 5");
+            System.out.println("SHIPPING PROVIDER: 6");
+            System.out.println("STORAGE: 7");
+            System.out.println("SHIPPING ORDER: 8");
+            System.out.println("PURCHASE ORDER: 9");
+            System.out.println("ENCERRAR: 0");
 
-//             String opcao = scanner.nextLine();
+            String opcao = scanner.nextLine();
 
-//             switch (opcao) {
-//                 case "1" -> employeeFunctions();
-//                 case "2" -> orderFunctions();
-//                 case "3" -> paymentFunctions();
-//                 case "4" -> productFunctions();
-//                 case "5" -> shippingAreaFunctions();
-//                 case "6" -> shippingProviderFunctions();
-//                 case "7" -> storageFunctions();
-//                 case "8" -> shippingOrderFunctions();
-//                 case "9" -> purchaseOrderFunctions();
-//                 case "0" -> {
-//                     System.out.println("Encerrando...");
-//                     return;
-//                 }
-//             }
+            switch (opcao) {
+                // case "1" -> employeeFunctions();
+                // case "2" -> orderFunctions();
+                // case "3" -> paymentFunctions();
+                // case "4" -> productFunctions();
+                // case "5" -> shippingAreaFunctions();
+                // case "6" -> shippingProviderFunctions();
+                // case "7" -> storageFunctions();
+                // case "8" -> shippingOrderFunctions();
+                case "9" -> purchaseOrderFunctions();
+                case "0" -> {
+                    System.out.println("Encerrando...");
+                    return;
+                }
+            }
 
-//         }
-//     }
-// }
+        }
+    }
+}
