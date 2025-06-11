@@ -31,6 +31,9 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         SideNavItem productLink = new SideNavItem("Products",
                 ProductsView.class, VaadinIcon.STOCK.create());
 
+        SideNavItem orderLink = new SideNavItem("Order",
+                OrderView.class, VaadinIcon.FILE_O.create());
+
         SideNavItem shippingLink = new SideNavItem("Shipping");
         shippingLink.setPrefixComponent(VaadinIcon.TRUCK.create());
         shippingLink.addItem(new SideNavItem("Shipping Area", ShippingAreaView.class,
@@ -42,7 +45,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
 
 
-        nav.addItem(employeeLink, productLink, shippingLink);
+        nav.addItem(employeeLink, productLink, shippingLink, orderLink);
 
         Scroller scroller = new Scroller(nav);
         scroller.setClassName(LumoUtility.Padding.SMALL);
