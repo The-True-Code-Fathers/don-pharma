@@ -8,7 +8,9 @@ import com.codefathers.model.entity.Product;
 import com.codefathers.model.entity.Storage;
 import com.codefathers.repository.interfaces.ProductRepository;
 import com.codefathers.repository.interfaces.StorageRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class StorageService {
 
     StorageRepository storageRepository;

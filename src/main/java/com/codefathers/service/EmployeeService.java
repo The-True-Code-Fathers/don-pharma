@@ -13,11 +13,16 @@ import com.codefathers.repository.interfaces.EmployeeRepository;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+@Service
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final Validator validator;
 
+    @Autowired
     public EmployeeService(EmployeeRepository employeeRepository, Validator validator) {
         this.employeeRepository = employeeRepository;
         this.validator = validator;
@@ -58,6 +63,10 @@ public class EmployeeService {
         employeeRepository.deleteEmployeeByID(uuid);
     }
 
+    public Long count() {
+        return employeeRepository.count();
+    }
+
     private void validateDTOFunctions(CreateEmployeeDTO createEmployeeDTO) {
         Set<ConstraintViolation<CreateEmployeeDTO>> violations = validator.validate(createEmployeeDTO);
         if (!violations.isEmpty()) {
@@ -74,4 +83,5 @@ public class EmployeeService {
             throw new IllegalArgumentException("O funcionário deve ter no mínimo 16 (dezesseis) anos para ser registrado");
         }
     }
+
 }

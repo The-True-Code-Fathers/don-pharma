@@ -10,7 +10,9 @@ import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
 import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.repository.interfaces.PaymentRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PaymentService {
 
     PaymentRepository paymentRepository;

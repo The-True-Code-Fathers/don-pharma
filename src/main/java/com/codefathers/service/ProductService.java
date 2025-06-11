@@ -10,8 +10,9 @@ import com.codefathers.repository.interfaces.ProductRepository;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
+import org.springframework.stereotype.Service;
 
-
+@Service
 public class ProductService {
 
     private final ProductRepository productRepository;
