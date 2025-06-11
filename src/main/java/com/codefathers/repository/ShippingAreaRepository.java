@@ -11,4 +11,5 @@ public interface ShippingAreaRepository {
     ShippingArea searchShippingAreaPerID(UUID areaId);
     List<ShippingArea> listAllShippingAreas();
     ShippingArea removeShippingAreaPerId(UUID areaId);
+    void updateShippingArea(ShippingArea shippingArea);
 }

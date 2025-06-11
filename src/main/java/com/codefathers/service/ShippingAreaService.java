@@ -54,6 +54,16 @@ public class ShippingAreaService {
         }
     }
 
+    public void updateShippingArea(@Valid ShippingArea shippingArea) {
+        var violations = validator.validate(shippingArea);
+
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+
+        shippingAreaRepository.updateShippingArea(shippingArea);
+    }
+
     public List<ShippingArea> findAllShippingAreas() {
         return shippingAreaRepository.listAllShippingAreas();
     }

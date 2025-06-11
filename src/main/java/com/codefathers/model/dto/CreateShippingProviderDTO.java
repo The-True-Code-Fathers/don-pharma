@@ -13,12 +13,17 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
 public class CreateShippingProviderDTO {
+
+    @NotNull
+    private UUID id;
+
     @NotBlank
     private String cnpj;
 

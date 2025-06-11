@@ -10,4 +10,5 @@ public interface ShippingProviderRepository {
     ShippingProvider searchShippingProviderPerId(UUID shippingId);
     List<ShippingProvider> listAllShippingProviders();
     ShippingProvider removeShippingProviderPerId(UUID shippingId);
+    void updateShippingProvider(ShippingProvider shippingProvider);
 }

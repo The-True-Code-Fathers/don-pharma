@@ -54,4 +54,15 @@ public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
         }
         return null;
     }
+
+    @Override
+    public void updateShippingArea(ShippingArea shippingArea) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.merge(shippingArea); // merge realiza atualização se o objeto já existe
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            System.out.println("Erro ao atualizar ShippingArea: " + e.getMessage());
+        }
+    }
 }
