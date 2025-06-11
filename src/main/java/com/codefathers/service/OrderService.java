@@ -105,4 +105,7 @@ public class OrderService {
         orderRepository.update(order);
     }
 
+    public List<Order> findAll() {
+        return orderRepository.findAll();
+    }
 }

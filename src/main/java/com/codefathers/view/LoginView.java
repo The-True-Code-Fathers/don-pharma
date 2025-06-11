@@ -39,12 +39,11 @@ public class LoginView extends VerticalLayout {
         Optional<SystemUser> user = authService.authenticate(username, password);
 
         if (user.isPresent()) {
-            UI.getCurrent().navigate(MainView.class); // Go to Main View
+            UI.getCurrent().navigate(MainView.class);
             return;
         }
         // Login failed
         loginForm.setError(true);
         Notification.show("Invalid credentials", 3000, Notification.Position.MIDDLE);
     }
-
 }
