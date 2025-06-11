@@ -125,7 +125,7 @@ public class ProductsView extends VerticalLayout {
             }
         });
 
-        grid.setHeight("400px");
+        grid.setAllRowsVisible(true);
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
     }
