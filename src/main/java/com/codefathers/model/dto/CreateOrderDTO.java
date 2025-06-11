@@ -2,6 +2,7 @@ package com.codefathers.model.dto;
 
 import com.codefathers.model.entity.Product;
 import com.codefathers.model.entity.ShippingProvider;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,6 +33,8 @@ public class CreateOrderDTO {
     // Products price will be computed
     @NotNull
     private ShippingProvider shippingProvider;
+
+    private LocalDateTime createdAt;
 
     // Shipping price will be computed
     // Total amount will be computer

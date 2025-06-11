@@ -1,12 +1,21 @@
 package com.codefathers.model.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Data
 @Entity(name = "purchase_order_item")
 public class PurchaseOrderItem {
+    
     @Id
     @GeneratedValue
     private UUID id;
@@ -24,5 +33,6 @@ public class PurchaseOrderItem {
 
     @Column(name = "purchase_price", precision = 19, scale = 4)
     private BigDecimal price;
+    
 }
 

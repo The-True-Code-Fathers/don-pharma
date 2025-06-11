@@ -35,14 +35,8 @@ public class PurchaseOrder {
     @Column(name = "purchase_total_amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal purchaseTotalAmount;
 
-    @Column(nullable = false)
-    private boolean addToInventory = false;
-
-    @Column(nullable = false)
-    private boolean cancelled = false;
-
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
 
 }

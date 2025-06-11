@@ -96,11 +96,11 @@ public class ShippingOrderView extends VerticalLayout {
 
     private void saveShippingOrder() {
         try {
-            UUID provId = providerComboBox.getValue().getId();
+            var provId = providerComboBox.getValue();
             Integer days = estimatedDays.isEmpty() ? null : Integer.parseInt(estimatedDays.getValue());
 
             CreateShippingOrderDTO dto = CreateShippingOrderDTO.builder()
-                    .shippingProviderId(provId)
+                    .shippingProvider(provId)
                     .destinationState(destinationState.getValue())
                     .destinationCity(destinationCity.getValue())
                     .weight(weight.getValue())

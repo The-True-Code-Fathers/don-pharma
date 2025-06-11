@@ -16,7 +16,7 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.save(purchaseOrder);
+            session.persist(purchaseOrder);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
@@ -29,7 +29,7 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.update(purchaseOrder);
+            session.merge(purchaseOrder);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();

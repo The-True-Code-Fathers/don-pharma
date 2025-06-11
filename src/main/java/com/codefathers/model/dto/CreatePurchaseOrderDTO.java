@@ -1,6 +1,8 @@
 package com.codefathers.model.dto;
 
 import com.codefathers.model.entity.Product;
+
+import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -11,6 +13,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,11 +33,6 @@ public class CreatePurchaseOrderDTO {
     @NotEmpty
     private List<@Valid CreatePurchaseOrderItemDTO> item;
 
-    // Shipping price will be computed
-    // Total amount will be computer
-    // Invoiced is false by default
-    // Cancelled is false by default
-
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -45,6 +43,9 @@ public class CreatePurchaseOrderDTO {
 
         @Min(1)
         private int quantity;
-        // Price will be computed
+
+        @Column(name = "")
+        private BigDecimal price;
+
     }
 }

@@ -3,7 +3,7 @@ package com.codefathers.service;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
-import java.util.Set;            
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -23,15 +23,15 @@ public class EmployeeService {
         this.validator = validator;
     }
 
-    public void createEmployee(CreateEmployeeDTO dto) {
-        validateDTOFunctions(dto);
-        validateAge(dto.getBirthDate());
+    public void createEmployee(CreateEmployeeDTO createEmployeeDTO) {
+        validateDTOFunctions(createEmployeeDTO);
+        validateAge(createEmployeeDTO.getBirthDate());
 
         Employee employee = Employee.builder()
-                .gender(dto.getGender())
-                .fullName(dto.getFullName())
-                .role(dto.getRole())
-                .birthDate(dto.getBirthDate())
+                .gender(createEmployeeDTO.getGender())
+                .fullName(createEmployeeDTO.getFullName())
+                .role(createEmployeeDTO.getRole())
+                .birthDate(createEmployeeDTO.getBirthDate())
                 .build();
         employeeRepository.saveEmployee(employee);
     }
@@ -40,12 +40,12 @@ public class EmployeeService {
         return employeeRepository.listAllEmployees();
     }
 
-    public void findEmployeeById(UUID id) {
+    public void findEmployeeById(UUID employeeId) {
         try {
             employeeList()
                     .stream()
                     .filter(employee -> employee.getId()
-                    .equals(id))
+                    .equals(employeeId))
                     .findFirst().
                     ifPresentOrElse(employee -> System.out.println("Encontrado: " + employee),
                             () -> System.out.println("Não foi possível encontrar o funcionário pelo id."));
@@ -58,8 +58,8 @@ public class EmployeeService {
         employeeRepository.deleteEmployeeByID(uuid);
     }
 
-    private void validateDTOFunctions(CreateEmployeeDTO dto) {
-        Set<ConstraintViolation<CreateEmployeeDTO>> violations = validator.validate(dto);
+    private void validateDTOFunctions(CreateEmployeeDTO createEmployeeDTO) {
+        Set<ConstraintViolation<CreateEmployeeDTO>> violations = validator.validate(createEmployeeDTO);
         if (!violations.isEmpty()) {
             String errors = violations.stream()
                     .map(ConstraintViolation::getMessage)

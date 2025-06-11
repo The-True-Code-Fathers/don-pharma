@@ -18,17 +18,17 @@ public class ShippingAreaService {
         this.validator = validator;
     }
 
-    public void saveShippingArea(@Valid CreateShippingAreaDTO dto){
-        var violations = validator.validate(dto);
+    public void saveShippingArea(@Valid CreateShippingAreaDTO createShippingAreaDTO){
+        var violations = validator.validate(createShippingAreaDTO);
 
         if (!violations.isEmpty()){
             throw new ConstraintViolationException(violations);
         }
 
         ShippingArea shippingArea = ShippingArea.builder()
-                .shippingProvider(dto.getShippingProvider())
-                .description(dto.getDescription())
-                .states(dto.getStates())
+                .shippingProvider(createShippingAreaDTO.getShippingProvider())
+                .description(createShippingAreaDTO.getDescription())
+                .states(createShippingAreaDTO.getStates())
                 .build();
 
         try{
@@ -39,18 +39,18 @@ public class ShippingAreaService {
     }
 
 
-    public ShippingArea findShippingAreaById(UUID id) {
-        ShippingArea area = shippingAreaRepository.searchShippingAreaPerID(id);
+    public ShippingArea findShippingAreaById(UUID shippingAreaId) {
+        ShippingArea area = shippingAreaRepository.searchShippingAreaPerID(shippingAreaId);
         if (area == null) {
-            throw new RuntimeException("Área de entrega com ID '" + id + "' não encontrada.");
+            throw new RuntimeException("Área de entrega com ID '" + shippingAreaId + "' não encontrada.");
         }
         return area;
     }
 
-    public void deleteShippingAreaById(UUID id) {
-        ShippingArea area = shippingAreaRepository.removeShippingAreaPerId(id);
+    public void deleteShippingAreaById(UUID shippingAreaId) {
+        ShippingArea area = shippingAreaRepository.removeShippingAreaPerId(shippingAreaId);
         if (area == null) {
-            throw new RuntimeException("Não foi possível remover a área de entrega com ID '" + id + "'.");
+            throw new RuntimeException("Não foi possível remover a área de entrega com ID '" + shippingAreaId + "'.");
         }
     }
 

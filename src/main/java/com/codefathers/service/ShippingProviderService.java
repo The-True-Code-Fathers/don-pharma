@@ -14,13 +14,13 @@ public class ShippingProviderService {
         this.shippingProviderRepository = shippingProviderRepository;
     }
 
-    public void registerShippingProvider(CreateShippingProviderDTO dto) {
+    public void registerShippingProvider(CreateShippingProviderDTO createShippingProviderDTO) {
         ShippingProvider shippingProvider = ShippingProvider.builder()
-                .cnpj(dto.getCnpj())
-                .name(dto.getName())
-                .basePrice(dto.getBasePrice())
-                .dailyCapacity(dto.getDailyCapacity())
-                .shippingAreas(dto.getShippingAreas())
+                .cnpj(createShippingProviderDTO.getCnpj())
+                .name(createShippingProviderDTO.getName())
+                .basePrice(createShippingProviderDTO.getBasePrice())
+                .dailyCapacity(createShippingProviderDTO.getDailyCapacity())
+                // .shippingAreas(createShippingProviderDTO.getShippingAreas())
                 .build();
         shippingProviderRepository.saveShippingProvider(shippingProvider);
     }

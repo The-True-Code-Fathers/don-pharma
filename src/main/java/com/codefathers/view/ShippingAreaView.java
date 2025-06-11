@@ -1,5 +1,8 @@
 package com.codefathers.view;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.codefathers.model.dto.CreateShippingAreaDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.model.entity.ShippingProvider;
@@ -16,10 +19,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import jakarta.validation.ConstraintViolationException;
 
-import java.util.List;
-import java.util.UUID;
+import jakarta.validation.ConstraintViolationException;
 
 @Route("shipping-area")
 public class ShippingAreaView extends VerticalLayout {
@@ -32,7 +33,6 @@ public class ShippingAreaView extends VerticalLayout {
     private final TextField idField = new TextField("Buscar/Remover por ID");
 
     private final Grid<ShippingArea> areaGrid = new Grid<>(ShippingArea.class, false);
-
 
     public ShippingAreaView() {
         try {
@@ -102,8 +102,7 @@ public class ShippingAreaView extends VerticalLayout {
                 descriptionField,
                 statesField,
                 idField,
-                buttons
-        );
+                buttons);
         formLayout.setSpacing(true);
         formLayout.setPadding(false);
 
@@ -126,7 +125,9 @@ public class ShippingAreaView extends VerticalLayout {
             CreateShippingAreaDTO dto = new CreateShippingAreaDTO();
             dto.setShippingProvider(provider);
             dto.setDescription(descriptionField.getValue());
-            dto.setStates(statesField.getValue());
+            String input = statesField.getValue(); // Ex: "SP, RJ, MG"
+            String[] statesArray = input.split("\\s*,\\s*"); // Remove espaços ao redor das vírgulas
+            dto.setStates(statesArray);
 
             shippingAreaService.saveShippingArea(dto);
             Notification.show("Área cadastrada com sucesso!", 3000, Notification.Position.MIDDLE);
@@ -134,8 +135,8 @@ public class ShippingAreaView extends VerticalLayout {
             atualizarGrid();
 
         } catch (ConstraintViolationException e) {
-            e.getConstraintViolations().forEach(v ->
-                    Notification.show("Erro de validação: " + v.getMessage(), 5000, Notification.Position.MIDDLE));
+            e.getConstraintViolations().forEach(
+                    v -> Notification.show("Erro de validação: " + v.getMessage(), 5000, Notification.Position.MIDDLE));
         } catch (Exception e) {
             Notification.show("Erro ao cadastrar: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
         }
@@ -176,7 +177,6 @@ public class ShippingAreaView extends VerticalLayout {
         }
     }
 
-
     private void removerPorId() {
         try {
             if (idField.isEmpty()) {
@@ -211,7 +211,6 @@ public class ShippingAreaView extends VerticalLayout {
         areaGrid.addColumn(ShippingArea::getStates)
                 .setHeader("Estados Atendidos").setAutoWidth(true);
     }
-
 
     private void limparCampos() {
         descriptionField.clear();

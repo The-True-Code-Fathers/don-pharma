@@ -6,15 +6,15 @@ import java.util.Optional;
 import com.codefathers.model.dto.CreateStorageDTO;
 import com.codefathers.model.entity.Product;
 import com.codefathers.model.entity.Storage;
-import com.codefathers.repository.implementations.ProductRepositoryImpl;
-import com.codefathers.repository.implementations.StorageRepositoryImpl;
+import com.codefathers.repository.interfaces.ProductRepository;
+import com.codefathers.repository.interfaces.StorageRepository;
 
 public class StorageService {
 
-    StorageRepositoryImpl storageRepository;
-    ProductRepositoryImpl productRepository;
+    StorageRepository storageRepository;
+    ProductRepository productRepository;
 
-    public StorageService(StorageRepositoryImpl storageRepository, ProductRepositoryImpl productRepository) {
+    public StorageService(StorageRepository storageRepository, ProductRepository productRepository) {
         this.storageRepository = storageRepository;
         this.productRepository = productRepository;
     }

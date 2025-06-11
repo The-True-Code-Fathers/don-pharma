@@ -1,10 +1,15 @@
 package com.codefathers.view;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.model.entity.ShippingProvider;
-import com.codefathers.repository.interfaces.ShippingProviderRepository;
 import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
+import com.codefathers.repository.interfaces.ShippingProviderRepository;
 import com.codefathers.service.ShippingProviderService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -15,11 +20,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Route("shipping-provider")
 public class ShippingProviderView extends VerticalLayout {
@@ -82,7 +82,6 @@ public class ShippingProviderView extends VerticalLayout {
                         .cnpj(cnpj)
                         .basePrice(basePrice)
                         .dailyCapacity(dailyCapacity)
-                        .shippingAreas(areas)
                         .build();
 
                 shippingProviderService.registerShippingProvider(dto);
@@ -121,7 +120,6 @@ public class ShippingProviderView extends VerticalLayout {
                 String states = descAndStates[1].trim();
                 ShippingArea area = new ShippingArea();
                 area.setDescription(desc);
-                area.setStates(states);
                 areas.add(area);
             }
         }

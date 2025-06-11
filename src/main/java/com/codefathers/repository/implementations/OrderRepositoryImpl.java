@@ -29,7 +29,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.update(order);
+            session.merge(order);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null)
