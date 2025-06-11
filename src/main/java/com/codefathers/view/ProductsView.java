@@ -115,6 +115,7 @@ public class ProductsView extends VerticalLayout {
         grid.addColumn(Product::getDescription).setHeader("Description").setAutoWidth(true);
         grid.addColumn(Product::getBuyPrice).setHeader("Buy Price").setAutoWidth(true);
         grid.addColumn(Product::getSellPrice).setHeader("Sell Price").setAutoWidth(true);
+        grid.addColumn(Product::isActive).setHeader("Active").setAutoWidth(true);
 
         grid.asSingleSelect().addValueChangeListener(event -> {
             currentProduct = event.getValue();
