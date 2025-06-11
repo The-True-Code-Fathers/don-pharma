@@ -8,14 +8,18 @@ import com.codefathers.model.entity.ShippingOrder;
 import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.repository.interfaces.ShippingOrderRepository;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
+@ApplicationScoped
 public class ShippingOrderService {
     private final ShippingOrderRepository shippingOrderRepository;
     private final ShippingProviderRepository shippingProviderRepository;
     private final Validator validator;
 
+    @Inject
     public ShippingOrderService(ShippingOrderRepository shippingOrderRepository, ShippingProviderRepository shippingProviderRepository, Validator validator) {
         this.shippingOrderRepository = shippingOrderRepository;
         this.shippingProviderRepository = shippingProviderRepository;

@@ -11,6 +11,8 @@ import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.repository.interfaces.StorageRepository;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@ApplicationScoped
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -27,6 +30,7 @@ public class OrderService {
     private final StorageRepository storageRepository;
     private final Validator validator;
 
+    @Inject
     public OrderService(OrderRepository orderRepository,
             EmployeeRepository employeeRepository, StorageRepository storageRepository,
             Validator validator) {

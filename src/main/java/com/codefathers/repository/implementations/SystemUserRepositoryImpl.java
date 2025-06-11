@@ -4,11 +4,13 @@ import com.codefathers.model.entity.SystemUser;
 import com.codefathers.repository.interfaces.SystemUserRepository;
 import com.codefathers.util.HibernateUtil;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.Optional;
 
+@ApplicationScoped
 public class SystemUserRepositoryImpl implements SystemUserRepository {
     @Override
     public Optional<SystemUser> findByUsername(String username) {

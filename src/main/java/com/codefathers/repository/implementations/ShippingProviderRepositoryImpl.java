@@ -3,6 +3,7 @@ package com.codefathers.repository.implementations;
 import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
 import com.codefathers.util.HibernateUtil;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -10,6 +11,7 @@ import java.awt.event.HierarchyBoundsAdapter;
 import java.util.List;
 import java.util.UUID;
 
+@ApplicationScoped
 public class ShippingProviderRepositoryImpl implements ShippingProviderRepository {
     @Override
     public void saveShippingProvider(ShippingProvider shippingProvider) {

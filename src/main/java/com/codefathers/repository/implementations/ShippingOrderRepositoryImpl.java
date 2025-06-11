@@ -3,6 +3,7 @@ package com.codefathers.repository.implementations;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -10,6 +11,7 @@ import com.codefathers.model.entity.ShippingOrder;
 import com.codefathers.repository.interfaces.ShippingOrderRepository;
 import com.codefathers.util.HibernateUtil;
 
+@ApplicationScoped
 public class ShippingOrderRepositoryImpl implements ShippingOrderRepository {
 
     @Override

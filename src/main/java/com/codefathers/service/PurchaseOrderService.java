@@ -16,12 +16,14 @@ import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.repository.interfaces.PurchaseOrderRepository;
 import com.codefathers.repository.interfaces.StorageRepository;
 
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Transactional
+@ApplicationScoped
 public class PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
@@ -29,6 +31,7 @@ public class PurchaseOrderService {
     private final StorageRepository storageRepository;
     private final Validator validator;
 
+    @Inject
     public PurchaseOrderService(PurchaseOrderRepository purchaseOrderRepository,
             EmployeeRepository employeeRepository, StorageRepository storageRepository,
             Validator validator) {

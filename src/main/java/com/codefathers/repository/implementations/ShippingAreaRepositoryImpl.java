@@ -3,11 +3,13 @@ package com.codefathers.repository.implementations;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.repository.interfaces.ShippingAreaRepository;
 import com.codefathers.util.HibernateUtil;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.Session;
 
 import java.util.List;
 import java.util.UUID;
 
+@ApplicationScoped
 public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
     @Override
     public void saveShippingArea(ShippingArea shippingArea) {

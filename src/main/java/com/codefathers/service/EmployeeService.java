@@ -11,14 +11,17 @@ import com.codefathers.model.dto.CreateEmployeeDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.repository.interfaces.EmployeeRepository;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import org.springframework.beans.factory.annotation.Autowired;
 
+@ApplicationScoped
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final Validator validator;
 
+    @Inject
     public EmployeeService(EmployeeRepository employeeRepository, Validator validator) {
         this.employeeRepository = employeeRepository;
         this.validator = validator;

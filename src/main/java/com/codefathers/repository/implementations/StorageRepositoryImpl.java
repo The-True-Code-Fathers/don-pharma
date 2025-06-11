@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.Optional;
 
 import com.codefathers.repository.interfaces.StorageRepository;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import com.codefathers.model.entity.Storage;
 import com.codefathers.util.HibernateUtil;
 
+@ApplicationScoped
 public class StorageRepositoryImpl implements StorageRepository {
 
     @Override

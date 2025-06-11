@@ -6,14 +6,18 @@ import com.codefathers.util.PasswordUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Optional;
 
+@ApplicationScoped
 public class AuthService {
 
     private final SystemUserRepository userRepository;
 
+    @Inject
     public AuthService(SystemUserRepository userRepository) {
         this.userRepository = userRepository;
     }

@@ -3,6 +3,7 @@ package com.codefathers.repository.implementations;
 import com.codefathers.model.entity.Order;
 import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.util.HibernateUtil;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.Transaction;
 import org.hibernate.Session;
 
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+@ApplicationScoped
 public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public void save(Order order) {

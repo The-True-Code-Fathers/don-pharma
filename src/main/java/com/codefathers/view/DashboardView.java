@@ -23,21 +23,28 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import com.vaadin.flow.router.Route;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
-@PageTitle("Dashboard - Sistema de Gestão")
-@Component
+@Route("")
 public class DashboardView extends VerticalLayout implements HasDynamicTitle {
 
-    private final EmployeeService employeeService;
-    private final OrderService orderService;
-    private final ProductService productService;
-    private final PurchaseOrderService purchaseOrderService;
+    @Inject
+    private EmployeeService employeeService;
+
+    @Inject
+    private OrderService orderService;
+
+    @Inject
+    private ProductService productService;
+
+    @Inject
+    private PurchaseOrderService purchaseOrderService;
 
     // Componentes principais
     private Grid<Employee> employeeGrid;
@@ -51,16 +58,17 @@ public class DashboardView extends VerticalLayout implements HasDynamicTitle {
     private Div totalRevenueCard;
     private Div pendingOrdersCard;
 
-    @Autowired
-    public DashboardView(EmployeeService employeeService,
+    /*public DashboardView(EmployeeService employeeService,
                          OrderService orderService,
                          ProductService productService,
                          PurchaseOrderService purchaseOrderService) {
         this.employeeService = employeeService;
         this.orderService = orderService;
         this.productService = productService;
-        this.purchaseOrderService = purchaseOrderService;
+        this.purchaseOrderService = purchaseOrderService;*/
 
+    @PostConstruct
+    public void init() {
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -68,6 +76,10 @@ public class DashboardView extends VerticalLayout implements HasDynamicTitle {
         initializeComponents();
         createLayout();
         loadData();
+    }
+
+    public DashboardView() {
+
     }
 
     private void initializeComponents() {
