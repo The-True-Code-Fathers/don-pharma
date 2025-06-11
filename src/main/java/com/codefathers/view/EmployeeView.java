@@ -25,6 +25,7 @@ import java.time.LocalDate;
 @Route("employee")
 public class EmployeeView extends VerticalLayout {
     private EmployeeService employeeService;
+    private Employee currentEmployee;
 
     private TextField fullname = new TextField("Nome completo");
     private DatePicker birthDate = new DatePicker("Data de nascimento");
@@ -38,7 +39,6 @@ public class EmployeeView extends VerticalLayout {
 
     private Grid<Employee> grid = new Grid<>(Employee.class, false);
     private Dialog dialog = new Dialog();
-    private Employee currentEmployee;
 
     public EmployeeView() {
         var employeeRepository = new EmployeeRepositoryImpl();

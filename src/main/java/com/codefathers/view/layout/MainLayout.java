@@ -27,7 +27,6 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
         SideNavItem employeeLink = new SideNavItem("Funcionários",
                 EmployeeView.class, VaadinIcon.GROUP.create());
-
         nav.addItem(employeeLink);
 
         Scroller scroller = new Scroller(nav);

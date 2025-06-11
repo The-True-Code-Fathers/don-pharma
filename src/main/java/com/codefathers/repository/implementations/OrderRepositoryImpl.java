@@ -65,7 +65,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public List<Order> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select Order o from \"order\"", Order.class).list();
+            return session.createQuery("select o from orders o", Order.class).list();
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
