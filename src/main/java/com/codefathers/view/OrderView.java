@@ -100,8 +100,14 @@ public class OrderView extends VerticalLayout {
     }
 
     private void searchStatusFilter() {
-        statusFilter.setAriaLabel("Filter by status");
-        statusFilter.setItems(Arrays.toString(OrderStatus.values()));
+        List<String> statusItems = new ArrayList<>();
+        statusItems.add("TODOS");
+        for (OrderStatus status : OrderStatus.values()) {
+            statusItems.add(status.name());
+        }
+
+        statusFilter.setItems(statusItems);
+        statusFilter.setValue("TODOS");
         statusFilter.setEmptySelectionAllowed(true);
         statusFilter.setPlaceholder("All Statuses");
 
@@ -135,6 +141,7 @@ public class OrderView extends VerticalLayout {
         CallbackDataProvider<Order, Void> dataProvider = DataProvider.fromCallbacks(
                 query -> {
                     List<Order> allOrders = orderService.findAll();
+                    System.out.println("Total de pedidos encontrados: " + allOrders.size());
                     return allOrders.stream()
                             .filter(this::matchesFilters)
                             .skip(query.getOffset())
@@ -275,6 +282,7 @@ public class OrderView extends VerticalLayout {
 
                 Notification.show("Pedido criado com sucesso!", 3000, Notification.Position.MIDDLE);
                 dataView.refreshAll();
+                grid.getDataProvider().refreshAll();
                 createDialog.close();
 
             } catch (Exception ex) {
