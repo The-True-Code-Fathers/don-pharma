@@ -5,6 +5,8 @@ import com.codefathers.model.entity.ShippingArea;
 import java.util.List;
 import java.util.UUID;
 
+import com.codefathers.model.entity.ShippingArea;
+
 public interface ShippingAreaRepository {
     void saveShippingArea(ShippingArea shippingArea);
     ShippingArea searchShippingAreaPerID(UUID areaId);

@@ -26,11 +26,11 @@
         <mapping class="com.codefathers.model.entity.ShippingProvider" />
         <mapping class="com.codefathers.model.entity.ShippingArea" />
         <mapping class="com.codefathers.model.entity.Storage"/>
-        <mapping class="com.codefathers.model.entity.Payment" />
-<<<<<<< HEAD
         <mapping class="com.codefathers.model.entity.ShippingOrder"/>
-=======
+        <mapping class="com.codefathers.model.entity.Payment" />
+        <mapping class="com.codefathers.model.entity.ShippingOrder"/>
         <mapping class="com.codefathers.model.entity.SystemUser" />
->>>>>>> c23b601fa9bee5da949ad775824597ef200a06eb
+        <mapping class="com.codefathers.model.entity.PurchaseOrder" />
+        <mapping class="com.codefathers.model.entity.PurchaseOrderItem" />
     </session-factory>
 </hibernate-configuration>

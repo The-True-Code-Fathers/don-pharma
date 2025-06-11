@@ -1,11 +1,13 @@
 package com.codefathers.model.entity;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,6 +38,6 @@ public class ShippingProvider {
     @Column(name = "average_delivery_days", nullable = false)
     private int averageDeliveryDays;
 
-    @OneToMany(mappedBy = "shippingProvider", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ShippingArea> shippingAreas;
+    
+
 }
