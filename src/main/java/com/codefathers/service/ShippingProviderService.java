@@ -3,12 +3,10 @@ package com.codefathers.service;
 import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
-@Service
 public class ShippingProviderService {
     private ShippingProviderRepository shippingProviderRepository;
 

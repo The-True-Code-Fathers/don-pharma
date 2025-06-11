@@ -14,15 +14,11 @@ import com.codefathers.repository.interfaces.EmployeeRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
-@Service
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final Validator validator;
 
-    @Autowired
     public EmployeeService(EmployeeRepository employeeRepository, Validator validator) {
         this.employeeRepository = employeeRepository;
         this.validator = validator;

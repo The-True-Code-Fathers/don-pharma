@@ -5,12 +5,10 @@ import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
 
-@Repository
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override

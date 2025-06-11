@@ -6,12 +6,10 @@ import com.codefathers.repository.interfaces.ShippingAreaRepository;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
-@Service
 public class ShippingAreaService {
     private final ShippingAreaRepository shippingAreaRepository;
     private final Validator validator;

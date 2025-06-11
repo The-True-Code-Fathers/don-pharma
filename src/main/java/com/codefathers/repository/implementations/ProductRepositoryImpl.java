@@ -8,9 +8,7 @@ import org.hibernate.exception.ConstraintViolationException;
 
 import com.codefathers.model.entity.Product;
 import com.codefathers.util.HibernateUtil;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public Product findBySKU(String sku) {

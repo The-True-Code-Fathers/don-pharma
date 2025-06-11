@@ -4,12 +4,10 @@ import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.repository.interfaces.ShippingAreaRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
 
-@Repository
 public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
     @Override
     public void saveShippingArea(ShippingArea shippingArea) {

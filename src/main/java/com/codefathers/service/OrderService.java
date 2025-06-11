@@ -14,15 +14,12 @@ import com.codefathers.repository.interfaces.StorageRepository;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
-import org.hibernate.query.Query;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Service
 public class OrderService {
 
     private final OrderRepository orderRepository;

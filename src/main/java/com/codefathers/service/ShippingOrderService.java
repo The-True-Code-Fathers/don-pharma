@@ -10,9 +10,7 @@ import com.codefathers.repository.interfaces.ShippingOrderRepository;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
-import org.springframework.stereotype.Service;
 
-@Service
 public class ShippingOrderService {
     private final ShippingOrderRepository shippingOrderRepository;
     private final ShippingProviderRepository shippingProviderRepository;

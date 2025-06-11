@@ -9,9 +9,7 @@ import org.hibernate.Transaction;
 import com.codefathers.model.entity.ShippingOrder;
 import com.codefathers.repository.interfaces.ShippingOrderRepository;
 import com.codefathers.util.HibernateUtil;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public class ShippingOrderRepositoryImpl implements ShippingOrderRepository {
 
     @Override

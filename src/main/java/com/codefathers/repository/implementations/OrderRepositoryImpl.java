@@ -5,13 +5,11 @@ import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Transaction;
 import org.hibernate.Session;
-import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-@Repository
 public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public void save(Order order) {

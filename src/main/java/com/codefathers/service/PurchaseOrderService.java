@@ -20,9 +20,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
-import org.springframework.stereotype.Service;
 
-@Service
 @Transactional
 public class PurchaseOrderService {
 
