@@ -10,6 +10,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.dataview.GridLazyDataView;
+import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -32,29 +33,44 @@ public class ProductsView extends VerticalLayout {
 
     private ProductService productService;
 
-    private TextField sku = new TextField("SKU");
-    private TextField name = new TextField("Name");
-    private TextArea description = new TextArea("Description", "Optional");
-    private BigDecimalField buyPrice = new BigDecimalField("Buy Price");
-    private BigDecimalField sellPrice = new BigDecimalField("Sell Price");
+    // Form fields - CREATE NEW INSTANCES FOR EACH DIALOG
+    private TextField createSku = new TextField("SKU");
+    private TextField createName = new TextField("Name");
+    private TextArea createDescription = new TextArea("Description", "Optional");
+    private BigDecimalField createBuyPrice = new BigDecimalField("Buy Price");
+    private BigDecimalField createSellPrice = new BigDecimalField("Sell Price");
+
+    private TextField updateSku = new TextField("SKU");
+    private TextField updateName = new TextField("Name");
+    private TextArea updateDescription = new TextArea("Description", "Optional");
+    private BigDecimalField updateBuyPrice = new BigDecimalField("Buy Price");
+    private BigDecimalField updateSellPrice = new BigDecimalField("Sell Price");
 
     private TextField searchField = new TextField();
     private Select<Integer> pageSizeSelect = new Select<>();
 
-    private Button saveButton = new Button("Save");
-    private Button clearButton = new Button("Clear");
-    private Button setInactive = new Button("Set Inactive");
-    private Button dialogButtonCreateProduct = new Button("Create");
-    private Button dialogButtonUpdateProduct = new Button("Update");
-    private Button closeDialog = new Button("Close");
+    // Buttons for create dialog
+    private Button createSaveButton = new Button("Save");
+    private Button createClearButton = new Button("Clear");
+    private Button createCloseButton = new Button("Close");
+
+    // Buttons for update dialog
+    private Button updateSaveButton = new Button("Update");
+    private Button updateClearButton = new Button("Clear");
+    private Button updateCloseButton = new Button("Close");
+    private Button setInactiveButton = new Button("Set Inactive");
+
+    private Button dialogButtonCreateProduct = new Button("Create Product");
 
     private Grid<Product> grid = new Grid<>(Product.class, false);
     private GridLazyDataView<Product> dataView;
+    private Column<Product> statusColumn;
 
     private com.vaadin.flow.component.checkbox.Checkbox showInactiveCheckbox =
             new com.vaadin.flow.component.checkbox.Checkbox("Show inactive products");
 
-    private Dialog dialog = new Dialog();
+    private Dialog createDialog = new Dialog();
+    private Dialog updateDialog = new Dialog();
     private Product currentProduct;
 
     // Cache para evitar consultas desnecessárias
@@ -67,19 +83,22 @@ public class ProductsView extends VerticalLayout {
         this.productService = new ProductService(productRepository, ValidatorUtil.getValidator());
 
         setupSearchField();
-        setupForm();
         setupGrid();
-        setupDialog();
+        setupCreateDialog();
+        setupUpdateDialog();
+        setupEventListeners();
 
-        HorizontalLayout searchLayout = new HorizontalLayout(searchField, showInactiveCheckbox);
-        searchLayout.setAlignItems(Alignment.CENTER);
+        HorizontalLayout leftLayout = new HorizontalLayout(dialogButtonCreateProduct, searchField);
+        leftLayout.setAlignItems(Alignment.CENTER);
+        leftLayout.setSpacing(true);
 
-        HorizontalLayout controlsLayout = new HorizontalLayout(dialogButtonCreateProduct, dialogButtonUpdateProduct);
-        controlsLayout.setAlignItems(Alignment.CENTER);
+        HorizontalLayout rightLayout = new HorizontalLayout(showInactiveCheckbox);
+        rightLayout.setAlignItems(Alignment.CENTER);
 
-        HorizontalLayout headerLayout = new HorizontalLayout(controlsLayout, searchLayout);
+        HorizontalLayout headerLayout = new HorizontalLayout(leftLayout, rightLayout);
         headerLayout.setAlignItems(Alignment.CENTER);
-        headerLayout.setJustifyContentMode(JustifyContentMode.EVENLY);
+        headerLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        headerLayout.setWidth("80%");
 
         add(headerLayout, grid);
         setupLazyDataProvider();
@@ -87,26 +106,95 @@ public class ProductsView extends VerticalLayout {
 
     private void setupSearchField() {
         searchField.setWidth("400px");
-        searchField.setPlaceholder("Search for SKU, name...");
+        searchField.setPlaceholder("Search by SKU, name...");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
         searchField.setClearButtonVisible(true);
 
-        // Adicionar delay para evitar muitas consultas
         searchField.addValueChangeListener(e -> {
             currentSearchTerm = e.getValue().trim();
             dataView.refreshAll();
         });
     }
 
+    private void setupCreateDialog() {
+        createDialog.setHeaderTitle("Create Product");
+        createDialog.setDraggable(true);
+        createDialog.getElement().getStyle().set("width", "400px");
+        createDialog.getElement().getStyle().set("height", "350px");
 
-    private void setupDialog() {
-        dialog.setHeaderTitle("Create or Update Product");
-        dialog.setResizable(true);
-        dialog.setDraggable(true);
-        dialog.getElement().getStyle().set("width", "300px");
-        dialog.getElement().getStyle().set("height", "200px");
-        dialog.add(createFormLayout());
+        // Setup form fields
+        createSku.setWidth("350px");
+        createName.setWidth("350px");
+        createDescription.setWidth("350px");
+        createBuyPrice.setWidth("350px");
+        createSellPrice.setWidth("350px");
+
+        // Create form layout
+        VerticalLayout formLayout = new VerticalLayout();
+        formLayout.add(createSku, createName, createDescription, createBuyPrice, createSellPrice);
+        formLayout.setSpacing(true);
+        formLayout.setPadding(true);
+
+        // Create buttons layout
+        HorizontalLayout buttonsLayout = new HorizontalLayout(createSaveButton, createClearButton, createCloseButton);
+        buttonsLayout.setJustifyContentMode(JustifyContentMode.EVENLY);
+
+        // Main layout
+        VerticalLayout mainLayout = new VerticalLayout(formLayout, buttonsLayout);
+        mainLayout.setSpacing(true);
+        mainLayout.setPadding(true);
+
+        createDialog.add(mainLayout);
+    }
+
+    private void setupUpdateDialog() {
+        updateDialog.setHeaderTitle("Update Product");
+        updateDialog.setDraggable(true);
+        updateDialog.getElement().getStyle().set("width", "300px");
+        updateDialog.getElement().getStyle().set("height", "250px");
+
+        // Setup form fields
+        updateSku.setWidth("350px");
+        updateName.setWidth("350px");
+        updateDescription.setWidth("350px");
+        updateBuyPrice.setWidth("350px");
+        updateSellPrice.setWidth("350px");
+
+        // Create form layout
+        VerticalLayout formLayout = new VerticalLayout();
+        formLayout.add(updateSku, updateName, updateDescription, updateBuyPrice, updateSellPrice);
+        formLayout.setSpacing(true);
+        formLayout.setPadding(true);
+
+        // Create buttons layout
+        HorizontalLayout buttonsLayout = new HorizontalLayout(updateSaveButton, updateClearButton, updateCloseButton, setInactiveButton);
+        buttonsLayout.setJustifyContentMode(JustifyContentMode.EVENLY);
+
+        // Main layout
+        VerticalLayout mainLayout = new VerticalLayout(formLayout, buttonsLayout);
+        mainLayout.setSpacing(true);
+        mainLayout.setPadding(true);
+
+        updateDialog.add(mainLayout);
+    }
+
+    private void setupEventListeners() {
+        // Create dialog events
+        dialogButtonCreateProduct.addClickListener(e -> {
+            clearCreateForm();
+            createDialog.open();
+        });
+
+        createSaveButton.addClickListener(e -> saveNewProduct());
+        createClearButton.addClickListener(e -> clearCreateForm());
+        createCloseButton.addClickListener(e -> createDialog.close());
+
+        // Update dialog events
+        updateSaveButton.addClickListener(e -> updateExistingProduct());
+        updateClearButton.addClickListener(e -> clearUpdateForm());
+        updateCloseButton.addClickListener(e -> updateDialog.close());
+        setInactiveButton.addClickListener(e -> toggleProductActive());
     }
 
     private void setupGrid() {
@@ -115,30 +203,32 @@ public class ProductsView extends VerticalLayout {
         grid.addColumn(Product::getDescription).setHeader("Description").setAutoWidth(true);
         grid.addColumn(Product::getBuyPrice).setHeader("Buy Price").setAutoWidth(true);
         grid.addColumn(Product::getSellPrice).setHeader("Sell Price").setAutoWidth(true);
-        grid.addColumn(Product::isActive).setHeader("Active").setAutoWidth(true);
 
-        grid.asSingleSelect().addValueChangeListener(event -> {
-            currentProduct = event.getValue();
-            if (currentProduct != null) {
-                populateForm(currentProduct);
-            } else {
-                clearForm();
+        statusColumn = grid.addColumn(product -> product.isActive() ? "Active" : "Inactive")
+                .setHeader("Status")
+                .setAutoWidth(true);
+        statusColumn.setVisible(false);
+
+        grid.addItemClickListener(event -> {
+            if (event.getClickCount() == 2) {
+                currentProduct = event.getItem();
+                populateUpdateForm(currentProduct);
+                updateDialog.open();
             }
         });
 
-        grid.setAllRowsVisible(true);
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+        grid.setPageSize(10);
+        grid.setWidth("80%");
     }
 
     private void setupLazyDataProvider() {
         CallbackDataProvider<Product, Void> dataProvider = DataProvider.fromCallbacks(
-                // Fetch callback
                 query -> {
                     int offset = query.getOffset();
                     int limit = query.getLimit();
 
-                    // 🔁 Chama o service dinamicamente
                     List<Product> allProducts = productService.findAllProducts();
 
                     return allProducts.stream()
@@ -146,7 +236,6 @@ public class ProductsView extends VerticalLayout {
                             .skip(offset)
                             .limit(limit);
                 },
-                // Count callback
                 query -> {
                     List<Product> allProducts = productService.findAllProducts();
                     return (int) allProducts.stream()
@@ -157,20 +246,18 @@ public class ProductsView extends VerticalLayout {
 
         dataView = grid.setItems(dataProvider);
 
-        // Listener para o checkbox de produtos inativos
         showInactiveCheckbox.addValueChangeListener(e -> {
             currentShowInactive = e.getValue();
+            statusColumn.setVisible(e.getValue());
             dataView.refreshAll();
         });
     }
 
     private boolean matchesCurrentFilters(Product product) {
-        // Filtro para produtos inativos
         if (!showInactiveCheckbox.getValue() && !product.isActive()) {
             return false;
         }
 
-        // Filtro de busca
         if (currentSearchTerm.isEmpty()) {
             return true;
         }
@@ -189,103 +276,96 @@ public class ProductsView extends VerticalLayout {
         return matchesSku || matchesName || matchesDescription || matchesBuyPrice || matchesSellPrice;
     }
 
-    private void setupForm() {
-        sku.setWidth("350px");
-        name.setWidth("350px");
-        description.setWidth("350px");
-        buyPrice.setWidth("350px");
-        sellPrice.setWidth("350px");
+    private void populateUpdateForm(Product product) {
+        updateSku.setValue(product.getSku());
+        updateSku.setReadOnly(true);
+        updateName.setValue(product.getName());
+        updateName.setReadOnly(true);
+        updateDescription.setValue(product.getDescription() != null ? product.getDescription() : "");
+        updateBuyPrice.setValue(product.getBuyPrice());
+        updateSellPrice.setValue(product.getSellPrice());
 
-        sku.setReadOnly(false);
-        name.setReadOnly(false);
-
-        dialogButtonCreateProduct.addClickListener(e -> {
-            clearForm();
-            dialog.open();
-        });
-
-        dialogButtonUpdateProduct.addClickListener(e -> {
-            if (currentProduct != null) {
-                dialog.open();
-                populateForm(currentProduct);
-                currentProduct.setActive(true);
-            }
-        });
-
-        closeDialog.addClickListener(e -> dialog.close());
-        setInactive.addClickListener(e -> {
-            currentProduct.setActive(!currentProduct.isActive());
-            saveProduct();
-        });
-        saveButton.addClickListener(e -> saveProduct());
-        clearButton.addClickListener(e -> clearForm());
+        // Update button text based on product status
+        setInactiveButton.setText(product.isActive() ? "Set Inactive" : "Set Active");
     }
 
-    private HorizontalLayout createFormLayout() {
-        HorizontalLayout buttonsCreate = new HorizontalLayout(saveButton, clearButton, closeDialog);
-        HorizontalLayout buttonsUpdate = new HorizontalLayout(saveButton, clearButton, closeDialog, setInactive);
-        VerticalLayout formLayout = new VerticalLayout(sku, name, description, buyPrice, sellPrice, buttonsCreate, buttonsUpdate);
-        formLayout.setWidth("400px");
-
-        return new HorizontalLayout(formLayout);
+    private void clearCreateForm() {
+        createSku.clear();
+        createSku.setReadOnly(false);
+        createName.clear();
+        createName.setReadOnly(false);
+        createDescription.clear();
+        createBuyPrice.clear();
+        createSellPrice.clear();
     }
 
-    private void populateForm(Product product) {
-        sku.setValue(product.getSku());
-        sku.setReadOnly(true);
-        name.setValue(product.getName());
-        name.setReadOnly(true);
-        description.setValue(product.getDescription() != null ? product.getDescription() : "");
-        buyPrice.setValue(product.getBuyPrice());
-        sellPrice.setValue(product.getSellPrice());
-    }
-
-    private void clearForm() {
+    private void clearUpdateForm() {
+        updateSku.clear();
+        updateSku.setReadOnly(false);
+        updateName.clear();
+        updateName.setReadOnly(false);
+        updateDescription.clear();
+        updateBuyPrice.clear();
+        updateSellPrice.clear();
         currentProduct = null;
-        sku.clear();
-        sku.setReadOnly(false);
-        name.clear();
-        name.setReadOnly(false);
-        description.clear();
-        buyPrice.clear();
-        sellPrice.clear();
-        grid.asSingleSelect().clear();
     }
 
-    private void saveProduct() {
+    private void saveNewProduct() {
         try {
-            if (currentProduct == null) {
-                CreateProductDTO dto = CreateProductDTO.builder()
-                        .sku(sku.getValue())
-                        .name(name.getValue())
-                        .description(description.getValue())
-                        .buyPrice(buyPrice.getValue())
-                        .sellPrice(sellPrice.getValue())
-                        .active(currentProduct.isActive())
-                        .build();
+            CreateProductDTO dto = CreateProductDTO.builder()
+                    .sku(createSku.getValue())
+                    .name(createName.getValue())
+                    .description(createDescription.getValue())
+                    .buyPrice(createBuyPrice.getValue())
+                    .sellPrice(createSellPrice.getValue())
+                    .active(true) // New products are active by default
+                    .build();
 
-                productService.createProduct(dto);
-                Notification.show("Product created");
-            } else {
-                UpdateProductDTO dto = UpdateProductDTO.builder()
-                        .description(description.getValue())
-                        .buyPrice(buyPrice.getValue())
-                        .sellPrice(sellPrice.getValue())
-                        .active(currentProduct.isActive())
-                        .build();
+            productService.createProduct(dto);
+            Notification.show("Product created successfully!");
 
-                productService.updateProduct(currentProduct.getSku(), dto);
-                Notification.show("Product updated");
-            }
-
-            // Refresh dos dados após salvar
             dataView.refreshAll();
-            clearForm();
-            dialog.close();
+            clearCreateForm();
+            createDialog.close();
 
         } catch (Exception ex) {
-            Notification.show("Error: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
+            Notification.show("Error creating product: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
             ex.printStackTrace();
+        }
+    }
+
+    private void updateExistingProduct() {
+        try {
+            if (currentProduct == null) {
+                Notification.show("No product selected for update");
+                return;
+            }
+
+            UpdateProductDTO dto = UpdateProductDTO.builder()
+                    .description(updateDescription.getValue())
+                    .buyPrice(updateBuyPrice.getValue())
+                    .sellPrice(updateSellPrice.getValue())
+                    .active(currentProduct.isActive())
+                    .build();
+
+            productService.updateProduct(currentProduct.getSku(), dto);
+            Notification.show("Product updated successfully!");
+
+            dataView.refreshAll();
+            clearUpdateForm();
+            updateDialog.close();
+
+        } catch (Exception ex) {
+            Notification.show("Error updating product: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            ex.printStackTrace();
+        }
+    }
+
+    private void toggleProductActive() {
+        if (currentProduct != null) {
+            currentProduct.setActive(!currentProduct.isActive());
+            setInactiveButton.setText(currentProduct.isActive() ? "Set Inactive" : "Set Active");
+            updateExistingProduct();
         }
     }
 
