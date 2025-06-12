@@ -13,7 +13,7 @@ public class DataInitializer {
         if (userRepository.findByUsername("admin").isEmpty()) {
             SystemUser adminUser = new SystemUser();
             adminUser.setUsername("admin");
-            adminUser.setPasswordHash(PasswordUtil.hashPassword("adminpass")); // HASH THE PASSWORD
+            adminUser.setPasswordHash(AuthUtil.PasswordUtil.hashPassword("adminpass")); // HASH THE PASSWORD
             adminUser.setRole("ADMIN");
             userRepository.save(adminUser);
             System.out.println("Created initial admin user.");
@@ -22,7 +22,7 @@ public class DataInitializer {
         if (userRepository.findByUsername("user").isEmpty()) {
             SystemUser regularUser = new SystemUser();
             regularUser.setUsername("user");
-            regularUser.setPasswordHash(PasswordUtil.hashPassword("password")); // HASH THE PASSWORD
+            regularUser.setPasswordHash(AuthUtil.PasswordUtil.hashPassword("password")); // HASH THE PASSWORD
             regularUser.setRole("USER");
             userRepository.save(regularUser);
             System.out.println("Created initial regular user.");

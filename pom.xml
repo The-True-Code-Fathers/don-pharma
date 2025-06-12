@@ -54,6 +54,7 @@
                     <scan>2</scan>
                     <!-- Use war output directory to get the webpack files -->
                     <webApp>
+                        <contextPath>/</contextPath>
                         <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
                     </webApp>
                 </configuration>
