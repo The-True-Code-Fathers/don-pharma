@@ -3,14 +3,12 @@ package com.codefathers.repository.implementations;
 import com.codefathers.model.entity.PurchaseOrder;
 import com.codefathers.repository.interfaces.PurchaseOrderRepository;
 import com.codefathers.util.HibernateUtil;
-import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import java.util.List;
 import java.util.UUID;
 
-@ApplicationScoped
 public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
 
     @Override

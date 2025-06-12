@@ -10,16 +10,12 @@ import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
 import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.repository.interfaces.PaymentRepository;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
-@ApplicationScoped
 public class PaymentService {
 
     PaymentRepository paymentRepository;
     EmployeeRepository employeeRepository;
 
-    @Inject
     public PaymentService(PaymentRepository paymentRepository, EmployeeRepository employeeRepository) {
         this.paymentRepository = paymentRepository;
         this.employeeRepository = employeeRepository;

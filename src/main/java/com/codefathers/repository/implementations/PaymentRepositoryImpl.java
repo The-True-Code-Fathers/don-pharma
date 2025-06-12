@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.codefathers.repository.interfaces.PaymentRepository;
-import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -13,7 +12,6 @@ import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
 import com.codefathers.util.HibernateUtil;
 
-@ApplicationScoped
 public class PaymentRepositoryImpl implements PaymentRepository {
 
     @Override

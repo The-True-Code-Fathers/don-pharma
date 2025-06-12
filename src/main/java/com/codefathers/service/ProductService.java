@@ -7,19 +7,15 @@ import com.codefathers.model.dto.UpdateProductDTO;
 import com.codefathers.model.entity.Product;
 import com.codefathers.repository.interfaces.ProductRepository;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 
-@ApplicationScoped
 public class ProductService {
 
     private final ProductRepository productRepository;
     private final Validator validator;
 
-    @Inject
     public ProductService(ProductRepository productRepository, Validator validator) {
         this.validator = validator;
         this.productRepository = productRepository;

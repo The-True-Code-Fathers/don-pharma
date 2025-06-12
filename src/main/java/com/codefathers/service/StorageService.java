@@ -8,16 +8,12 @@ import com.codefathers.model.entity.Product;
 import com.codefathers.model.entity.Storage;
 import com.codefathers.repository.interfaces.ProductRepository;
 import com.codefathers.repository.interfaces.StorageRepository;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
-@ApplicationScoped
 public class StorageService {
 
     StorageRepository storageRepository;
     ProductRepository productRepository;
 
-    @Inject
     public StorageService(StorageRepository storageRepository, ProductRepository productRepository) {
         this.storageRepository = storageRepository;
         this.productRepository = productRepository;

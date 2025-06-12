@@ -3,8 +3,6 @@ package com.codefathers.service;
 import com.codefathers.model.dto.CreateShippingAreaDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.repository.interfaces.ShippingAreaRepository;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
@@ -12,12 +10,10 @@ import jakarta.validation.Validator;
 import java.util.List;
 import java.util.UUID;
 
-@ApplicationScoped
 public class ShippingAreaService {
     private final ShippingAreaRepository shippingAreaRepository;
     private final Validator validator;
 
-    @Inject
     public ShippingAreaService(ShippingAreaRepository shippingAreaRepository, Validator validator) {
         this.shippingAreaRepository = shippingAreaRepository;
         this.validator = validator;

@@ -2,29 +2,25 @@ package com.codefathers.service;
 
 import com.codefathers.model.entity.SystemUser;
 import com.codefathers.repository.interfaces.SystemUserRepository;
-import com.codefathers.util.PasswordUtil;
+import com.codefathers.util.AuthUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Optional;
 
-@ApplicationScoped
 public class AuthService {
 
     private final SystemUserRepository userRepository;
 
-    @Inject
     public AuthService(SystemUserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
     public Optional<SystemUser> authenticate(String username, String password) {
         Optional<SystemUser> authenticatedUser = userRepository.findByUsername(username)
-                .filter(user -> PasswordUtil.verifyPassword(password, user.getPasswordHash()));
+                .filter(user -> AuthUtil.PasswordUtil.verifyPassword(password, user.getPasswordHash()));
 
         // If authentication is successful, store the user in the session
         authenticatedUser.ifPresent(user -> {

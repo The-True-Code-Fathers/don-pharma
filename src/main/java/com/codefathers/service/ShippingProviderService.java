@@ -3,17 +3,13 @@ package com.codefathers.service;
 import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.UUID;
 
-@ApplicationScoped
 public class ShippingProviderService {
     private ShippingProviderRepository shippingProviderRepository;
 
-    @Inject
     public ShippingProviderService(ShippingProviderRepository shippingProviderRepository) {
         this.shippingProviderRepository = shippingProviderRepository;
     }

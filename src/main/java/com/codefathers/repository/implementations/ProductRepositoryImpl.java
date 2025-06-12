@@ -3,14 +3,12 @@ package com.codefathers.repository.implementations;
 import java.util.List;
 
 import com.codefathers.repository.interfaces.ProductRepository;
-import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.Session;
 import org.hibernate.exception.ConstraintViolationException;
 
 import com.codefathers.model.entity.Product;
 import com.codefathers.util.HibernateUtil;
 
-@ApplicationScoped
 public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public Product findBySKU(String sku) {
