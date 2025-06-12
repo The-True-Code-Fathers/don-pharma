@@ -33,7 +33,7 @@ public class ShippingAreaService {
                 .build();
 
         try{
-            shippingAreaRepository.saveShippingArea(shippingArea);
+            shippingAreaRepository.save(shippingArea);
         }catch (ConstraintViolationException e){
             System.out.println("Erro ao salvar ShippingArea: " + e.getMessage());
         }
@@ -41,7 +41,7 @@ public class ShippingAreaService {
 
 
     public ShippingArea findShippingAreaById(UUID shippingAreaId) {
-        ShippingArea area = shippingAreaRepository.searchShippingAreaPerID(shippingAreaId);
+        ShippingArea area = shippingAreaRepository.findById(shippingAreaId).get();
         if (area == null) {
             throw new RuntimeException("Área de entrega com ID '" + shippingAreaId + "' não encontrada.");
         }
@@ -49,8 +49,8 @@ public class ShippingAreaService {
     }
 
     public void deleteShippingAreaById(UUID shippingAreaId) {
-        ShippingArea area = shippingAreaRepository.removeShippingAreaPerId(shippingAreaId);
-        if (area == null) {
+        var shippingArea = shippingAreaRepository.findById(shippingAreaId).get();
+        if (shippingArea == null) {
             throw new RuntimeException("Não foi possível remover a área de entrega com ID '" + shippingAreaId + "'.");
         }
     }
@@ -62,12 +62,12 @@ public class ShippingAreaService {
             throw new ConstraintViolationException(violations);
         }
 
-        shippingAreaRepository.updateShippingArea(shippingArea);
+        shippingAreaRepository.update(shippingArea);
     }
 
     public List<ShippingArea> findAllShippingAreas() {
         try {
-            List<ShippingArea> areas = shippingAreaRepository.listAllShippingAreas();
+            List<ShippingArea> areas = shippingAreaRepository.listAll();
 
             // Log detalhado para diagnóstico
             System.out.println("Total de áreas encontradas: " + areas.size());

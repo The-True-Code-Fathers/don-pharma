@@ -4,13 +4,15 @@ import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.repository.interfaces.ShippingAreaRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
     @Override
-    public void saveShippingArea(ShippingArea shippingArea) {
+    public void save(ShippingArea shippingArea) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
             session.persist(shippingArea);
@@ -21,9 +23,10 @@ public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
     }
 
     @Override
-    public ShippingArea searchShippingAreaPerID(UUID areaId) {
+    public Optional<ShippingArea> findById(UUID areaId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(ShippingArea.class, areaId);
+            var shippingArea = session.get(ShippingArea.class, areaId);
+            return Optional.ofNullable(shippingArea);
         } catch (Exception e) {
             System.out.println("Erro ao buscar a área de transporte: " + e.getMessage());
         }
@@ -31,7 +34,7 @@ public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
     }
 
     @Override
-    public List<ShippingArea> listAllShippingAreas() {
+    public List<ShippingArea> listAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             // Consulta corrigida com JOIN FETCH para carregar todas as relações
             String hql = "SELECT sa FROM shipping_area sa LEFT JOIN FETCH sa.shippingProvider";
@@ -56,7 +59,7 @@ public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
     }
 
     @Override
-    public ShippingArea removeShippingAreaPerId(UUID areaId) {
+    public void delete(UUID areaId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
             ShippingArea shippingArea = session.get(ShippingArea.class, areaId);
@@ -64,18 +67,16 @@ public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
             if (shippingArea != null) {
                 session.remove(shippingArea);
                 session.getTransaction().commit();
-                return shippingArea;
             } else {
                 System.out.println("Não foi possivel remover a área da transportadora.");
             }
         } catch (Exception e) {
             System.out.println("Erro: " + e.getMessage());
         }
-        return null;
     }
 
     @Override
-    public void updateShippingArea(ShippingArea shippingArea) {
+    public void update(ShippingArea shippingArea) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
             session.merge(shippingArea); // merge realiza atualização se o objeto já existe
@@ -84,4 +85,5 @@ public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
             System.out.println("Erro ao atualizar ShippingArea: " + e.getMessage());
         }
     }
+
 }

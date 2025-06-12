@@ -3,12 +3,17 @@ package com.codefathers.repository.interfaces;
 import com.codefathers.model.entity.ShippingOrder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ShippingOrderRepository {
-    void saveShippingOrder(ShippingOrder shippingOrder);
-    ShippingOrder searchShippingOrderPerId(UUID orderId);
-    List<ShippingOrder> listAllShippingOrders();
-    ShippingOrder removeShippingOrderPerId(UUID orderId);
-    void updateShippingOrder(ShippingOrder shippingOrder);
+    void save(ShippingOrder shippingOrder);
+
+    void update(ShippingOrder shippingOrder);
+
+    void delete(UUID id);
+
+    Optional<ShippingOrder> findById(UUID id);
+
+    List<ShippingOrder> listAll();
 }

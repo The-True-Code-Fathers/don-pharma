@@ -49,7 +49,7 @@ public class OrderItemRepositoryImpl implements OrderItemRepository {
     @Override
     public List<OrderItem> listAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            List<OrderItem> orderItemList = session.createQuery("select i from order_items i", OrderItem.class).list();
+            List<OrderItem> orderItemList = session.createQuery("select i from order_item i", OrderItem.class).list();
             return orderItemList;
         }
     }

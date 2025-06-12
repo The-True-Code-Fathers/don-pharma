@@ -33,7 +33,7 @@ public class ShippingOrderService {
 
         // Busca o provedor de entrega
         ShippingProvider provider = shippingProviderRepository
-                .searchShippingProviderPerId(dto.getShippingProviderId());
+                .findById(dto.getShippingProviderId()).get();
 
         if (provider == null) {
             throw new IllegalArgumentException("Provedor de entrega não encontrado para o id: " + dto.getShippingProviderId());
@@ -52,30 +52,29 @@ public class ShippingOrderService {
                 .shippingCost(dto.getShippingCost())
                 .build();
 
-        shippingOrderRepository.saveShippingOrder(order);
+        shippingOrderRepository.save(order);
     }
 
     public ShippingOrder searchShippingOrder(UUID orderId) {
         if (orderId == null) {
             throw new IllegalArgumentException("ID do pedido não pode ser nulo");
         }
-        return shippingOrderRepository.searchShippingOrderPerId(orderId);
+        return shippingOrderRepository.findById(orderId).get();
     }
 
     public List<ShippingOrder> listAllShippingOrders() {
-        return shippingOrderRepository.listAllShippingOrders();
+        return shippingOrderRepository.listAll();
     }
 
-    public ShippingOrder removeShippingOrder(UUID orderId) {
+    public void removeShippingOrder(UUID orderId) {
         if (orderId == null) {
             throw new IllegalArgumentException("ID do pedido não pode ser nulo");
         }
 
-        ShippingOrder removedOrder = shippingOrderRepository.removeShippingOrderPerId(orderId);
-        if (removedOrder == null) {
+        var removedOrder = shippingOrderRepository.findById(orderId);
+        if (removedOrder.isPresent()) {
             throw new IllegalArgumentException("Pedido não encontrado para o ID: " + orderId);
         }
-        return removedOrder;
     }
 
     public void updateOrder(UUID orderId, CreateShippingOrderDTO dto) {
@@ -85,15 +84,13 @@ public class ShippingOrderService {
             throw new ConstraintViolationException(violations);
         }
 
-        // Verifica se o pedido existe
-        ShippingOrder existingOrder = shippingOrderRepository.searchShippingOrderPerId(orderId);
+        var existingOrder = shippingOrderRepository.findById(orderId).get();
         if (existingOrder == null) {
             throw new IllegalArgumentException("Pedido não encontrado para o id: " + orderId);
         }
 
-        // Busca o novo provedor de entrega
         ShippingProvider provider = shippingProviderRepository
-                .searchShippingProviderPerId(dto.getShippingProviderId());
+                .findById(dto.getShippingProviderId()).get();
 
         if (provider == null) {
             throw new IllegalArgumentException("Provedor de entrega não encontrado para o id: " + dto.getShippingProviderId());
@@ -110,6 +107,6 @@ public class ShippingOrderService {
         existingOrder.setDeliveryDate(dto.getDeliveryDate());
         existingOrder.setShippingCost(dto.getShippingCost());
 
-        shippingOrderRepository.updateShippingOrder(existingOrder);
+        shippingOrderRepository.update(existingOrder);
     }
 }

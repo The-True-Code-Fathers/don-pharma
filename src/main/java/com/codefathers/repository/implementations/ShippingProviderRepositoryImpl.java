@@ -7,12 +7,13 @@ import org.hibernate.Hibernate;
 import org.hibernate.Session;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ShippingProviderRepositoryImpl implements ShippingProviderRepository {
 
     @Override
-    public void saveShippingProvider(ShippingProvider shippingProvider) {
+    public void save(ShippingProvider shippingProvider) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
 
@@ -29,13 +30,13 @@ public class ShippingProviderRepositoryImpl implements ShippingProviderRepositor
     }
 
     @Override
-    public ShippingProvider searchShippingProviderPerId(UUID shippingId) {
+    public Optional<ShippingProvider> findById(UUID shippingId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             ShippingProvider provider = session.get(ShippingProvider.class, shippingId);
             if (provider != null) {
                 Hibernate.initialize(provider.getShippingAreas());
             }
-            return provider;
+            return Optional.ofNullable(provider);
         } catch (Exception e) {
             System.out.println("Erro ao buscar a transportadora: " + e.getMessage());
             throw new RuntimeException("Erro ao buscar transportadora", e);
@@ -43,7 +44,7 @@ public class ShippingProviderRepositoryImpl implements ShippingProviderRepositor
     }
 
     @Override
-    public List<ShippingProvider> listAllShippingProviders() {
+    public List<ShippingProvider> listAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "SELECT DISTINCT p FROM shipping_provider p LEFT JOIN FETCH p.shippingAreas";
             List<ShippingProvider> providers = session.createQuery(hql).getResultList();
@@ -55,7 +56,7 @@ public class ShippingProviderRepositoryImpl implements ShippingProviderRepositor
     }
 
     @Override
-    public ShippingProvider removeShippingProviderPerId(UUID shippingId) {
+    public void delete(UUID shippingId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
             ShippingProvider shippingProvider = session.get(ShippingProvider.class, shippingId);
@@ -64,10 +65,8 @@ public class ShippingProviderRepositoryImpl implements ShippingProviderRepositor
                 Hibernate.initialize(shippingProvider.getShippingAreas());
                 session.remove(shippingProvider);
                 session.getTransaction().commit();
-                return shippingProvider;
             } else {
                 System.out.println("Transportadora não encontrada.");
-                return null;
             }
         } catch (Exception e) {
             System.out.println("Não foi possível remover a transportadora pelo ID: " + e.getMessage());
@@ -76,7 +75,7 @@ public class ShippingProviderRepositoryImpl implements ShippingProviderRepositor
     }
 
     @Override
-    public void updateShippingProvider(ShippingProvider shippingProvider) {
+    public void update(ShippingProvider shippingProvider) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
 

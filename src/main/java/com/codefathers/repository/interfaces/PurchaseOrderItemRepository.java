@@ -8,8 +8,12 @@ import com.codefathers.model.entity.PurchaseOrderItem;
 
 public interface PurchaseOrderItemRepository {
     void save(PurchaseOrderItem purchaseOrderItem);
+
     void update(PurchaseOrderItem purchaseOrderItem);
+
     void delete(PurchaseOrderItem purchaseOrderItem);
+
     Optional<PurchaseOrderItem> findById(UUID purchaseOrderItemId);
+
     List<PurchaseOrderItem> findAll();
 }

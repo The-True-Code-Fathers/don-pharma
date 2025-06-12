@@ -35,7 +35,7 @@ public class ShippingProviderService {
         List<ShippingArea> areas = processShippingAreas(dto.getShippingAreas(), shippingProvider);
         shippingProvider.setShippingAreas(areas);
 
-        shippingProviderRepository.saveShippingProvider(shippingProvider);
+        shippingProviderRepository.save(shippingProvider);
     }
 
     public ShippingProvider searchShippingProviderPerId(UUID shippingId) {
@@ -44,23 +44,22 @@ public class ShippingProviderService {
         }
 
 
-        return shippingProviderRepository.searchShippingProviderPerId(shippingId);
+        return shippingProviderRepository.findById(shippingId).get();
     }
 
     public List<ShippingProvider> listAllShippingProviders() {
-        return shippingProviderRepository.listAllShippingProviders();
+        return shippingProviderRepository.listAll();
     }
 
-    public ShippingProvider removeShippingProvider(UUID shippingId) {
+    public void removeShippingProvider(UUID shippingId) {
         if (shippingId == null) {
             throw new IllegalArgumentException("ID da transportadora não pode ser nulo");
         }
 
-        ShippingProvider removed = shippingProviderRepository.removeShippingProviderPerId(shippingId);
+        ShippingProvider removed = shippingProviderRepository.findById(shippingId).get();
         if (removed == null) {
             throw new IllegalArgumentException("Transportadora não encontrada para remoção");
         }
-        return removed;
     }
 
     public void updateShippingProvider(CreateShippingProviderDTO dto) {
@@ -69,7 +68,7 @@ public class ShippingProviderService {
         }
 
         // Busca a transportadora existente
-        ShippingProvider existing = shippingProviderRepository.searchShippingProviderPerId(dto.getId());
+        ShippingProvider existing = shippingProviderRepository.findById(dto.getId()).get();
         if (existing == null) {
             throw new IllegalArgumentException("Transportadora não encontrada");
         }
@@ -84,7 +83,7 @@ public class ShippingProviderService {
         List<ShippingArea> areas = processShippingAreas(dto.getShippingAreas(), existing);
         existing.setShippingAreas(areas);
 
-        shippingProviderRepository.updateShippingProvider(existing);
+        shippingProviderRepository.update(existing);
     }
 
 
