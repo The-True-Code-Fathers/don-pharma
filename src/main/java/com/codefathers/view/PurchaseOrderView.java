@@ -19,6 +19,7 @@ import com.codefathers.service.PurchaseOrderService;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -41,18 +42,19 @@ public class PurchaseOrderView extends VerticalLayout {
 
     private final TextField searchField = new TextField();
     private final Button addItemButton = new Button("Add Item");
-    private final Button createOrderButton = new Button("Create Order");
+    private final Button openDialogButton = new Button("Create Order");
 
     private final Grid<PurchaseOrder> grid = new Grid<>(PurchaseOrder.class, false);
-    private final Grid<CreatePurchaseOrderItemDTO> itemGrid = new Grid<>(CreatePurchaseOrderItemDTO.class, false); // Novo
-                                                                                                                   // grid
+    private final Grid<CreatePurchaseOrderItemDTO> itemGrid = new Grid<>(CreatePurchaseOrderItemDTO.class, false);
 
-    private ComboBox<Product> productComboBox = new ComboBox<>("Product");
-    private NumberField quantityField = new NumberField("Quantity");
-    private NumberField priceField = new NumberField("Price");
-    private ComboBox<Employee> purchaserComboBox = new ComboBox<>("Purchaser");
+    private final ComboBox<Product> productComboBox = new ComboBox<>("Product");
+    private final NumberField quantityField = new NumberField("Quantity");
+    private final NumberField priceField = new NumberField("Price");
+    private final ComboBox<Employee> purchaserComboBox = new ComboBox<>("Purchaser");
 
-    private List<CreatePurchaseOrderItemDTO> items = new ArrayList<>();
+    private final Dialog orderDialog = new Dialog();
+
+    private final List<CreatePurchaseOrderItemDTO> items = new ArrayList<>();
 
     private String currentSearchTerm = "";
 
@@ -61,6 +63,7 @@ public class PurchaseOrderView extends VerticalLayout {
         var employeeRepository = new EmployeeRepositoryImpl();
         var storageRepository = new StorageRepositoryImpl();
         var productRepository = new ProductRepositoryImpl();
+
         this.purchaseOrderService = new PurchaseOrderService(purchaseOrderRepository, employeeRepository,
                 storageRepository, ValidatorUtil.getValidator());
         this.employeeService = new EmployeeService(employeeRepository, ValidatorUtil.getValidator());
@@ -68,23 +71,18 @@ public class PurchaseOrderView extends VerticalLayout {
 
         setupSearchField();
         setupGrid();
+        setupItemGrid();
         setupForm();
-        setupItemGrid(); // configura o grid de itens adicionados
-
-        FormLayout formLayout = new FormLayout();
-        formLayout.setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 2));
-        formLayout.add(productComboBox, quantityField, priceField, purchaserComboBox, addItemButton, createOrderButton);
+        setupOrderDialog();
 
         HorizontalLayout topLayout = new HorizontalLayout();
         topLayout.setWidthFull();
         topLayout.setAlignItems(Alignment.END);
 
         searchField.setWidth("300px");
-        topLayout.add(formLayout, searchField);
-        topLayout.expand(formLayout);
+        topLayout.add(openDialogButton, searchField);
 
-        add(topLayout, itemGrid, grid); // adiciona itemGrid no layout visual
+        add(topLayout, itemGrid, grid, orderDialog); // adiciona o dialog oculto inicialmente
 
         refreshGrid();
     }
@@ -104,8 +102,10 @@ public class PurchaseOrderView extends VerticalLayout {
     private void setupGrid() {
         grid.addColumn(po -> po.getId().toString()).setHeader("ID").setSortable(true);
         grid.addColumn(po -> po.getPurchaserId().getFullName()).setHeader("Purchaser").setSortable(true);
-        grid.addColumn(po -> po.getPurchaseTotalAmount()).setHeader("Total Amount").setSortable(true);
+        grid.addColumn(po -> po.getPurchaseTotalProductAmount()).setHeader("Total Amount").setSortable(true);
+        grid.addColumn(po -> po.getPurchaseTotalPriceAmount()).setHeader("Total Price Amount").setSortable(true);
         grid.addColumn(po -> po.getCreatedAt().toString()).setHeader("Created At").setSortable(true);
+        grid.addColumn(po -> po.getPurchaseOrderStatus().toString()).setHeader("Status").setSortable(true);
 
         grid.setHeight("400px");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
@@ -138,7 +138,25 @@ public class PurchaseOrderView extends VerticalLayout {
         purchaserComboBox.setPlaceholder("Select purchaser");
 
         addItemButton.addClickListener(e -> addItem());
-        createOrderButton.addClickListener(e -> createOrder());
+        openDialogButton.addClickListener(e -> orderDialog.open()); // abre o diálogo
+    }
+
+    private void setupOrderDialog() {
+        FormLayout dialogFormLayout = new FormLayout();
+        dialogFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
+        dialogFormLayout.add(productComboBox, quantityField, priceField, purchaserComboBox, addItemButton);
+
+        Button confirmOrderButton = new Button("Confirm Order", e -> {
+            createOrder();
+            orderDialog.close();
+        });
+
+        VerticalLayout dialogContent = new VerticalLayout(dialogFormLayout, confirmOrderButton);
+        dialogContent.setPadding(true);
+        dialogContent.setSpacing(true);
+
+        orderDialog.setHeaderTitle("Create Purchase Order");
+        orderDialog.add(dialogContent);
     }
 
     private void addItem() {
@@ -166,7 +184,7 @@ public class PurchaseOrderView extends VerticalLayout {
                 .build();
 
         items.add(itemDTO);
-        itemGrid.setItems(items); // atualiza o grid com os novos itens
+        itemGrid.setItems(items);
 
         Notification.show("Item added successfully.");
 
@@ -203,7 +221,7 @@ public class PurchaseOrderView extends VerticalLayout {
             quantityField.setValue(1.0);
             priceField.setValue(0.0);
             purchaserComboBox.clear();
-            itemGrid.setItems(items); // limpa a grid dos itens adicionados
+            itemGrid.setItems(items);
 
             refreshGrid();
         } catch (Exception ex) {

@@ -12,6 +12,7 @@ import com.codefathers.model.entity.PurchaseOrder;
 import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.model.entity.Storage;
 import com.codefathers.model.enums.EmployeeRole;
+import com.codefathers.model.enums.PurchaseOrderStatus;
 import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.repository.interfaces.PurchaseOrderRepository;
 import com.codefathers.repository.interfaces.StorageRepository;
@@ -55,8 +56,9 @@ public class PurchaseOrderService {
 
         PurchaseOrder purchaseOrder = PurchaseOrder.builder()
                 .purchaserId(employee)
-                .purchaseProductsPrice(BigDecimal.ZERO)
-                .purchaseTotalAmount(BigDecimal.ZERO)
+                .purchaseTotalPriceAmount(BigDecimal.ZERO)
+                .purchaseTotalProductAmount(0)
+                .purchaseOrderStatus(PurchaseOrderStatus.OPEN)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -87,11 +89,13 @@ public class PurchaseOrderService {
         BigDecimal purchaseProductsPrice = purchaseOrderItems.stream().map(PurchaseOrderItem::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal purchaseTotalAmount = purchaseProductsPrice;
+        int purchaseProductsQuantity = purchaseOrderItems.stream()
+                .mapToInt(PurchaseOrderItem::getQuantity)
+                .sum();
 
         purchaseOrder.setPurchaseItems(purchaseOrderItems);
-        purchaseOrder.setPurchaseProductsPrice(purchaseProductsPrice);
-        purchaseOrder.setPurchaseTotalAmount(purchaseTotalAmount);
+        purchaseOrder.setPurchaseTotalPriceAmount(purchaseProductsPrice);
+        purchaseOrder.setPurchaseTotalProductAmount(purchaseProductsQuantity);
 
         purchaseOrderRepository.save(purchaseOrder);
     }
