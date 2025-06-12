@@ -1,6 +1,7 @@
 package com.codefathers.view.layout;
 
 import com.codefathers.view.EmployeeView;
+import com.codefathers.view.OrderView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.H1;
@@ -28,6 +29,10 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         SideNavItem employeeLink = new SideNavItem("Funcionários",
                 EmployeeView.class, VaadinIcon.GROUP.create());
         nav.addItem(employeeLink);
+
+        SideNavItem orderLink = new SideNavItem("Order",
+                OrderView.class, VaadinIcon.CLIPBOARD.create());
+        nav.addItem(orderLink);
 
         Scroller scroller = new Scroller(nav);
         scroller.setClassName(LumoUtility.Padding.SMALL);
