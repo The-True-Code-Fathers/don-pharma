@@ -80,7 +80,7 @@ public class PurchaseOrderView extends VerticalLayout {
         setupItemGrid();
         setupForm();
         setupOrderDialog();
-        setupEditDialog(); // <-- Adicione esta linha
+        setupEditDialog();
 
         HorizontalLayout topLayout = new HorizontalLayout();
         topLayout.setWidthFull();
@@ -174,8 +174,7 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     private void openEditDialog(PurchaseOrder order) {
-        editDialog.removeAll(); // Limpa conteúdo antigo
-        editDialog.setWidth("600px");
+        editDialog.removeAll(); // Limpa conteúdo antigo;
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
@@ -198,9 +197,9 @@ public class PurchaseOrderView extends VerticalLayout {
 
             FormLayout itemLayout = new FormLayout();
             itemLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
-            itemLayout.addFormItem(form.productField, "Product");
-            itemLayout.addFormItem(form.quantityField, "Quantity");
-            itemLayout.addFormItem(form.priceField, "Price");
+            itemLayout.add(form.productField);
+            itemLayout.add(form.quantityField);
+            itemLayout.add(form.priceField);
 
             layout.add(itemLayout);
         }
