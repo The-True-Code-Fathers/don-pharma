@@ -9,11 +9,13 @@ import com.codefathers.model.dto.CreateOrderDTO;
 import com.codefathers.model.dto.CreateOrderItemDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Order;
+import com.codefathers.model.entity.OrderItem;
 import com.codefathers.model.entity.Product;
 import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.model.enums.EmployeeRole;
 import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.implementations.EmployeeRepositoryImpl;
+import com.codefathers.repository.implementations.OrderItemRepositoryImpl;
 import com.codefathers.repository.implementations.OrderRepositoryImpl;
 import com.codefathers.repository.implementations.ProductRepositoryImpl;
 import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
@@ -21,12 +23,14 @@ import com.codefathers.repository.implementations.StorageRepositoryImpl;
 import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.service.EmployeeService;
 import com.codefathers.service.OrderService;
+import com.codefathers.service.OrderItemService;
 import com.codefathers.service.ProductService;
 import com.codefathers.service.ShippingProviderService;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.dataview.GridLazyDataView;
@@ -50,9 +54,11 @@ public class OrderView extends VerticalLayout {
     private ShippingProviderService shippingProviderService;
     ProductRepositoryImpl productRepository = new ProductRepositoryImpl();
     ShippingProviderRepositoryImpl shippingProviderRepository = new ShippingProviderRepositoryImpl();
+    OrderItemRepositoryImpl orderItemRepository = new OrderItemRepositoryImpl();
     private ProductService productService;
     private EmployeeService employeeService;
     private OrderService orderService;
+    private OrderItemService orderItemService;
     private Grid<Order> grid = new Grid<>(Order.class, false);
     private GridLazyDataView<Order> dataView;
     private Select<OrderStatus> orderStatusSelect;
@@ -62,11 +68,14 @@ public class OrderView extends VerticalLayout {
     private Select<String> statusFilter = new Select<>();
     private ComboBox<Employee> employeeComboBox;
     private Dialog dialog = new Dialog();
+    private Dialog editDialog = new Dialog();
     private String currentSearchingTerm = "";
     private String currentStatus = "TODOS";
+    private Order currentOrderEditing = null;
 
     public OrderView() {
         productService = new ProductService(productRepository, ValidatorUtil.getValidator());
+        orderItemService = new OrderItemService(orderItemRepository, orderRepository);
         shippingProviderService = new ShippingProviderService(shippingProviderRepository);
         EmployeeRepository employeeRepository = new EmployeeRepositoryImpl();
         employeeService = new EmployeeService(employeeRepository, ValidatorUtil.getValidator());
@@ -74,12 +83,15 @@ public class OrderView extends VerticalLayout {
         var storageRepository = new StorageRepositoryImpl();
         Validator validator = ValidatorUtil.getValidator();
         this.orderService = new OrderService(orderRepository, employeeRepository, storageRepository, validator);
+        // Assumindo que você tem OrderItemService - se não tiver, você precisará criar
+        // this.orderItemService = new OrderItemService(...);
 
         employeeComboBox = new ComboBox<>();
         setupEmployeeComboBox();
         searchStatusFilter();
         setupGrid();
         setupDialog();
+        setupEditDialog();
 
         Button createButton = new Button("Criar Pedido", new Icon(VaadinIcon.PLUS));
         createButton.addClickListener(e -> openCreateOrderDialog());
@@ -111,12 +123,161 @@ public class OrderView extends VerticalLayout {
         grid.addColumn(Order::getOrderStatus).setHeader("Status do Pedido").setAutoWidth(true);
         grid.addColumn(Order::getTotalAmount).setHeader("Valor Total (R$)").setAutoWidth(true);
 
-        grid.asSingleSelect().addValueChangeListener(event -> {
-            Order selected = event.getValue();
-            if (selected != null) {
-                showOrderDialog(selected);
+        // Adicionando coluna de ações
+        grid.addComponentColumn(order -> {
+            HorizontalLayout actions = new HorizontalLayout();
+            
+            Button viewButton = new Button(new Icon(VaadinIcon.EYE));
+            viewButton.addClickListener(e -> showOrderDialog(order));
+            viewButton.getElement().setAttribute("title", "Visualizar");
+            
+            Button editButton = new Button(new Icon(VaadinIcon.EDIT));
+            editButton.addClickListener(e -> openEditDialog(order));
+            editButton.getElement().setAttribute("title", "Editar");
+            
+            actions.add(viewButton, editButton);
+            actions.setSpacing(true);
+            return actions;
+        }).setHeader("Ações").setAutoWidth(true);
+    }
+
+    private void setupEditDialog() {
+        editDialog.setHeaderTitle("Editar Pedido");
+        editDialog.setResizable(true);
+        editDialog.setDraggable(true);
+        editDialog.setWidth("800px");
+        editDialog.setHeight("600px");
+    }
+
+    private void openEditDialog(Order order) {
+        currentOrderEditing = order;
+        editDialog.removeAll();
+
+        VerticalLayout layout = new VerticalLayout();
+        layout.setSpacing(true);
+        layout.setPadding(true);
+        layout.setWidthFull();
+
+        ComboBox<OrderStatus> statusComboBox = new ComboBox<>("Status");
+        statusComboBox.setItems(OrderStatus.values());
+        statusComboBox.setValue(order.getOrderStatus());
+        statusComboBox.setWidthFull();
+
+        List<OrderItemForm> itemForms = new ArrayList<>();
+        
+        // Verifica se o pedido tem itens
+        if (order.getItems() != null && !order.getItems().isEmpty()) {
+            for (OrderItem item : order.getItems()) {
+                OrderItemForm form = new OrderItemForm(productService.findAllProducts());
+                form.productField.setValue(item.getProduct());
+                form.quantityField.setValue((double) item.getQuantity());
+                form.priceField.setValue(item.getPrice().doubleValue());
+
+                itemForms.add(form);
+
+                FormLayout itemLayout = new FormLayout();
+                itemLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
+                itemLayout.add(form.productField);
+                itemLayout.add(form.quantityField);
+                itemLayout.add(form.priceField);
+
+                layout.add(itemLayout);
+            }
+        }
+
+        Button addItemButton = new Button("Adicionar Item", new Icon(VaadinIcon.PLUS));
+        addItemButton.addClickListener(e -> {
+            OrderItemForm newForm = new OrderItemForm(productService.findAllProducts());
+            itemForms.add(newForm);
+
+            FormLayout newItemLayout = new FormLayout();
+            newItemLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
+            newItemLayout.add(newForm.productField);
+            newItemLayout.add(newForm.quantityField);
+            newItemLayout.add(newForm.priceField);
+
+            // Adiciona antes dos botões
+            layout.addComponentAtIndex(layout.getComponentCount() - 2, newItemLayout);
+        });
+
+        Button updateButton = new Button("Atualizar", e -> {
+            try {
+                if (order.getItems() != null) {
+                    for (int i = 0; i < Math.min(itemForms.size(), order.getItems().size()); i++) {
+                        OrderItemForm form = itemForms.get(i);
+                        OrderItem item = order.getItems().get(i);
+
+                        if (form.productField.getValue() != null && 
+                            form.quantityField.getValue() != null && 
+                            form.priceField.getValue() != null) {
+                            
+                            item.setProduct(form.productField.getValue());
+                            item.setQuantity(form.quantityField.getValue().intValue());
+                            item.setPrice(BigDecimal.valueOf(form.priceField.getValue()));
+                            
+                            orderItemService.update(item);
+                        }
+                    }
+                }
+
+                OrderStatus selectedStatus = statusComboBox.getValue();
+                OrderStatus originalStatus = order.getOrderStatus();
+
+                if (selectedStatus == OrderStatus.CANCELLED) {
+                    orderService.cancelOrder(order.getId());
+                    Notification.show("Pedido cancelado.");
+                } else if (selectedStatus == OrderStatus.INVOICED) {
+                    orderService.finishOrder(order);
+                    Notification.show("Pedido finalizado.");
+                }
+
+                refreshGrid();
+                editDialog.close();
+                
+            } catch (Exception ex) {
+                Notification.show("Erro ao atualizar pedido: " + ex.getMessage());
+                ex.printStackTrace();
             }
         });
+
+        Button cancelButton = new Button("Cancelar", e -> editDialog.close());
+
+        HorizontalLayout buttonsLayout = new HorizontalLayout(updateButton, cancelButton);
+        buttonsLayout.setSpacing(true);
+
+        layout.add(statusComboBox, addItemButton, buttonsLayout);
+        editDialog.add(layout);
+        editDialog.open();
+    }
+
+    // Classe interna para formulário de item do pedido
+    private static class OrderItemForm {
+        ComboBox<Product> productField;
+        NumberField quantityField;
+        NumberField priceField;
+
+        public OrderItemForm(List<Product> products) {
+            this.productField = new ComboBox<>("Produto");
+            this.productField.setItems(products);
+            this.productField.setItemLabelGenerator(product -> product.getName() + " (" + product.getSku() + ")");
+            this.productField.setPlaceholder("Selecione um produto");
+            this.productField.setWidthFull();
+
+            this.quantityField = new NumberField("Quantidade");
+            this.quantityField.setMin(1);
+            this.quantityField.setStep(1);
+            this.quantityField.setValue(1.0);
+
+            this.priceField = new NumberField("Preço");
+            this.priceField.setMin(0.01);
+            this.priceField.setStep(0.01);
+            this.priceField.setValue(0.01);
+        }
+    }
+
+    private void refreshGrid() {
+        dataView.refreshAll();
+        grid.getDataProvider().refreshAll();
     }
 
     private void setupEmployeeComboBox() {
@@ -193,6 +354,16 @@ public class OrderView extends VerticalLayout {
         content.add("Status: " + order.getOrderStatus());
         content.add("Total: R$" + order.getTotalAmount());
 
+        // Adiciona informações dos itens
+        if (order.getItems() != null && !order.getItems().isEmpty()) {
+            content.add(new com.vaadin.flow.component.html.H5("Itens do Pedido:"));
+            for (OrderItem item : order.getItems()) {
+                content.add("- " + item.getProduct().getName() + 
+                           " (Qtd: " + item.getQuantity() + 
+                           ", Preço: R$" + item.getPrice() + ")");
+            }
+        }
+
         Button close = new Button("Fechar", e -> dialog.close());
         content.add(close);
 
@@ -216,7 +387,7 @@ public class OrderView extends VerticalLayout {
 
         ComboBox<Product> productComboBox = new ComboBox<>("Produto");
         IntegerField quantityField = new IntegerField("Quantidade");
-        NumberField priceField = new NumberField("Price");
+        NumberField priceField = new NumberField("Preço");
         Button addItemButton = new Button("Adicionar Item");
 
         setupSellerComboBox(sellerComboBox);
@@ -312,11 +483,12 @@ public class OrderView extends VerticalLayout {
 
         Button cancelButton = new Button("Cancelar", e -> createDialog.close());
 
-        HorizontalLayout addItemLayout = new HorizontalLayout(productComboBox, quantityField, addItemButton);
+        HorizontalLayout addItemLayout = new HorizontalLayout(productComboBox, quantityField, priceField, addItemButton);
         addItemLayout.setAlignItems(Alignment.END);
         addItemLayout.setWidthFull();
         productComboBox.setWidth("300px");
         quantityField.setWidth("100px");
+        priceField.setWidth("100px");
 
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.add(
@@ -332,13 +504,6 @@ public class OrderView extends VerticalLayout {
 
         createDialog.add(mainLayout);
         createDialog.open();
-    }
-
-    private void setupCreateOrderButton() {
-        Button createButton = new Button("Criar Pedido");
-        createButton.setIcon(new Icon(VaadinIcon.PLUS));
-        createButton.addClickListener(e -> openCreateOrderDialog());
-        add(createButton);
     }
 
     private void setupSellerComboBox(ComboBox<Employee> sellerComboBox) {

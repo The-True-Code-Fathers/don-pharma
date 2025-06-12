@@ -5,6 +5,8 @@ import com.codefathers.model.dto.CreateOrderDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.OrderItem;
+import com.codefathers.model.entity.PurchaseOrderItem;
+import com.codefathers.model.entity.Storage;
 import com.codefathers.model.enums.EmployeeRole;
 import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.interfaces.EmployeeRepository;
@@ -101,7 +103,37 @@ public class OrderService {
 
     public void cancelOrder(UUID id) {
         Order order = orderRepository.findById(id);
+        List<OrderItem> orderItems = order.getItems().stream().map(dto -> {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setQuantity(dto.getQuantity());
+            orderItem.setPrice(dto.getPrice());
+            orderItem.setProduct(dto.getProduct());
+            return orderItem;
+        }).toList();
+
+        if (order.getOrderStatus() == OrderStatus.OPEN) {
+            for (OrderItem item : orderItems) {
+                String productSku = item.getProduct().getSku();
+
+                storageRepository.findByProductSku(productSku).ifPresentOrElse(existingStorage -> {
+                    existingStorage.setProductQuantity(existingStorage.getProductQuantity() + item.getQuantity());
+                    storageRepository.update(existingStorage);
+                }, () -> {
+                    Storage newStorage = Storage.builder()
+                            .product(item.getProduct())
+                            .productQuantity(item.getQuantity())
+                            .build();
+                    storageRepository.save(newStorage);
+                });
+            }
+        }
         order.setOrderStatus(OrderStatus.CANCELLED);
+        orderRepository.update(order);
+    }
+
+    public void finishOrder(Order order) {
+        order.setOrderStatus(OrderStatus.INVOICED);
         orderRepository.update(order);
     }
 

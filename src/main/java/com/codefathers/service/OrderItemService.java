@@ -38,4 +38,8 @@ public class OrderItemService {
         return orderItem;
     }
 
+    public void update(OrderItem orderItem) {
+        orderItemRepository.update(orderItem);
+    }
+
 }
