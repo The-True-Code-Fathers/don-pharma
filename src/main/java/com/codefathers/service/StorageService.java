@@ -43,7 +43,7 @@ public class StorageService {
     }
 
     public Product findProductBySku(String productSku) {
-        return productRepository.findBySKU(productSku);
+        return productRepository.findBySKU(productSku).get();
     }
 
     public int getQuantityStock(String productSku) {
@@ -53,7 +53,7 @@ public class StorageService {
     }
 
     public List<Storage> getAllStorages() {
-        return storageRepository.getAllStorages();
+        return storageRepository.listAll();
     }
 
 }

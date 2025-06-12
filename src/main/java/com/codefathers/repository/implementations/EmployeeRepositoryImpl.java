@@ -22,7 +22,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public void saveEmployee(Employee employee) {
+    public void save(Employee employee) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
             session.persist(employee);
@@ -33,7 +33,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public List<Employee> listAllEmployees() {
+    public List<Employee> listAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("select e from employee e", Employee.class).list();
         } catch (Exception e) {
@@ -43,7 +43,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public void deleteEmployeeByID(UUID id) {
+    public void delete(UUID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
             Employee employee = session.get(Employee.class, id);
@@ -71,7 +71,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public Employee searchEmployeePerId(UUID id) {
+    public Employee findById(UUID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Employee.class, id);
         } catch (Exception e) {

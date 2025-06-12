@@ -1,7 +1,6 @@
 package com.codefathers.model.dto;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import com.codefathers.model.entity.Product;
 
@@ -20,9 +19,6 @@ import lombok.NoArgsConstructor;
 public class CreatePurchaseOrderItemDTO {
     @NotNull
     private Product product;
-
-    @NotNull
-    private UUID purchaseOrderId;
 
     @NotNull
     @Min(1)

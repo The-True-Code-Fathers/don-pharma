@@ -1,6 +1,7 @@
 package com.codefathers.repository.implementations;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.hibernate.Session;
@@ -13,7 +14,7 @@ import com.codefathers.util.HibernateUtil;
 public class ShippingOrderRepositoryImpl implements ShippingOrderRepository {
 
     @Override
-    public void saveShippingOrder(ShippingOrder shippingOrder) {
+    public void save(ShippingOrder shippingOrder) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
@@ -25,9 +26,38 @@ public class ShippingOrderRepositoryImpl implements ShippingOrderRepository {
     }
 
     @Override
-    public ShippingOrder searchShippingOrderPerId(UUID orderId) {
+    public void update(ShippingOrder shippingOrder) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(ShippingOrder.class, orderId);
+            session.beginTransaction();
+            session.merge(shippingOrder);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            System.out.println("Erro ao atualizar pedido: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void delete(UUID id) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            ShippingOrder shippingOrder = session.get(ShippingOrder.class, id);
+            if (shippingOrder != null) {
+                session.remove(shippingOrder);
+                transaction.commit();
+            } else {
+                System.out.println("Pedido não encontrado.");
+            }
+        } catch (Exception e) {
+            System.out.println("Não foi possivel remover o pedido da transportadora pelo ID: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Optional<ShippingOrder> findById(UUID id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            var shippingOrder = session.get(ShippingOrder.class, id);
+            return Optional.ofNullable(shippingOrder);
         } catch (Exception e) {
             System.out.println("Erro: " + e.getMessage());
         }
@@ -35,40 +65,10 @@ public class ShippingOrderRepositoryImpl implements ShippingOrderRepository {
     }
 
     @Override
-    public List<ShippingOrder> listAllShippingOrders() {
+    public List<ShippingOrder> listAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("select o from shipping_order o", ShippingOrder.class).getResultList();
         }
     }
 
-    @Override
-    public ShippingOrder removeShippingOrderPerId(UUID orderId) {
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            ShippingOrder shippingOrder = session.get(ShippingOrder.class, orderId);
-
-            if (shippingOrder != null) {
-                session.remove(shippingOrder);
-                session.getTransaction().commit();
-                return shippingOrder;
-            } else {
-                System.out.println("Pedido não encontrado.");
-            }
-        } catch (Exception e) {
-            System.out.println("Não foi possivel remover o pedido da transportadora pelo ID: " + e.getMessage());
-        }
-        return null;
-    }
-
-    @Override
-    public void updateShippingOrder(ShippingOrder shippingOrder) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            session.update(shippingOrder);
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            System.out.println("Erro ao atualizar pedido: " + e.getMessage());
-        }
-    }
 }

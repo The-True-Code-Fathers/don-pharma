@@ -7,10 +7,10 @@ import java.util.UUID;
 
 public interface EmployeeRepository {
     void update(Employee employee);
-    void saveEmployee(Employee employee);
-    Employee searchEmployeePerId(UUID id);
-    List<Employee> listAllEmployees();
-    void deleteEmployeeByID(UUID id);
+    void save(Employee employee);
+    Employee findById(UUID id);
+    List<Employee> listAll();
+    void delete(UUID id);
     long count();
 }
 

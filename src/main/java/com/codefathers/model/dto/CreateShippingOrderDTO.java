@@ -54,11 +54,10 @@ public class CreateShippingOrderDTO {
     @DecimalMin(value = "0.0", inclusive = false, message = "O custo do frete deve ser positivo")
     private BigDecimal shippingCost;
 
-    // Método auxiliar para obter o provedor (opcional)
     public ShippingProvider getShippingProvider(ShippingProviderRepository repository) {
         if (shippingProviderId == null) {
             return null;
         }
-        return repository.searchShippingProviderPerId(shippingProviderId);
+        return repository.findById(shippingProviderId).get();
     }
 }

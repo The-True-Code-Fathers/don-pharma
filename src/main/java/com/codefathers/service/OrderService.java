@@ -20,6 +20,7 @@ import jakarta.validation.Validator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class OrderService {
@@ -44,7 +45,7 @@ public class OrderService {
             throw new ConstraintViolationException(violations);
         }
 
-        Employee employee = employeeRepository.searchEmployeePerId(createOrderDTO.getSellerId());
+        Employee employee = employeeRepository.findById(createOrderDTO.getSellerId());
         boolean isSeller = employee.getRole().equals(EmployeeRole.SALES);
         boolean isManager = employee.getRole().equals(EmployeeRole.LOCAL_MANAGER);
 
@@ -97,12 +98,12 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    public Order findOrderById(UUID id) {
+    public Optional<Order> findOrderById(UUID id) {
         return orderRepository.findById(id);
     }
 
     public void cancelOrder(UUID id) {
-        Order order = orderRepository.findById(id);
+        Order order = orderRepository.findById(id).get();
         List<OrderItem> orderItems = order.getItems().stream().map(dto -> {
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
@@ -138,7 +139,7 @@ public class OrderService {
     }
 
     public List<Order> findAll() {
-        return orderRepository.findAll();
+        return orderRepository.listAll();
     }
 
     public Long count() {

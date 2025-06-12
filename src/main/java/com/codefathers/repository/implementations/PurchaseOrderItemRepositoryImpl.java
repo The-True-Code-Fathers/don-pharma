@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.repository.interfaces.PurchaseOrderItemRepository;
@@ -13,33 +14,35 @@ import com.codefathers.util.HibernateUtil;
 public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemRepository {
 
     @Override
-    public void delete(PurchaseOrderItem purchaseOrderItem) {
-    
-    }
-
-    @Override
     public void save(PurchaseOrderItem purchaseOrderItem) {
+        Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            session.beginTransaction();
+            transaction = session.beginTransaction();
             session.persist(purchaseOrderItem);
-            session.beginTransaction().commit();
+            transaction.commit();
         }
     }
 
     @Override
     public void update(PurchaseOrderItem purchaseOrderItem) {
+        Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            session.beginTransaction();
+            transaction = session.beginTransaction();
             session.merge(purchaseOrderItem);
-            session.beginTransaction().commit();
+            transaction.commit();
         }
     }
 
     @Override
+    public void delete(PurchaseOrderItem purchaseOrderItem) {
+
+    }
+
+    @Override
     public Optional<PurchaseOrderItem> findById(UUID id) {
-        try(Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             var purchaseOrderItem = session.get(PurchaseOrderItem.class, id);
-            return Optional.of(purchaseOrderItem);
+            return Optional.ofNullable(purchaseOrderItem);
         }
     }
 

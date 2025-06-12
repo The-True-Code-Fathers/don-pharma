@@ -36,6 +36,7 @@ public class CreateProductDTO {
     @Positive (message = "O valor deve ser positivo")
     private BigDecimal sellPrice;
 
+    @Builder.Default
     private boolean active = true;
 
     @NotNull(message = "Campo obrigatório")

@@ -23,7 +23,7 @@ public class PaymentService {
 
     public Payment createPayment(CreatePaymentDTO createPaymentDTO) {
         try {
-            Employee employee = employeeRepository.searchEmployeePerId(createPaymentDTO.getEmployee().getId());
+            Employee employee = employeeRepository.findById(createPaymentDTO.getEmployee().getId());
 
         if (isNegative(createPaymentDTO.getGrossIncome(), createPaymentDTO.getAmountInTaxes(),
                 createPaymentDTO.getMealVoucherAmount(), createPaymentDTO.getFoodVoucherAmount(),
@@ -81,15 +81,15 @@ public class PaymentService {
     }
 
     public List<Payment> findPaymentsByEmployee(Employee employee) {
-        return paymentRepository.findPaymentsByEmployee(employee);
+        return paymentRepository.findByEmployee(employee);
     }
 
     public List<Payment> getAllPayments() {
-        return paymentRepository.getAllPayments();
+        return paymentRepository.listAll();
     }
 
     public Employee findEmployeeById(UUID employeeId) {
-        return employeeRepository.searchEmployeePerId(employeeId);
+        return employeeRepository.findById(employeeId);
     }
 
     public Optional<Payment> findById(UUID id) {

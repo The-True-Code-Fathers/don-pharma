@@ -28,6 +28,8 @@
         <mapping class="com.codefathers.model.entity.Storage"/>
         <mapping class="com.codefathers.model.entity.Payment" />
         <mapping class="com.codefathers.model.entity.ShippingOrder"/>
+        <mapping class="com.codefathers.model.entity.PurchaseOrder"/>
+        <mapping class="com.codefathers.model.entity.PurchaseOrderItem"/>
         <mapping class="com.codefathers.model.entity.SystemUser" />
     </session-factory>
 </hibernate-configuration>

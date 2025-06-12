@@ -1,12 +1,14 @@
 package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.PurchaseOrder;
+import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.repository.interfaces.PurchaseOrderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
@@ -19,7 +21,8 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
             session.persist(purchaseOrder);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (transaction != null)
+                transaction.rollback();
             e.printStackTrace(); // melhor usar logger
         }
     }
@@ -32,19 +35,42 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
             session.merge(purchaseOrder);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (transaction != null)
+                transaction.rollback();
             e.printStackTrace();
         }
     }
 
+    @Override
+    public void delete(UUID id) {
+
+    }
 
     @Override
-    public PurchaseOrder findById(UUID id) {
+    public Optional<PurchaseOrder> findById(UUID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(PurchaseOrder.class, id);
+            var purchaseOrder = session.get(PurchaseOrder.class, id);
+            return Optional.ofNullable(purchaseOrder);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @Override
+    public List<PurchaseOrderItem> findAllPurchaseOrderItemByPurchaseOrderId(UUID purchaseOrderId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "select poi from purchase_order_item poi " +
+                            "join fetch poi.purchaseOrder po " +
+                            "join fetch poi.product p " +
+                            "where po.id = :purchaseOrderId",
+                    PurchaseOrderItem.class)
+                    .setParameter("purchaseOrderId", purchaseOrderId)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
         }
     }
 
@@ -58,16 +84,4 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
         }
     }
 
-    @Override
-    public void delete(PurchaseOrder purchaseOrder) {
-        Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-            session.delete(purchaseOrder);
-            transaction.commit();
-        } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
-            e.printStackTrace();
-        }
-    }
 }

@@ -2,6 +2,7 @@ package com.codefathers.repository.implementations;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.codefathers.repository.interfaces.StorageRepository;
 import org.hibernate.Session;
@@ -32,6 +33,10 @@ public class StorageRepositoryImpl implements StorageRepository {
         }
     }
 
+    public void delete(UUID id) {
+
+    }
+
     @Override
     public Optional<Storage> findByProductSku(String productSku) {
         try (Session session = HibernateUtil.sessionFactory.openSession()) {
@@ -44,7 +49,7 @@ public class StorageRepositoryImpl implements StorageRepository {
     }
 
     @Override
-    public List<Storage> getAllStorages() {
+    public List<Storage> listAll() {
         try (Session session = HibernateUtil.sessionFactory.openSession()) {
             String hql = "from storage";
             return session.createQuery(hql, Storage.class).list();
@@ -53,5 +58,4 @@ public class StorageRepositoryImpl implements StorageRepository {
             return List.of();
         }
     }
-
 }

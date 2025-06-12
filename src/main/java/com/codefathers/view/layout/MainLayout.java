@@ -1,6 +1,8 @@
 package com.codefathers.view.layout;
 
 import com.codefathers.view.*;
+import com.codefathers.view.PurchaseOrderView;
+import com.codefathers.view.StorageView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
