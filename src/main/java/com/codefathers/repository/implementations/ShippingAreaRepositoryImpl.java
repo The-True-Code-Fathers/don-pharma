@@ -33,7 +33,14 @@ public class ShippingAreaRepositoryImpl implements ShippingAreaRepository {
     @Override
     public List<ShippingArea> listAllShippingAreas() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM shipping_area", ShippingArea.class).getResultList();
+            // Use o nome da CLASSE Java (não da tabela)
+            var query = session.createQuery("FROM ShippingArea", ShippingArea.class);
+            List<ShippingArea> result = query.getResultList();
+            System.out.println("Áreas encontradas: " + result.size()); // Log de debug
+            return result;
+        } catch (Exception e) {
+            System.out.println("ERRO na consulta: " + e.getMessage());
+            return List.of();
         }
     }
 

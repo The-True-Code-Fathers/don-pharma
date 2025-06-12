@@ -4,8 +4,8 @@ import com.codefathers.model.dto.CreateShippingOrderDTO;
 import com.codefathers.model.entity.ShippingOrder;
 import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.model.enums.ShippingServiceStatus;
-import com.codefathers.repository.ShippingOrderRepositoryImpl;
-import com.codefathers.repository.ShippingProviderRepositoryImpl;
+import com.codefathers.repository.implementations.ShippingOrderRepositoryImpl;
+import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
 import com.codefathers.service.ShippingOrderService;
 import com.codefathers.service.ShippingProviderService;
 import com.codefathers.util.ValidatorUtil;
@@ -26,9 +26,8 @@ import java.util.UUID;
 @Route("shipping-orders")
 public class ShippingOrderView extends VerticalLayout {
 
-    private ShippingOrderService shippingOrderService;
-    private ShippingProviderService shippingProviderService;
-
+    private final ShippingOrderService shippingOrderService;
+    private final ShippingProviderService shippingProviderService;
     private final Grid<ShippingOrder> grid = new Grid<>(ShippingOrder.class, false);
 
     public ShippingOrderView() {
@@ -42,30 +41,26 @@ public class ShippingOrderView extends VerticalLayout {
                 ValidatorUtil.getValidator()
         );
 
-        // Botão de cadastro
+        // Configuração inicial
+        configureGrid();
         Button newOrderButton = new Button("Novo Pedido", e -> openEditDialog(null));
-
-        setupGrid();
-
-        // Adiciona o botão e a grade na tela
         add(newOrderButton, grid);
         updateGrid();
     }
 
-
-    private void setupGrid() {
-        grid.addColumn(order -> order.getId()).setHeader("ID");
+    private void configureGrid() {
+        grid.addColumn(ShippingOrder::getId).setHeader("ID");
         grid.addColumn(order -> order.getShippingProvider().getName()).setHeader("Provedor");
         grid.addColumn(ShippingOrder::getDestinationCity).setHeader("Cidade");
         grid.addColumn(ShippingOrder::getDestinationState).setHeader("Estado");
-        grid.addColumn(ShippingOrder::getWeight).setHeader("Peso");
+        grid.addColumn(ShippingOrder::getWeight).setHeader("Peso (kg)");
         grid.addColumn(ShippingOrder::getStatus).setHeader("Status");
-        grid.setHeight("300px");
+        grid.addColumn(ShippingOrder::getShippingCost).setHeader("Custo Frete");
+        grid.setHeight("400px");
 
         grid.addItemDoubleClickListener(event -> {
-            ShippingOrder selectedOrder = event.getItem();
-            if (selectedOrder != null) {
-                openEditDialog(selectedOrder);
+            if (event.getItem() != null) {
+                openEditDialog(event.getItem());
                 grid.asSingleSelect().clear();
             }
         });
@@ -75,100 +70,129 @@ public class ShippingOrderView extends VerticalLayout {
         Dialog dialog = new Dialog();
         dialog.setWidth("800px");
 
-        // Campos do formulário
+        // Componentes do formulário
         ComboBox<ShippingProvider> providerComboBox = new ComboBox<>("Provedor");
         providerComboBox.setItems(shippingProviderService.listAllShippingProviders());
         providerComboBox.setItemLabelGenerator(ShippingProvider::getName);
-        if (order != null) providerComboBox.setValue(order.getShippingProvider());
+        providerComboBox.setRequired(true);
 
         TextField destinationState = new TextField("Estado de Destino");
-        destinationState.setValue(order != null && order.getDestinationState() != null ? order.getDestinationState() : "");
+        destinationState.setRequired(true);
+        destinationState.setPattern("[A-Za-z]{2}");
+        destinationState.setErrorMessage("Digite a sigla do estado (2 letras)");
 
         TextField destinationCity = new TextField("Cidade de Destino");
-        destinationCity.setValue(order != null && order.getDestinationCity() != null ? order.getDestinationCity() : "");
+        destinationCity.setRequired(true);
 
         BigDecimalField weight = new BigDecimalField("Peso (kg)");
-        weight.setValue(order != null ? order.getWeight() : null);
+        weight.setRequiredIndicatorVisible(true);
 
         ComboBox<ShippingServiceStatus> status = new ComboBox<>("Status");
         status.setItems(ShippingServiceStatus.values());
-        if (order != null) status.setValue(order.getStatus());
+        status.setRequired(true);
 
         TextField estimatedDays = new TextField("Dias Estimados");
-        estimatedDays.setValue(order != null && order.getEstimatedDeliveryDays() != null ? order.getEstimatedDeliveryDays().toString() : "");
+        estimatedDays.setPattern("\\d*");
+        estimatedDays.setErrorMessage("Apenas números são permitidos");
 
         DatePicker shipmentDate = new DatePicker("Data de Envio");
-        shipmentDate.setValue(order != null ? order.getShipmentDate() : null);
-
         DatePicker deliveryDate = new DatePicker("Data Prevista");
-        deliveryDate.setValue(order != null ? order.getDeliveryDate() : null);
 
         BigDecimalField shippingCost = new BigDecimalField("Custo do Frete");
-        shippingCost.setValue(order != null ? order.getShippingCost() : null);
+        shippingCost.setRequiredIndicatorVisible(true);
 
-        Button saveOrUpdateButton = new Button(order == null ? "Cadastrar" : "Atualizar", e -> {
-            try {
-                UUID provId = providerComboBox.getValue().getId();
-                Integer days = estimatedDays.isEmpty() ? null : Integer.parseInt(estimatedDays.getValue());
+        // Preenche os campos se estiver editando
+        if (order != null) {
+            providerComboBox.setValue(order.getShippingProvider());
+            destinationState.setValue(order.getDestinationState());
+            destinationCity.setValue(order.getDestinationCity());
+            weight.setValue(order.getWeight());
+            status.setValue(order.getStatus());
+            estimatedDays.setValue(order.getEstimatedDeliveryDays() != null ?
+                    order.getEstimatedDeliveryDays().toString() : "");
+            shipmentDate.setValue(order.getShipmentDate());
+            deliveryDate.setValue(order.getDeliveryDate());
+            shippingCost.setValue(order.getShippingCost());
+        }
 
-                CreateShippingOrderDTO dto = CreateShippingOrderDTO.builder()
-                        .shippingProviderId(provId)
-                        .destinationState(destinationState.getValue())
-                        .destinationCity(destinationCity.getValue())
-                        .weight(weight.getValue())
-                        .status(status.getValue())
-                        .estimatedDeliveryDays(days)
-                        .shipmentDate(shipmentDate.getValue())
-                        .deliveryDate(deliveryDate.getValue())
-                        .shippingCost(shippingCost.getValue())
-                        .build();
+        // Botões de ação
+        Button saveButton = new Button(order == null ? "Cadastrar" : "Atualizar", e -> saveOrder(order, dialog,
+                providerComboBox, destinationState, destinationCity, weight, status,
+                estimatedDays, shipmentDate, deliveryDate, shippingCost));
 
-                if (order == null) {
-                    shippingOrderService.createOrder(dto);
-                    Notification.show("Pedido criado com sucesso!");
-                } else {
-                    shippingOrderService.updateOrder(order.getId(), dto);
-                    Notification.show("Pedido atualizado com sucesso!");
-                }
-
-                updateGrid();
-                dialog.close();
-
-            } catch (Exception ex) {
-                Notification.show("Erro: " + ex.getMessage(), 4000, Notification.Position.MIDDLE);
-                ex.printStackTrace();
-            }
-        });
-
-        Button deleteButton = new Button("Deletar", e -> {
-            if (order == null) return; // Evita deletar quando for novo
-
-            try {
-                shippingOrderService.removeShippingOrder(order.getId());
-                Notification.show("Pedido deletado com sucesso!");
-                updateGrid();
-                dialog.close();
-            } catch (Exception ex) {
-                Notification.show("Erro ao deletar: " + ex.getMessage(), 4000, Notification.Position.MIDDLE);
-                ex.printStackTrace();
-            }
-        });
-        deleteButton.setVisible(order != null); // só mostra ao editar
+        Button deleteButton = new Button("Deletar", e -> deleteOrder(order, dialog));
+        deleteButton.setVisible(order != null);
 
         Button cancelButton = new Button("Cancelar", e -> dialog.close());
 
-        HorizontalLayout buttons = new HorizontalLayout(saveOrUpdateButton, deleteButton, cancelButton);
-
-        VerticalLayout dialogLayout = new VerticalLayout(
+        // Layout
+        HorizontalLayout buttonsLayout = new HorizontalLayout(saveButton, deleteButton, cancelButton);
+        VerticalLayout formLayout = new VerticalLayout(
                 providerComboBox, destinationState, destinationCity, weight,
                 status, estimatedDays, shipmentDate, deliveryDate, shippingCost,
-                buttons
+                buttonsLayout
         );
 
-        dialog.add(dialogLayout);
+        dialog.add(formLayout);
         dialog.open();
     }
 
+    private void saveOrder(ShippingOrder existingOrder, Dialog dialog,
+                           ComboBox<ShippingProvider> providerComboBox,
+                           TextField destinationState, TextField destinationCity,
+                           BigDecimalField weight, ComboBox<ShippingServiceStatus> status,
+                           TextField estimatedDays, DatePicker shipmentDate,
+                           DatePicker deliveryDate, BigDecimalField shippingCost) {
+        try {
+            // Validação básica dos campos obrigatórios
+            if (providerComboBox.isEmpty() || destinationState.isEmpty() ||
+                    destinationCity.isEmpty() || weight.isEmpty() || status.isEmpty()) {
+                Notification.show("Preencha todos os campos obrigatórios", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+
+            // Cria o DTO
+            CreateShippingOrderDTO dto = CreateShippingOrderDTO.builder()
+                    .shippingProviderId(providerComboBox.getValue().getId())
+                    .destinationState(destinationState.getValue())
+                    .destinationCity(destinationCity.getValue())
+                    .weight(weight.getValue())
+                    .status(status.getValue())
+                    .estimatedDeliveryDays(estimatedDays.getValue().isEmpty() ?
+                            null : Integer.parseInt(estimatedDays.getValue()))
+                    .shipmentDate(shipmentDate.getValue())
+                    .deliveryDate(deliveryDate.getValue())
+                    .shippingCost(shippingCost.getValue())
+                    .build();
+
+            // Salva ou atualiza
+            if (existingOrder == null) {
+                shippingOrderService.createOrder(dto);
+                Notification.show("Pedido criado com sucesso!");
+            } else {
+                shippingOrderService.updateOrder(existingOrder.getId(), dto);
+                Notification.show("Pedido atualizado com sucesso!");
+            }
+
+            updateGrid();
+            dialog.close();
+        } catch (Exception ex) {
+            Notification.show("Erro: " + ex.getMessage(), 4000, Notification.Position.MIDDLE);
+            ex.printStackTrace();
+        }
+    }
+
+    private void deleteOrder(ShippingOrder order, Dialog dialog) {
+        try {
+            shippingOrderService.removeShippingOrder(order.getId());
+            Notification.show("Pedido deletado com sucesso!");
+            updateGrid();
+            dialog.close();
+        } catch (Exception ex) {
+            Notification.show("Erro ao deletar: " + ex.getMessage(), 4000, Notification.Position.MIDDLE);
+            ex.printStackTrace();
+        }
+    }
 
     private void updateGrid() {
         grid.setItems(shippingOrderService.listAllShippingOrders());

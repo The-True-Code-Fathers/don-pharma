@@ -3,7 +3,8 @@ package com.codefathers.service;
 import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.model.entity.ShippingProvider;
-import com.codefathers.repository.ShippingProviderRepository;
+import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
+import com.codefathers.repository.interfaces.ShippingProviderRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 public class ShippingProviderService {
     private final ShippingProviderRepository shippingProviderRepository;
+
 
     public ShippingProviderService(ShippingProviderRepository shippingProviderRepository) {
         this.shippingProviderRepository = shippingProviderRepository;

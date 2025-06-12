@@ -1,6 +1,7 @@
-package com.codefathers.repository;
+package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.ShippingProvider;
+import com.codefathers.repository.interfaces.ShippingProviderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;

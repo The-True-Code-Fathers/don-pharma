@@ -3,7 +3,7 @@ package com.codefathers.view;
 import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.model.entity.ShippingProvider;
-import com.codefathers.repository.ShippingProviderRepositoryImpl;
+import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
 import com.codefathers.service.ShippingProviderService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -39,21 +39,16 @@ public class ShippingProviderView extends VerticalLayout {
     }
 
     private void setupGrid() {
-        // Limpa todas as colunas existentes
         grid.removeAllColumns();
-
-        // Adiciona as colunas
         grid.addColumn(ShippingProvider::getName).setHeader("Nome").setAutoWidth(true);
         grid.addColumn(ShippingProvider::getCnpj).setHeader("CNPJ").setAutoWidth(true);
         grid.addColumn(sp -> sp.getBasePrice().toString()).setHeader("Preço Base").setAutoWidth(true);
         grid.addColumn(sp -> sp.getDailyCapacity().toString()).setHeader("Capacidade Diária").setAutoWidth(true);
 
-        // Configuração do double click
         grid.addItemDoubleClickListener(event -> {
             try {
                 ShippingProvider item = event.getItem();
                 if (item != null) {
-                    System.out.println("Editando: " + item.getName()); // Log
                     openFormDialog(item);
                 } else {
                     Notification.show("Selecione um item válido", 3000, Notification.Position.MIDDLE);
@@ -65,7 +60,6 @@ public class ShippingProviderView extends VerticalLayout {
             }
         });
 
-        // Configurações visuais
         grid.setHeight("300px");
         grid.setWidthFull();
         grid.getStyle().set("margin-top", "10px");
@@ -90,7 +84,8 @@ public class ShippingProviderView extends VerticalLayout {
 
             StringBuilder sb = new StringBuilder();
             for (ShippingArea area : provider.getShippingAreas()) {
-                sb.append(area.getDescription()).append(": ").append(area.getStates()).append("; ");
+                sb.append(area.getDescription()).append(": ")
+                        .append(String.join(", ", area.getStates())).append("; ");
             }
             areasField.setValue(sb.toString().trim());
         }
@@ -145,7 +140,6 @@ public class ShippingProviderView extends VerticalLayout {
     }
 
     private CreateShippingProviderDTO buildDTO(String name, String cnpj, String priceStr, Integer capacity, String areasText) {
-        // Validações dos campos obrigatórios
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Nome é obrigatório.");
         }
@@ -158,7 +152,6 @@ public class ShippingProviderView extends VerticalLayout {
             throw new IllegalArgumentException("CNPJ deve conter 14 dígitos numéricos.");
         }
 
-        // Conversão do preço base
         BigDecimal basePrice;
         try {
             basePrice = new BigDecimal(priceStr);
@@ -166,7 +159,6 @@ public class ShippingProviderView extends VerticalLayout {
             throw new IllegalArgumentException("Preço Base inválido.");
         }
 
-        // Conversão da capacidade diária
         BigDecimal dailyCapacity;
         try {
             dailyCapacity = capacity != null ? new BigDecimal(capacity) : BigDecimal.ZERO;
@@ -198,7 +190,11 @@ public class ShippingProviderView extends VerticalLayout {
                     if (parts.length == 2) {
                         ShippingArea area = new ShippingArea();
                         area.setDescription(parts[0].trim());
-                        area.setStates(parts[1].trim());
+                        // Convertendo a string de estados para array
+                        String[] states = Arrays.stream(parts[1].trim().split(","))
+                                .map(String::trim)
+                                .toArray(String[]::new);
+                        area.setStates(states);
                         areas.add(area);
                     }
                 });
