@@ -37,7 +37,6 @@ import com.vaadin.flow.router.Route;
 
 @Route("purchaseOrder")
 public class PurchaseOrderView extends VerticalLayout {
-
     private final PurchaseOrderService purchaseOrderService;
     private final ProductService productService;
     private final EmployeeService employeeService;
@@ -77,7 +76,6 @@ public class PurchaseOrderView extends VerticalLayout {
 
         setupSearchField();
         setupGrid();
-        setupItemGrid();
         setupForm();
         setupOrderDialog();
         setupEditDialog();
@@ -121,15 +119,6 @@ public class PurchaseOrderView extends VerticalLayout {
             currentSearchTerm = e.getValue().trim().toLowerCase();
             refreshGrid();
         });
-    }
-
-    private void setupItemGrid() {
-        itemGrid.addColumn(item -> item.getProduct().getName()).setHeader("Product");
-        itemGrid.addColumn(CreatePurchaseOrderItemDTO::getQuantity).setHeader("Quantity");
-        itemGrid.addColumn(item -> item.getPrice().toString()).setHeader("Price");
-
-        itemGrid.setHeight("200px");
-        itemGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
     }
 
     private void setupForm() {
