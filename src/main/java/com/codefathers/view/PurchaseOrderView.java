@@ -174,21 +174,18 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     private void openEditDialog(PurchaseOrder order) {
-        editDialog.removeAll();
+        editDialog.removeAll(); // Limpa conteúdo antigo
         editDialog.setWidth("600px");
 
         VerticalLayout layout = new VerticalLayout();
-        layout.setPadding(true);
         layout.setSpacing(true);
+        layout.setPadding(true);
         layout.setWidthFull();
-        layout.getStyle().set("gap", "1rem"); // espaçamento extra entre os componentes
 
         ComboBox<PurchaseOrderStatus> statusComboBox = new ComboBox<>("Status");
         statusComboBox.setItems(PurchaseOrderStatus.values());
         statusComboBox.setValue(order.getPurchaseOrderStatus());
         statusComboBox.setWidthFull();
-
-        layout.add(statusComboBox);
 
         List<PurchaseOrderItemForm> itemForms = new ArrayList<>();
         for (PurchaseOrderItem item : order.getPurchaseItems()) {
@@ -200,24 +197,13 @@ public class PurchaseOrderView extends VerticalLayout {
             itemForms.add(form);
 
             FormLayout itemLayout = new FormLayout();
-            itemLayout.setResponsiveSteps(
-                    new FormLayout.ResponsiveStep("0", 1), // mobile first
-                    new FormLayout.ResponsiveStep("500px", 3) // quando maior, exibe 3 colunas
-            );
-            itemLayout.setWidthFull();
-            itemLayout.getStyle().set("padding", "0.5rem 0"); // espaço interno entre os grupos
-
+            itemLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
             itemLayout.addFormItem(form.productField, "Product");
             itemLayout.addFormItem(form.quantityField, "Quantity");
             itemLayout.addFormItem(form.priceField, "Price");
 
             layout.add(itemLayout);
         }
-
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setSpacing(true);
-        buttonLayout.setWidthFull();
-        buttonLayout.setJustifyContentMode(JustifyContentMode.END);
 
         Button updateButton = new Button("Update", e -> {
             try {
@@ -251,12 +237,7 @@ public class PurchaseOrderView extends VerticalLayout {
             }
         });
 
-        Button cancelButton = new Button("Cancel", e -> editDialog.close());
-
-        buttonLayout.add(cancelButton, updateButton);
-
-        layout.add(buttonLayout);
-
+        layout.add(statusComboBox, updateButton);
         editDialog.setHeaderTitle("Edit Purchase Order");
         editDialog.add(layout);
         editDialog.open();
