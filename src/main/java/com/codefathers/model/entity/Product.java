@@ -2,6 +2,7 @@ package com.codefathers.model.entity;
 
 import java.math.BigDecimal;
 
+import com.codefathers.model.enums.UmSelect;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -24,6 +25,9 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private UmSelect umSelect;
+
     @Column(columnDefinition = "text")
     private String description;
 
@@ -35,5 +39,6 @@ public class Product {
 
     @Column(name = "active", nullable = false)
     private boolean active;
+
 
 }

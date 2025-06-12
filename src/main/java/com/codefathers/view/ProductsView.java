@@ -2,11 +2,15 @@ package com.codefathers.view;
 
 import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.dto.UpdateProductDTO;
+import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Product;
+import com.codefathers.model.enums.EmployeeRole;
+import com.codefathers.model.enums.UmSelect;
 import com.codefathers.repository.implementations.ProductRepositoryImpl;
 import com.codefathers.service.ProductService;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.dataview.GridLazyDataView;
@@ -27,6 +31,7 @@ import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Route("products")
 public class ProductsView extends VerticalLayout {
@@ -48,6 +53,9 @@ public class ProductsView extends VerticalLayout {
 
     private TextField searchField = new TextField();
     private Select<Integer> pageSizeSelect = new Select<>();
+
+    private ComboBox<UmSelect> createUnit = new ComboBox<>("Unit");
+    private ComboBox<UmSelect> updateUnit = new ComboBox<>("Unit");
 
     // Buttons for create dialog
     private Button createSaveButton = new Button("Save");
@@ -87,6 +95,8 @@ public class ProductsView extends VerticalLayout {
         setupCreateDialog();
         setupUpdateDialog();
         setupEventListeners();
+        setupCreateComboBox(createUnit);
+        setupUpdateComboBox(updateUnit);
 
         HorizontalLayout leftLayout = new HorizontalLayout(dialogButtonCreateProduct, searchField);
         leftLayout.setAlignItems(Alignment.CENTER);
@@ -126,13 +136,15 @@ public class ProductsView extends VerticalLayout {
         // Setup form fields
         createSku.setWidth("350px");
         createName.setWidth("350px");
+        createUnit.setWidth("350px");
         createDescription.setWidth("350px");
         createBuyPrice.setWidth("350px");
         createSellPrice.setWidth("350px");
 
+
         // Create form layout
         VerticalLayout formLayout = new VerticalLayout();
-        formLayout.add(createSku, createName, createDescription, createBuyPrice, createSellPrice);
+        formLayout.add(createSku, createName, createUnit, createDescription, createBuyPrice, createSellPrice);
         formLayout.setSpacing(true);
         formLayout.setPadding(true);
 
@@ -157,13 +169,14 @@ public class ProductsView extends VerticalLayout {
         // Setup form fields
         updateSku.setWidth("350px");
         updateName.setWidth("350px");
+        updateUnit.setWidth("350px");
         updateDescription.setWidth("350px");
         updateBuyPrice.setWidth("350px");
         updateSellPrice.setWidth("350px");
 
         // Create form layout
         VerticalLayout formLayout = new VerticalLayout();
-        formLayout.add(updateSku, updateName, updateDescription, updateBuyPrice, updateSellPrice);
+        formLayout.add(updateSku, updateName, updateUnit, updateDescription, updateBuyPrice, updateSellPrice);
         formLayout.setSpacing(true);
         formLayout.setPadding(true);
 
@@ -200,6 +213,7 @@ public class ProductsView extends VerticalLayout {
     private void setupGrid() {
         grid.addColumn(Product::getSku).setHeader("SKU").setSortable(true).setAutoWidth(true);
         grid.addColumn(Product::getName).setHeader("Name").setSortable(true).setAutoWidth(true);
+        grid.addColumn(Product::getUmSelect).setHeader("UM").setSortable(true).setAutoWidth(true);
         grid.addColumn(Product::getDescription).setHeader("Description").setAutoWidth(true);
         grid.addColumn(Product::getBuyPrice).setHeader("Buy Price").setAutoWidth(true);
         grid.addColumn(Product::getSellPrice).setHeader("Sell Price").setAutoWidth(true);
@@ -221,6 +235,24 @@ public class ProductsView extends VerticalLayout {
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
         grid.setPageSize(10);
         grid.setWidth("80%");
+    }
+
+    private void setupCreateComboBox(ComboBox<UmSelect> createUnit) {
+        createUnit.setAllowCustomValue(false);
+        createUnit.setWidthFull();
+
+        createUnit.setItems(UmSelect.values());
+        createUnit.setPlaceholder("Unit");
+
+    }
+
+    private void setupUpdateComboBox(ComboBox<UmSelect> updateUnit) {
+        updateUnit.setAllowCustomValue(false);
+        updateUnit.setWidthFull();
+
+        updateUnit.setItems(UmSelect.values());
+        updateUnit.setPlaceholder("Unit");
+
     }
 
     private void setupLazyDataProvider() {
@@ -281,6 +313,7 @@ public class ProductsView extends VerticalLayout {
         updateSku.setReadOnly(true);
         updateName.setValue(product.getName());
         updateName.setReadOnly(true);
+        updateUnit.setValue(product.getUmSelect());
         updateDescription.setValue(product.getDescription() != null ? product.getDescription() : "");
         updateBuyPrice.setValue(product.getBuyPrice());
         updateSellPrice.setValue(product.getSellPrice());
@@ -294,6 +327,7 @@ public class ProductsView extends VerticalLayout {
         createSku.setReadOnly(false);
         createName.clear();
         createName.setReadOnly(false);
+        createUnit.clear();
         createDescription.clear();
         createBuyPrice.clear();
         createSellPrice.clear();
@@ -304,6 +338,7 @@ public class ProductsView extends VerticalLayout {
         updateSku.setReadOnly(false);
         updateName.clear();
         updateName.setReadOnly(false);
+        updateUnit.clear();
         updateDescription.clear();
         updateBuyPrice.clear();
         updateSellPrice.clear();
@@ -319,6 +354,7 @@ public class ProductsView extends VerticalLayout {
                     .buyPrice(createBuyPrice.getValue())
                     .sellPrice(createSellPrice.getValue())
                     .active(true) // New products are active by default
+                    .umSelect(createUnit.getValue())
                     .build();
 
             productService.createProduct(dto);
@@ -343,6 +379,7 @@ public class ProductsView extends VerticalLayout {
 
             UpdateProductDTO dto = UpdateProductDTO.builder()
                     .description(updateDescription.getValue())
+                    .umSelect(updateUnit.getValue())
                     .buyPrice(updateBuyPrice.getValue())
                     .sellPrice(updateSellPrice.getValue())
                     .active(currentProduct.isActive())

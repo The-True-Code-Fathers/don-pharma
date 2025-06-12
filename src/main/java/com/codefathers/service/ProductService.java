@@ -36,6 +36,7 @@ public class ProductService {
                     .name(createProductDTO.getName())
                     .description(createProductDTO.getDescription())
                     .active(true)
+                    .umSelect(createProductDTO.getUmSelect())
                     .build();
         try {
             productRepository.save(product);
@@ -51,9 +52,6 @@ public class ProductService {
 
         Product product = productRepository.findBySKU(productSku);
 
-        // if (!violations.isEmpty()) {
-        //     throw new jakarta.validation.ConstraintViolationException(violations);
-        // }
 
         if (product == null) {
             throw new RuntimeException("Produto com SKU '" + productSku + "' não encontrado.");
@@ -62,6 +60,7 @@ public class ProductService {
         product.setBuyPrice(updateProductDTO.getBuyPrice());
         product.setSellPrice(updateProductDTO.getSellPrice());
         product.setActive(updateProductDTO.isActive());
+        product.setUmSelect(updateProductDTO.getUmSelect());
         try {
             productRepository.update(product);
         } catch (ConstraintViolationException e) {
