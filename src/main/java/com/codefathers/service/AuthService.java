@@ -1,5 +1,6 @@
 package com.codefathers.service;
 
+import com.codefathers.factory.ServiceFactory;
 import com.codefathers.model.entity.SystemUser;
 import com.codefathers.repository.interfaces.SystemUserRepository;
 import com.codefathers.util.AuthUtil;
@@ -47,15 +48,15 @@ public class AuthService {
         UI.getCurrent().navigate("login");
     }
 
-    public static Optional<SystemUser> getCurrentUser() {
+    public Optional<SystemUser> getCurrentUser() {
         return Optional.ofNullable((SystemUser) VaadinSession.getCurrent().getAttribute("user"));
     }
 
     public static boolean isLoggedIn() {
-        return getCurrentUser().isPresent();
+        return ServiceFactory.getAuthService().getCurrentUser().isPresent();
     }
 
-    public static boolean hasRole(String role) {
+    public boolean hasRole(String role) {
         return getCurrentUser()
                 .map(SystemUser::getRole)
                 .filter(userRole -> userRole.equalsIgnoreCase(role))
