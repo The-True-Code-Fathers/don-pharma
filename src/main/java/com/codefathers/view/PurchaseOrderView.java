@@ -20,6 +20,7 @@ import com.codefathers.service.ProductService;
 import com.codefathers.service.PurchaseOrderService;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -28,12 +29,14 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
+import org.hibernate.sql.ast.tree.expression.Literal;
 
 @Route("purchaseOrder")
 public class PurchaseOrderView extends VerticalLayout {
@@ -47,6 +50,7 @@ public class PurchaseOrderView extends VerticalLayout {
 
     private final Grid<PurchaseOrder> grid = new Grid<>(PurchaseOrder.class, false);
     private final Grid<CreatePurchaseOrderItemDTO> itemGrid = new Grid<>(CreatePurchaseOrderItemDTO.class, false);
+    private final List<CreatePurchaseOrderItemDTO> itemList = new ArrayList<>();
 
     private final ComboBox<Product> productComboBox = new ComboBox<>("Product");
     private final NumberField quantityField = new NumberField("Quantity");
@@ -75,6 +79,7 @@ public class PurchaseOrderView extends VerticalLayout {
         this.productService = new ProductService(productRepository, ValidatorUtil.getValidator());
 
         setupSearchField();
+        setupItemGrid();
         setupGrid();
         setupForm();
         setupOrderDialog();
@@ -87,7 +92,7 @@ public class PurchaseOrderView extends VerticalLayout {
         searchField.setWidth("300px");
         topLayout.add(openDialogButton, searchField);
 
-        add(topLayout, itemGrid, grid, orderDialog, editDialog);
+        add(topLayout, grid, orderDialog, editDialog);
 
         refreshGrid();
     }
@@ -102,11 +107,20 @@ public class PurchaseOrderView extends VerticalLayout {
         grid.addComponentColumn(order -> {
             Button editButton = new Button("Edit", new Icon(VaadinIcon.EDIT));
             editButton.addClickListener(e -> openEditDialog(order));
+            if (order.getPurchaseOrderStatus() == PurchaseOrderStatus.CANCELLED) {
+                editButton.setEnabled(false);
+            }
             return editButton;
+
         }).setHeader("Actions");
 
         grid.setHeight("400px");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
+
+        grid.addItemDoubleClickListener(event -> {
+            PurchaseOrder selectedOrder = event.getItem();
+            showOrderDetails(selectedOrder);
+        });
     }
 
     private void setupSearchField() {
@@ -211,10 +225,12 @@ public class PurchaseOrderView extends VerticalLayout {
 
                 if (selectedStatus == PurchaseOrderStatus.CANCELLED) {
                     purchaseOrderService.cancelPurchaseOrder(order);
-                    Notification.show("Order cancelled.");
+                    Notification notification = Notification.show("Order cancelled.");
+                    notification.setPosition(Notification.Position.MIDDLE);
                 } else if (selectedStatus == PurchaseOrderStatus.INVOICED) {
                     purchaseOrderService.finishPurchaseOrder(order);
-                    Notification.show("Order finished.");
+                    Notification notification = Notification.show("Order finished.");
+                    notification.setPosition(Notification.Position.MIDDLE);
                 }
 
                 order.setPurchaseOrderStatus(originalStatus);
@@ -294,6 +310,7 @@ public class PurchaseOrderView extends VerticalLayout {
 
         orderDialog.setHeaderTitle("Create Purchase Order");
         orderDialog.add(dialogContent);
+        orderDialog.add(itemGrid);
     }
 
     private void addItem() {
@@ -383,4 +400,90 @@ public class PurchaseOrderView extends VerticalLayout {
         return id.contains(currentSearchTerm) || purchaserName.contains(currentSearchTerm);
     }
 
+    private void setupItemGrid() {
+        itemGrid.addColumn(item -> item.getProduct().getName()).setHeader("Product").setAutoWidth(true);
+        itemGrid.addColumn(CreatePurchaseOrderItemDTO::getQuantity).setHeader("Quantity").setAutoWidth(true);
+        itemGrid.addColumn(item -> item.getPrice().toString()).setHeader("Price").setAutoWidth(true);
+
+        itemGrid.setHeight("200px");
+    }
+
+    private void showOrderDetails(PurchaseOrder order) {
+        Dialog detailsDialog = new Dialog();
+        detailsDialog.setHeaderTitle("Purchase Order Details");
+        detailsDialog.setWidth("600px");
+        detailsDialog.setHeight("500px");
+
+        VerticalLayout mainLayout = new VerticalLayout();
+        mainLayout.setPadding(true);
+        mainLayout.setSpacing(true);
+
+        FormLayout orderInfoLayout = new FormLayout();
+        orderInfoLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
+
+        TextField idField = new TextField("Order ID");
+        idField.setValue(order.getId().toString());
+        idField.setReadOnly(true);
+
+        TextField purchaserField = new TextField("Purchaser");
+        purchaserField.setValue(order.getPurchaserId().getFullName());
+        purchaserField.setReadOnly(true);
+
+        TextField statusField = new TextField("Status");
+        statusField.setValue(order.getPurchaseOrderStatus().toString());
+        statusField.setReadOnly(true);
+
+        TextField createdAtField = new TextField("Created At");
+        createdAtField.setValue(order.getCreatedAt().toString());
+        createdAtField.setReadOnly(true);
+
+        TextField totalAmountField = new TextField("Total Amount");
+        totalAmountField.setValue(String.valueOf(order.getPurchaseTotalProductAmount()));
+        totalAmountField.setReadOnly(true);
+
+        TextField totalPriceField = new TextField("Total Price");
+        totalPriceField.setValue(order.getPurchaseTotalPriceAmount().toString());
+        totalPriceField.setReadOnly(true);
+
+        orderInfoLayout.add(idField, purchaserField, statusField, createdAtField, totalAmountField, totalPriceField);
+
+        Grid<PurchaseOrderItem> itemsGrid = new Grid<>(PurchaseOrderItem.class, false);
+        itemsGrid.addColumn(item -> item.getProduct().getName()).setHeader("Product").setAutoWidth(true);
+        itemsGrid.addColumn(PurchaseOrderItem::getQuantity).setHeader("Quantity").setAutoWidth(true);
+        itemsGrid.addColumn(item -> item.getPrice().toString()).setHeader("Unit Price").setAutoWidth(true);
+        itemsGrid.addColumn(item -> {
+            BigDecimal total = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+            return total.toString();
+        }).setHeader("Total").setAutoWidth(true);
+
+        itemsGrid.setItems(order.getPurchaseItems());
+        itemsGrid.setHeight("200px");
+
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        buttonLayout.setWidthFull();
+
+        Button editButton = new Button("Edit Order", new Icon(VaadinIcon.EDIT));
+        editButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        editButton.addClickListener(e -> {
+            detailsDialog.close();
+            openEditDialog(order);
+        });
+
+        Button closeButton = new Button("Close");
+        closeButton.addClickListener(e -> detailsDialog.close());
+
+        buttonLayout.add(editButton, closeButton);
+
+        mainLayout.add(
+                new com.vaadin.flow.component.html.H4("Order Information"),
+                orderInfoLayout,
+                new com.vaadin.flow.component.html.H4("Items"),
+                itemsGrid,
+                buttonLayout
+        );
+
+        detailsDialog.add(mainLayout);
+        detailsDialog.open();
+    }
 }
