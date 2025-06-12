@@ -11,4 +11,6 @@ public interface EmployeeRepository {
     Employee searchEmployeePerId(UUID id);
     List<Employee> listAllEmployees();
     void deleteEmployeeByID(UUID id);
+    long count();
 }
+

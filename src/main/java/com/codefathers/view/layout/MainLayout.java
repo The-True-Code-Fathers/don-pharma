@@ -1,8 +1,6 @@
 package com.codefathers.view.layout;
 
 import com.codefathers.view.*;
-import com.codefathers.view.PurchaseOrderView;
-import com.codefathers.view.StorageView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.H1;
@@ -18,12 +16,12 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 @Layout
 public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
-        public MainLayout() {
-                DrawerToggle toggle = new DrawerToggle();
+    public MainLayout() {
+        DrawerToggle toggle = new DrawerToggle();
 
-                H1 title = new H1("Don Pharma");
-                title.getStyle().set("font-size", "var(--lumo-font-size-l)")
-                                .set("margin", "0");
+        H1 title = new H1("\uD83D\uDC8A Don Pharma");
+        title.getStyle().set("font-size", "var(--lumo-font-size-l)")
+                .set("margin", "0");
 
                 SideNav nav = new SideNav();
 
@@ -32,6 +30,9 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
                 SideNavItem productLink = new SideNavItem("Products",
                 ProductsView.class, VaadinIcon.STOCK.create());
+
+        SideNavItem orderLink = new SideNavItem("Order",
+                OrderView.class, VaadinIcon.FILE_O.create());
 
         SideNavItem shippingLink = new SideNavItem("Shipping");
         shippingLink.setPrefixComponent(VaadinIcon.TRUCK.create());
@@ -44,7 +45,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
 
 
-        nav.addItem(employeeLink, productLink, shippingLink);
+        nav.addItem(employeeLink, productLink, shippingLink, orderLink);
 
                 SideNavItem storageLink = new SideNavItem("Armazenamento",
                                 StorageView.class, VaadinIcon.PACKAGE.create());

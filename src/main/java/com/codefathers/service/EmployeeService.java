@@ -58,6 +58,10 @@ public class EmployeeService {
         employeeRepository.deleteEmployeeByID(uuid);
     }
 
+    public Long count() {
+        return employeeRepository.count();
+    }
+
     private void validateDTOFunctions(CreateEmployeeDTO createEmployeeDTO) {
         Set<ConstraintViolation<CreateEmployeeDTO>> violations = validator.validate(createEmployeeDTO);
         if (!violations.isEmpty()) {
@@ -74,4 +78,5 @@ public class EmployeeService {
             throw new IllegalArgumentException("O funcionário deve ter no mínimo 16 (dezesseis) anos para ser registrado");
         }
     }
+
 }

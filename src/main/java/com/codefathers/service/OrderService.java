@@ -108,4 +108,13 @@ public class OrderService {
     public List<Order> findAll() {
         return orderRepository.findAll();
     }
+
+    public Long count() {
+        return orderRepository.count();
+    }
+
+    public BigDecimal getTotalRevenue() {
+        return BigDecimal.ZERO;
+    }
+
 }

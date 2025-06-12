@@ -1,8 +1,9 @@
 package com.codefathers.service;
 
+import com.codefathers.factory.ServiceFactory;
 import com.codefathers.model.entity.SystemUser;
 import com.codefathers.repository.interfaces.SystemUserRepository;
-import com.codefathers.util.PasswordUtil;
+import com.codefathers.util.AuthUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
@@ -20,7 +21,7 @@ public class AuthService {
 
     public Optional<SystemUser> authenticate(String username, String password) {
         Optional<SystemUser> authenticatedUser = userRepository.findByUsername(username)
-                .filter(user -> PasswordUtil.verifyPassword(password, user.getPasswordHash()));
+                .filter(user -> AuthUtil.PasswordUtil.verifyPassword(password, user.getPasswordHash()));
 
         // If authentication is successful, store the user in the session
         authenticatedUser.ifPresent(user -> {
@@ -47,15 +48,15 @@ public class AuthService {
         UI.getCurrent().navigate("login");
     }
 
-    public static Optional<SystemUser> getCurrentUser() {
+    public Optional<SystemUser> getCurrentUser() {
         return Optional.ofNullable((SystemUser) VaadinSession.getCurrent().getAttribute("user"));
     }
 
     public static boolean isLoggedIn() {
-        return getCurrentUser().isPresent();
+        return ServiceFactory.getAuthService().getCurrentUser().isPresent();
     }
 
-    public static boolean hasRole(String role) {
+    public boolean hasRole(String role) {
         return getCurrentUser()
                 .map(SystemUser::getRole)
                 .filter(userRole -> userRole.equalsIgnoreCase(role))

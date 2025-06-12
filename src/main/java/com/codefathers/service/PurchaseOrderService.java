@@ -16,12 +16,10 @@ import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.repository.interfaces.PurchaseOrderRepository;
 import com.codefathers.repository.interfaces.StorageRepository;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 
-@Transactional
 public class PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
