@@ -19,7 +19,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     public MainLayout() {
         DrawerToggle toggle = new DrawerToggle();
 
-        H1 title = new H1("Don Pharma");
+        H1 title = new H1("\uD83D\uDC8A Don Pharma");
         title.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0");
 

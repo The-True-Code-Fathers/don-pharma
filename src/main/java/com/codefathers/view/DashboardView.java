@@ -169,9 +169,8 @@ public class DashboardView extends VerticalLayout implements HasDynamicTitle {
                 .setHeader("Valor Total")
                 .setResizable(true)
                 .setSortable(true);
-
-        /*
-        orderGrid.addComponentColumn(order -> {
+        
+        /* orderGrid.addComponentColumn(order -> {
             Span status = new Span(order.isInvoiced() ? "Faturado" : "Pendente");
             status.getElement().getThemeList().add(
                     order.isInvoiced() ? "badge success" : "badge error"
