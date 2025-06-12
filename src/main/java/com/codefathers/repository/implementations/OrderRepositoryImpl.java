@@ -1,6 +1,8 @@
 package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.Order;
+import com.codefathers.model.entity.OrderItem;
+import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Transaction;
@@ -66,6 +68,23 @@ public class OrderRepositoryImpl implements OrderRepository {
     public List<Order> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("select o from orders o", Order.class).list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+    @Override
+    public List<OrderItem> findAllOrderItemsByOrderId(UUID orderId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "select oi from order_item oi " +
+                            "join fetch oi.orders o " +
+                            "join fetch oi.product p " +
+                            "where o.id = :ordersId",
+                    OrderItem.class)
+                    .setParameter("ordersId", orderId)
+                    .getResultList();
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();

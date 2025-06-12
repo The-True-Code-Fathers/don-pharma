@@ -1,12 +1,24 @@
 package com.codefathers.view;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.codefathers.model.dto.CreateOrderDTO;
-import com.codefathers.model.entity.*;
+import com.codefathers.model.dto.CreateOrderItemDTO;
+import com.codefathers.model.entity.Employee;
+import com.codefathers.model.entity.Order;
+import com.codefathers.model.entity.Product;
+import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.model.enums.EmployeeRole;
 import com.codefathers.model.enums.OrderStatus;
-import com.codefathers.repository.implementations.*;
+import com.codefathers.repository.implementations.EmployeeRepositoryImpl;
+import com.codefathers.repository.implementations.OrderRepositoryImpl;
+import com.codefathers.repository.implementations.ProductRepositoryImpl;
+import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
+import com.codefathers.repository.implementations.StorageRepositoryImpl;
 import com.codefathers.repository.interfaces.EmployeeRepository;
-import com.codefathers.repository.interfaces.ShippingProviderRepository;
 import com.codefathers.service.EmployeeService;
 import com.codefathers.service.OrderService;
 import com.codefathers.service.ProductService;
@@ -25,18 +37,13 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
-import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
-import jakarta.validation.Validator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import jakarta.validation.Validator;
 
 @Route("order")
 public class OrderView extends VerticalLayout {
@@ -144,8 +151,7 @@ public class OrderView extends VerticalLayout {
                 query -> {
                     List<Order> allOrders = orderService.findAll();
                     return (int) allOrders.stream().filter(this::matchesFilters).count();
-                }
-        );
+                });
 
         dataView = grid.setItems(dataProvider);
     }
@@ -155,7 +161,8 @@ public class OrderView extends VerticalLayout {
             return false;
         }
 
-        if (currentSearchingTerm.isEmpty()) return true;
+        if (currentSearchingTerm.isEmpty())
+            return true;
 
         String sellerName = order.getSeller() != null ? order.getSeller().getFullName().toLowerCase() : "";
         return sellerName.contains(currentSearchingTerm);
@@ -168,7 +175,6 @@ public class OrderView extends VerticalLayout {
         dialog.setWidth("400px");
         dialog.setHeight("200px");
     }
-
 
     private void showOrderDialog(Order order) {
         dialog.removeAll();
@@ -202,6 +208,7 @@ public class OrderView extends VerticalLayout {
 
         ComboBox<Product> productComboBox = new ComboBox<>("Produto");
         IntegerField quantityField = new IntegerField("Quantidade");
+        NumberField priceField = new NumberField("Price");
         Button addItemButton = new Button("Adicionar Item");
 
         setupSellerComboBox(sellerComboBox);
@@ -216,9 +223,19 @@ public class OrderView extends VerticalLayout {
         quantityField.setMin(1);
         quantityField.setStepButtonsVisible(true);
 
+        priceField.setValue(1.0);
+        priceField.setMin(1);
+        priceField.setStepButtonsVisible(true);
+
         addItemButton.addClickListener(e -> {
             Product selectedProduct = productComboBox.getValue();
             Integer quantity = quantityField.getValue();
+            Double priceDouble = priceField.getValue();
+            if (priceDouble == null || priceDouble <= 0) {
+                Notification.show("Informe um preço válido", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            BigDecimal price = BigDecimal.valueOf(priceDouble);
 
             if (selectedProduct == null) {
                 Notification.show("Selecione um produto", 3000, Notification.Position.MIDDLE);
@@ -238,7 +255,7 @@ public class OrderView extends VerticalLayout {
                 return;
             }
 
-            OrderItemRow newItem = new OrderItemRow(selectedProduct, quantity);
+            OrderItemRow newItem = new OrderItemRow(selectedProduct, quantity, price);
             orderItems.add(newItem);
             itemsGrid.getDataProvider().refreshAll();
 
@@ -269,8 +286,7 @@ public class OrderView extends VerticalLayout {
                         sellerComboBox.getValue(),
                         shippingComboBox.getValue(),
                         descriptionField.getValue(),
-                        orderItems
-                );
+                        orderItems);
 
                 orderService.createOrder(createOrderDTO);
 
@@ -302,8 +318,7 @@ public class OrderView extends VerticalLayout {
                 new com.vaadin.flow.component.html.H4("Itens do Pedido"),
                 addItemLayout,
                 itemsGrid,
-                new HorizontalLayout(saveButton, cancelButton)
-        );
+                new HorizontalLayout(saveButton, cancelButton));
         mainLayout.setSpacing(true);
         mainLayout.setPadding(true);
 
@@ -332,12 +347,13 @@ public class OrderView extends VerticalLayout {
     }
 
     private CreateOrderDTO buildCreateOrderDTO(Employee seller, ShippingProvider shippingProvider,
-                                               String description, List<OrderItemRow> items) {
+            String description, List<OrderItemRow> items) {
 
-        List<CreateOrderDTO.CreateOrderItemDTO> itemDTOs = items.stream()
-                .map(item -> CreateOrderDTO.CreateOrderItemDTO.builder()
+        List<CreateOrderItemDTO> itemDTOs = items.stream()
+                .map(item -> CreateOrderItemDTO.builder()
                         .product(item.getProduct())
                         .quantity(item.getQuantity())
+                        .price(item.getPrice())
                         .build())
                 .collect(Collectors.toList());
 
@@ -357,11 +373,10 @@ public class OrderView extends VerticalLayout {
         grid.addColumn(item -> item.getProduct().getName()).setHeader("Produto").setAutoWidth(true);
         grid.addColumn(item -> item.getProduct().getSku()).setHeader("SKU").setAutoWidth(true);
         grid.addColumn(OrderItemRow::getQuantity).setHeader("Quantidade").setAutoWidth(true);
-        grid.addColumn(item -> "R$ " + item.getProduct().getSellPrice()).setHeader("Preço Unit.").setAutoWidth(true);
-        grid.addColumn(item -> "R$ " + item.getProduct().getSellPrice().multiply(new java.math.BigDecimal(item.getQuantity())))
+        grid.addColumn(item -> "R$ " + item.getPrice()).setHeader("Preço Unit.").setAutoWidth(true);
+        grid.addColumn(item -> "R$ " + item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .setHeader("Total").setAutoWidth(true);
 
-        // Coluna de ações (remover)
         grid.addComponentColumn(item -> {
             Button removeButton = new Button(new Icon(VaadinIcon.TRASH));
             removeButton.addClickListener(e -> {
@@ -374,11 +389,10 @@ public class OrderView extends VerticalLayout {
     }
 
     private void setupShippingComboBox(ComboBox<ShippingProvider> shippingComboBox) {
-        shippingComboBox.setItemLabelGenerator(provider -> provider.getName()); // Ajuste conforme sua entidade
+        shippingComboBox.setItemLabelGenerator(provider -> provider.getName());
         shippingComboBox.setAllowCustomValue(false);
         shippingComboBox.setWidthFull();
         shippingComboBox.setPlaceholder("Selecione uma transportadora");
-
 
         List<ShippingProvider> providers = shippingProviderService.listAllShippingProviders();
         shippingComboBox.setItems(providers);
@@ -396,15 +410,29 @@ public class OrderView extends VerticalLayout {
     private static class OrderItemRow {
         private Product product;
         private int quantity;
+        private BigDecimal price;
 
-        public OrderItemRow(Product product, int quantity) {
+        public OrderItemRow(Product product, int quantity, BigDecimal price) {
             this.product = product;
             this.quantity = quantity;
+            this.price = price;
         }
 
-        public Product getProduct() { return product; }
-        public int getQuantity() { return quantity; }
-        public void setQuantity(int quantity) { this.quantity = quantity; }
+        public Product getProduct() {
+            return product;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public BigDecimal getPrice() {
+            return price;
+        }
+
+        public void setQuantity(int quantity) {
+            this.quantity = quantity;
+        }
     }
 
     private List<Employee> filterEmployeesByName(String filter) {
