@@ -9,6 +9,7 @@ import com.codefathers.model.dto.CreatePurchaseOrderItemDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Product;
 import com.codefathers.model.entity.PurchaseOrder;
+import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.model.enums.PurchaseOrderStatus;
 import com.codefathers.repository.implementations.EmployeeRepositoryImpl;
 import com.codefathers.repository.implementations.ProductRepositoryImpl;
@@ -173,61 +174,76 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     private void openEditDialog(PurchaseOrder order) {
-        currentOrderEditing = order;
+        editDialog.removeAll();
+        editDialog.setWidth("600px");
 
-        VerticalLayout itemEditLayout = new VerticalLayout();
-        itemEditLayout.setSpacing(true);
-        itemEditLayout.setPadding(true);
+        VerticalLayout layout = new VerticalLayout();
+        layout.setPadding(true);
+        layout.setSpacing(true);
+        layout.setWidthFull();
+        layout.getStyle().set("gap", "1rem"); // espaçamento extra entre os componentes
+
+        ComboBox<PurchaseOrderStatus> statusComboBox = new ComboBox<>("Status");
+        statusComboBox.setItems(PurchaseOrderStatus.values());
+        statusComboBox.setValue(order.getPurchaseOrderStatus());
+        statusComboBox.setWidthFull();
+
+        layout.add(statusComboBox);
 
         List<PurchaseOrderItemForm> itemForms = new ArrayList<>();
+        for (PurchaseOrderItem item : order.getPurchaseItems()) {
+            PurchaseOrderItemForm form = new PurchaseOrderItemForm(productService.findAllProducts());
+            form.productField.setValue(item.getProduct());
+            form.quantityField.setValue((double) item.getQuantity());
+            form.priceField.setValue(item.getPrice().doubleValue());
 
-        for (var item : order.getPurchaseItems()) {
-            ComboBox<Product> productField = new ComboBox<>("Product");
-            productField.setItems(productService.findAllProducts());
-            productField.setItemLabelGenerator(Product::getName);
-            productField.setValue(item.getProduct());
+            itemForms.add(form);
 
-            NumberField quantityField = new NumberField("Quantity");
-            quantityField.setMin(1);
-            quantityField.setValue((double) item.getQuantity());
+            FormLayout itemLayout = new FormLayout();
+            itemLayout.setResponsiveSteps(
+                    new FormLayout.ResponsiveStep("0", 1), // mobile first
+                    new FormLayout.ResponsiveStep("500px", 3) // quando maior, exibe 3 colunas
+            );
+            itemLayout.setWidthFull();
+            itemLayout.getStyle().set("padding", "0.5rem 0"); // espaço interno entre os grupos
 
-            NumberField priceField = new NumberField("Price");
-            priceField.setMin(0);
-            priceField.setStep(0.01);
-            priceField.setValue(item.getPrice().doubleValue());
+            itemLayout.addFormItem(form.productField, "Product");
+            itemLayout.addFormItem(form.quantityField, "Quantity");
+            itemLayout.addFormItem(form.priceField, "Price");
 
-            itemForms.add(new PurchaseOrderItemForm(productField, quantityField, priceField));
-
-            FormLayout form = new FormLayout(productField, quantityField, priceField);
-            form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
-            itemEditLayout.add(form);
+            layout.add(itemLayout);
         }
 
-        statusComboBox.setValue(order.getPurchaseOrderStatus());
-        itemEditLayout.add(statusComboBox);
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setSpacing(true);
+        buttonLayout.setWidthFull();
+        buttonLayout.setJustifyContentMode(JustifyContentMode.END);
 
         Button updateButton = new Button("Update", e -> {
             try {
-                // Atualiza os dados dos itens
                 for (int i = 0; i < itemForms.size(); i++) {
-                    var itemForm = itemForms.get(i);
-                    var item = order.getPurchaseItems().get(i);
+                    PurchaseOrderItemForm form = itemForms.get(i);
+                    PurchaseOrderItem item = order.getPurchaseItems().get(i);
 
-                    item.setProduct(itemForm.productField.getValue());
-                    item.setQuantity(itemForm.quantityField.getValue().intValue());
-                    item.setPrice(BigDecimal.valueOf(itemForm.priceField.getValue()));
+                    item.setProduct(form.productField.getValue());
+                    item.setQuantity(form.quantityField.getValue().intValue());
+                    item.setPrice(BigDecimal.valueOf(form.priceField.getValue()));
                 }
 
-                // Atualiza o status
-                PurchaseOrderStatus newStatus = statusComboBox.getValue();
-                if (newStatus == null) {
-                    Notification.show("Status must be selected.");
-                    return;
-                }
-                purchaseOrderService.udpatePurchaseOrder(currentOrderEditing);
-                order.setPurchaseOrderStatus(newStatus);
+                purchaseOrderService.udpatePurchaseOrder(order);
 
-                Notification.show("Order updated successfully.");
+                PurchaseOrderStatus selectedStatus = statusComboBox.getValue();
+                PurchaseOrderStatus originalStatus = order.getPurchaseOrderStatus();
+
+                if (selectedStatus == PurchaseOrderStatus.CANCELLED) {
+                    purchaseOrderService.cancelPurchaseOrder(order);
+                    Notification.show("Order cancelled.");
+                } else if (selectedStatus == PurchaseOrderStatus.INVOICED) {
+                    purchaseOrderService.finishPurchaseOrder(order);
+                    Notification.show("Order finished.");
+                }
+
+                order.setPurchaseOrderStatus(originalStatus);
                 refreshGrid();
                 editDialog.close();
             } catch (Exception ex) {
@@ -235,11 +251,14 @@ public class PurchaseOrderView extends VerticalLayout {
             }
         });
 
-        itemEditLayout.add(updateButton);
+        Button cancelButton = new Button("Cancel", e -> editDialog.close());
 
-        editDialog.removeAll(); // limpa conteúdo antigo
+        buttonLayout.add(cancelButton, updateButton);
+
+        layout.add(buttonLayout);
+
         editDialog.setHeaderTitle("Edit Purchase Order");
-        editDialog.add(itemEditLayout);
+        editDialog.add(layout);
         editDialog.open();
     }
 
@@ -248,11 +267,19 @@ public class PurchaseOrderView extends VerticalLayout {
         NumberField quantityField;
         NumberField priceField;
 
-        public PurchaseOrderItemForm(ComboBox<Product> productField, NumberField quantityField,
-                NumberField priceField) {
-            this.productField = productField;
-            this.quantityField = quantityField;
-            this.priceField = priceField;
+        public PurchaseOrderItemForm(List<Product> products) {
+            this.productField = new ComboBox<>("Product");
+            this.productField.setItems(products);
+            this.productField.setItemLabelGenerator(Product::getName);
+            this.productField.setPlaceholder("Select a product");
+
+            this.quantityField = new NumberField("Quantity");
+            this.quantityField.setMin(1);
+            this.quantityField.setStep(1);
+
+            this.priceField = new NumberField("Price");
+            this.priceField.setMin(0.01);
+            this.priceField.setStep(0.01);
         }
     }
 
@@ -380,6 +407,11 @@ public class PurchaseOrderView extends VerticalLayout {
     private boolean matchesFilter(PurchaseOrder order) {
         if (currentSearchTerm.isEmpty())
             return true;
-        return order.getId().toString().toLowerCase().contains(currentSearchTerm);
+
+        String id = order.getId().toString().toLowerCase();
+        String purchaserName = order.getPurchaserId().getFullName().toLowerCase();
+
+        return id.contains(currentSearchTerm) || purchaserName.contains(currentSearchTerm);
     }
+
 }

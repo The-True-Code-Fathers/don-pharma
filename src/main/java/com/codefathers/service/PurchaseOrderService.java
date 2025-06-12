@@ -119,11 +119,6 @@ public class PurchaseOrderService {
     }
 
     public void finishPurchaseOrder(PurchaseOrder purchaseOrder) {
-        purchaseOrder.setPurchaseOrderStatus(PurchaseOrderStatus.INVOICED);
-        purchaseOrderRepository.update(purchaseOrder);
-    }
-
-    public void cancelPurchaseOrder(PurchaseOrder purchaseOrder) {
         List<PurchaseOrderItem> purchaseOrderItems = purchaseOrder.getPurchaseItems().stream().map(dto -> {
             PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
             purchaseOrderItem.setPurchaseOrder(purchaseOrder);
@@ -133,20 +128,27 @@ public class PurchaseOrderService {
             return purchaseOrderItem;
         }).toList();
 
-        for (PurchaseOrderItem item : purchaseOrderItems) {
-            String productSku = item.getProduct().getSku();
+        if (purchaseOrder.getPurchaseOrderStatus() == PurchaseOrderStatus.OPEN) {
+            for (PurchaseOrderItem item : purchaseOrderItems) {
+                String productSku = item.getProduct().getSku();
 
-            storageRepository.findByProductSku(productSku).ifPresentOrElse(existingStorage -> {
-                existingStorage.setProductQuantity(existingStorage.getProductQuantity() + item.getQuantity());
-                storageRepository.update(existingStorage);
-            }, () -> {
-                Storage newStorage = Storage.builder()
-                        .product(item.getProduct())
-                        .productQuantity(item.getQuantity())
-                        .build();
-                storageRepository.save(newStorage);
-            });
+                storageRepository.findByProductSku(productSku).ifPresentOrElse(existingStorage -> {
+                    existingStorage.setProductQuantity(existingStorage.getProductQuantity() + item.getQuantity());
+                    storageRepository.update(existingStorage);
+                }, () -> {
+                    Storage newStorage = Storage.builder()
+                            .product(item.getProduct())
+                            .productQuantity(item.getQuantity())
+                            .build();
+                    storageRepository.save(newStorage);
+                });
+            }
         }
+        purchaseOrder.setPurchaseOrderStatus(PurchaseOrderStatus.INVOICED);
+        purchaseOrderRepository.update(purchaseOrder);
+    }
+
+    public void cancelPurchaseOrder(PurchaseOrder purchaseOrder) {
         purchaseOrder.setPurchaseOrderStatus(PurchaseOrderStatus.CANCELLED);
         purchaseOrderRepository.update(purchaseOrder);
     }
