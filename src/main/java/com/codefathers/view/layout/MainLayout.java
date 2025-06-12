@@ -5,7 +5,6 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -36,6 +35,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         themeToggleButton = new Button(VaadinIcon.SUN_O.create()); // Default to sun icon (light theme)
         themeToggleButton.addClickListener(event -> toggleTheme());
         themeToggleButton.getStyle().set("margin-right", "0.5em");
+        themeToggleButton.getStyle().set("background", "transparent");
 
         Avatar avatarBasic = new Avatar();
         avatarBasic.getStyle().set("margin-right", "0.5em");
