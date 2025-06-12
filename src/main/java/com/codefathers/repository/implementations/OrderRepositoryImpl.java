@@ -91,4 +91,26 @@ public class OrderRepositoryImpl implements OrderRepository {
             return List.of();
         }
     }
+
+    @Override
+    public Long count() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("select count(*) from \"order\"", Long.class).uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
+
+    @Override
+    public BigDecimal getTotalRevenue() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("select sum(revenue) from \"order\"", BigDecimal.class)
+                    .uniqueResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return BigDecimal.ZERO;
+        }
+    }
 }

@@ -49,7 +49,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         var dashboardLink = new SideNavItem("Dashboard", DashboardView.class, VaadinIcon.DASHBOARD.create());
         var employeeLink = new SideNavItem("Employees", EmployeeView.class, VaadinIcon.GROUP.create());
         var productLink = new SideNavItem("Products", ProductsView.class, VaadinIcon.STOCK.create());
-        var orderLink = new SideNavItem("Order", OrderView.class, VaadinIcon.FILE_O.create());
+        var orderLink = new SideNavItem("Order", OrderView.class, VaadinIcon.CLIPBOARD.create());
         var shippingLink = new SideNavItem("Shipping");
 
         shippingLink.setPrefixComponent(VaadinIcon.TRUCK.create());
@@ -70,6 +70,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
         sideNav.addItem(
                 dashboardLink,
+                employeeLink,
                 productLink,
                 shippingLink,
                 orderLink,
