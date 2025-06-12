@@ -1,6 +1,7 @@
 package com.codefathers.repository.interfaces;
 
 import com.codefathers.model.entity.Order;
+import com.codefathers.model.entity.OrderItem;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,4 +15,5 @@ public interface OrderRepository extends GenericRepository<Order, UUID> {
     List<Order> findAll();
     Long count();
     BigDecimal getTotalRevenue();
+    List<OrderItem> findAllOrderItemsByOrderId(UUID orderId);
 }

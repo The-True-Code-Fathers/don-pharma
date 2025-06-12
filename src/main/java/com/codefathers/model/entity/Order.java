@@ -29,7 +29,7 @@ public class Order {
 
     private String description;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<OrderItem> items;
 
     @Column(name = "products_price", precision = 19, scale = 4, nullable = false)

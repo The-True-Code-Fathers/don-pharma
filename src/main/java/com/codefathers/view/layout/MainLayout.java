@@ -77,6 +77,10 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
                 purchaseOrderLink
         );
 
+        SideNavItem orderLink = new SideNavItem("Order",
+                OrderView.class, VaadinIcon.CLIPBOARD.create());
+        nav.addItem(orderLink);
+
         Scroller scroller = new Scroller(sideNav);
         scroller.setClassName(LumoUtility.Padding.SMALL);
         addToDrawer(scroller);
