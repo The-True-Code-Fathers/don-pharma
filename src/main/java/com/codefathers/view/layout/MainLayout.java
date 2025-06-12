@@ -50,7 +50,6 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         avatarButton.getStyle().set("border", "none");
         avatarButton.getStyle().set("padding", "0");
         avatarButton.getStyle().set("min-width", "unset"); // Prevent button from forcing a minimum width
-        avatarButton.getStyle().set("cursor", "pointer"); // Ensure the button shows a pointer cursor on hover
 
         HorizontalLayout navbarRightContext = new HorizontalLayout(themeToggleButton, avatarButton);
         navbarRightContext.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
