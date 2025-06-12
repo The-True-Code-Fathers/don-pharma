@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 
-@Route("dashboard")
+@Route("")
 @PageTitle("Dashboard | Sistema de Gestão")
 public class DashboardView extends VerticalLayout {
 
