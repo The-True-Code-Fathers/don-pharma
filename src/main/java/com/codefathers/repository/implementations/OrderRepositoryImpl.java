@@ -95,7 +95,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Long count() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select count(*) from \"order\"", Long.class).uniqueResult();
+            return session.createQuery("select count(*) from orders", Long.class).uniqueResult();
         } catch (Exception e) {
             e.printStackTrace();
             return 0L;
@@ -105,7 +105,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public BigDecimal getTotalRevenue() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select sum(revenue) from \"order\"", BigDecimal.class)
+            return session.createQuery("select sum(revenue) from orders", BigDecimal.class)
                     .uniqueResult();
 
         } catch (Exception e) {
