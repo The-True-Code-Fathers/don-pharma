@@ -1,16 +1,15 @@
-package com.codefathers.repository.implementations;
+package com.codefathers.repository;
 
 import com.codefathers.model.entity.ShippingProvider;
-import com.codefathers.repository.interfaces.ShippingProviderRepository;
 import com.codefathers.util.HibernateUtil;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 
-import java.awt.event.HierarchyBoundsAdapter;
 import java.util.List;
 import java.util.UUID;
 
 public class ShippingProviderRepositoryImpl implements ShippingProviderRepository {
+
     @Override
     public void saveShippingProvider(ShippingProvider shippingProvider) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -19,54 +18,69 @@ public class ShippingProviderRepositoryImpl implements ShippingProviderRepositor
             session.getTransaction().commit();
         } catch (Exception e) {
             System.out.println("Erro ao salvar a transportadora: " + e.getMessage());
+            throw new RuntimeException("Erro ao salvar transportadora", e);
         }
     }
 
     @Override
     public ShippingProvider searchShippingProviderPerId(UUID shippingId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(ShippingProvider.class, shippingId);
+            ShippingProvider provider = session.get(ShippingProvider.class, shippingId);
+            if (provider != null) {
+                Hibernate.initialize(provider.getShippingAreas());
+            }
+            return provider;
         } catch (Exception e) {
-           System.out.println("Erro ao buscar a transportadora: " + e.getMessage());
-           return null;
+            System.out.println("Erro ao buscar a transportadora: " + e.getMessage());
+            throw new RuntimeException("Erro ao buscar transportadora", e);
         }
     }
 
     @Override
     public List<ShippingProvider> listAllShippingProviders() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select p from shipping_provider p", ShippingProvider.class).getResultList();
+            String hql = "SELECT DISTINCT p FROM shipping_provider p LEFT JOIN FETCH p.shippingAreas";
+            List<ShippingProvider> providers = session.createQuery(hql).getResultList();
+            return providers;
+        } catch (Exception e) {
+            System.out.println("Erro ao listar transportadoras: " + e.getMessage());
+            throw new RuntimeException("Erro ao listar transportadoras", e);
         }
     }
 
     @Override
     public ShippingProvider removeShippingProviderPerId(UUID shippingId) {
-        Session session = null;
-        Transaction transaction = null;
-
-        try {
-            session = HibernateUtil.getSessionFactory().openSession();
-            transaction = session.beginTransaction();
-
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
             ShippingProvider shippingProvider = session.get(ShippingProvider.class, shippingId);
+
             if (shippingProvider != null) {
+                Hibernate.initialize(shippingProvider.getShippingAreas());
                 session.remove(shippingProvider);
-                transaction.commit();
-                System.out.println("Transportadora removida com sucesso!");
+                session.getTransaction().commit();
                 return shippingProvider;
             } else {
-                transaction.rollback();
                 System.out.println("Transportadora não encontrada.");
                 return null;
             }
         } catch (Exception e) {
-            if (transaction != null && transaction.isActive()) {
-                transaction.rollback();
-            } else {
-                System.out.println("Não foi possivel remover a transportadora pelo ID: " + e.getMessage());
-                e.printStackTrace();
-            }
+            System.out.println("Não foi possível remover a transportadora pelo ID: " + e.getMessage());
+            throw new RuntimeException("Erro ao remover transportadora", e);
         }
-        return null;
+    }
+
+    @Override
+    public void updateShippingProvider(ShippingProvider shippingProvider) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            if (shippingProvider.getShippingAreas() != null) {
+                shippingProvider.getShippingAreas().forEach(session::merge);
+            }
+            session.merge(shippingProvider);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            System.out.println("Erro ao atualizar a transportadora: " + e.getMessage());
+            throw new RuntimeException("Erro ao atualizar transportadora", e);
+        }
     }
 }

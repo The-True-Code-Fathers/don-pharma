@@ -58,4 +58,33 @@ public class ShippingOrderService {
     public ShippingOrder removeShippingOrder(UUID orderId) {
         return shippingOrderRepository.removeShippingOrderPerId(orderId);
     }
+
+    public void updateOrder(UUID orderId, CreateShippingOrderDTO dto) {
+        var violations = validator.validate(dto);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+        ShippingOrder existingOrder = shippingOrderRepository.searchShippingOrderPerId(orderId);
+        if (existingOrder == null) {
+            throw new IllegalArgumentException("Pedido não encontrado para o id: " + orderId);
+        }
+
+        ShippingProvider provider = shippingProviderRepository.searchShippingProviderPerId(dto.getShippingProviderId());
+        if (provider == null) {
+            throw new IllegalArgumentException("ShippingProvider não encontrado para o id: " + dto.getShippingProviderId());
+        }
+
+        existingOrder.setShippingProvider(provider);
+        existingOrder.setDestinationState(dto.getDestinationState());
+        existingOrder.setDestinationCity(dto.getDestinationCity());
+        existingOrder.setWeight(dto.getWeight());
+        existingOrder.setStatus(dto.getStatus());
+        existingOrder.setEstimatedDeliveryDays(dto.getEstimatedDeliveryDays());
+        existingOrder.setShipmentDate(dto.getShipmentDate());
+        existingOrder.setDeliveryDate(dto.getDeliveryDate());
+        existingOrder.setShippingCost(dto.getShippingCost());
+
+        shippingOrderRepository.updateShippingOrder(existingOrder);
+    }
+
 }

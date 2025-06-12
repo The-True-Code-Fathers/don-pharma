@@ -10,4 +10,5 @@ public interface ShippingOrderRepository {
     ShippingOrder searchShippingOrderPerId(UUID orderId);
     List<ShippingOrder> listAllShippingOrders();
     ShippingOrder removeShippingOrderPerId(UUID orderId);
+    void updateShippingOrder(ShippingOrder shippingOrder);
 }

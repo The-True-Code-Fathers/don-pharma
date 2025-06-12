@@ -17,7 +17,7 @@ import java.util.UUID;
 public class PurchaseOrderItem {
     
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne
