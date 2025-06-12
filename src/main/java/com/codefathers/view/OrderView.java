@@ -34,6 +34,9 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.dataview.GridLazyDataView;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -126,15 +129,30 @@ public class OrderView extends VerticalLayout {
         // Adicionando coluna de ações
         grid.addComponentColumn(order -> {
             HorizontalLayout actions = new HorizontalLayout();
-            
+
             Button viewButton = new Button(new Icon(VaadinIcon.EYE));
             viewButton.addClickListener(e -> showOrderDialog(order));
             viewButton.getElement().setAttribute("title", "Visualizar");
-            
+
             Button editButton = new Button(new Icon(VaadinIcon.EDIT));
-            editButton.addClickListener(e -> openEditDialog(order));
-            editButton.getElement().setAttribute("title", "Editar");
-            
+
+            // Verifica se o pedido pode ser editado
+            boolean canEdit = order.getOrderStatus() != OrderStatus.CANCELLED &&
+                    order.getOrderStatus() != OrderStatus.INVOICED;
+
+            if (canEdit) {
+                editButton.addClickListener(e -> openEditDialog(order));
+                editButton.getElement().setAttribute("title", "Editar");
+            } else {
+                editButton.setEnabled(false);
+                String statusText = order.getOrderStatus() == OrderStatus.CANCELLED ? "cancelado" : "faturado";
+                editButton.getElement().setAttribute("title", "Não é possível editar - pedido " + statusText);
+                editButton.addClickListener(e -> {
+                    Notification.show("⚠️ Este pedido não pode ser editado pois foi " + statusText + ".",
+                            4000, Notification.Position.MIDDLE);
+                });
+            }
+
             actions.add(viewButton, editButton);
             actions.setSpacing(true);
             return actions;
@@ -150,6 +168,17 @@ public class OrderView extends VerticalLayout {
     }
 
     private void openEditDialog(Order order) {
+        // Verifica se o pedido pode ser editado antes de abrir o diálogo
+        boolean canEdit = order.getOrderStatus() != OrderStatus.CANCELLED &&
+                order.getOrderStatus() != OrderStatus.INVOICED;
+
+        if (!canEdit) {
+            String statusText = order.getOrderStatus() == OrderStatus.CANCELLED ? "cancelado" : "faturado";
+            Notification.show("⚠️ Este pedido não pode ser editado pois foi " + statusText + ".",
+                    4000, Notification.Position.MIDDLE);
+            return;
+        }
+
         currentOrderEditing = order;
         editDialog.removeAll();
 
@@ -164,7 +193,7 @@ public class OrderView extends VerticalLayout {
         statusComboBox.setWidthFull();
 
         List<OrderItemForm> itemForms = new ArrayList<>();
-        
+
         // Verifica se o pedido tem itens
         if (order.getItems() != null && !order.getItems().isEmpty()) {
             for (OrderItem item : order.getItems()) {
@@ -185,21 +214,6 @@ public class OrderView extends VerticalLayout {
             }
         }
 
-        Button addItemButton = new Button("Adicionar Item", new Icon(VaadinIcon.PLUS));
-        addItemButton.addClickListener(e -> {
-            OrderItemForm newForm = new OrderItemForm(productService.findAllProducts());
-            itemForms.add(newForm);
-
-            FormLayout newItemLayout = new FormLayout();
-            newItemLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 3));
-            newItemLayout.add(newForm.productField);
-            newItemLayout.add(newForm.quantityField);
-            newItemLayout.add(newForm.priceField);
-
-            // Adiciona antes dos botões
-            layout.addComponentAtIndex(layout.getComponentCount() - 2, newItemLayout);
-        });
-
         Button updateButton = new Button("Atualizar", e -> {
             try {
                 if (order.getItems() != null) {
@@ -207,14 +221,14 @@ public class OrderView extends VerticalLayout {
                         OrderItemForm form = itemForms.get(i);
                         OrderItem item = order.getItems().get(i);
 
-                        if (form.productField.getValue() != null && 
-                            form.quantityField.getValue() != null && 
-                            form.priceField.getValue() != null) {
-                            
+                        if (form.productField.getValue() != null &&
+                                form.quantityField.getValue() != null &&
+                                form.priceField.getValue() != null) {
+
                             item.setProduct(form.productField.getValue());
                             item.setQuantity(form.quantityField.getValue().intValue());
                             item.setPrice(BigDecimal.valueOf(form.priceField.getValue()));
-                            
+
                             orderItemService.update(item);
                         }
                     }
@@ -233,7 +247,7 @@ public class OrderView extends VerticalLayout {
 
                 refreshGrid();
                 editDialog.close();
-                
+
             } catch (Exception ex) {
                 Notification.show("Erro ao atualizar pedido: " + ex.getMessage());
                 ex.printStackTrace();
@@ -245,7 +259,7 @@ public class OrderView extends VerticalLayout {
         HorizontalLayout buttonsLayout = new HorizontalLayout(updateButton, cancelButton);
         buttonsLayout.setSpacing(true);
 
-        layout.add(statusComboBox, addItemButton, buttonsLayout);
+        layout.add(statusComboBox, buttonsLayout);
         editDialog.add(layout);
         editDialog.open();
     }
@@ -346,30 +360,98 @@ public class OrderView extends VerticalLayout {
     }
 
     private void showOrderDialog(Order order) {
-        dialog.removeAll();
-
-        VerticalLayout content = new VerticalLayout();
-        content.add("ID: " + order.getId());
-        content.add("Vendedor: " + order.getSeller().getFullName());
-        content.add("Status: " + order.getOrderStatus());
-        content.add("Total: R$" + order.getTotalAmount());
-
-        // Adiciona informações dos itens
-        if (order.getItems() != null && !order.getItems().isEmpty()) {
-            content.add(new com.vaadin.flow.component.html.H5("Itens do Pedido:"));
-            for (OrderItem item : order.getItems()) {
-                content.add("- " + item.getProduct().getName() + 
-                           " (Qtd: " + item.getQuantity() + 
-                           ", Preço: R$" + item.getPrice() + ")");
-            }
+    dialog.removeAll();
+    dialog.setWidth("700px");
+    dialog.setHeight("900px");
+    
+    VerticalLayout content = new VerticalLayout();
+    content.setSpacing(true);
+    content.setPadding(true);
+    
+    // Estilo para os labels
+    String labelStyle = "font-weight: bold; margin-right: 10px; min-width: 120px; display: inline-block;";
+    String valueStyle = "margin-left: 10px;";
+    
+    // Cabeçalho do pedido
+    Div header = new Div();
+    header.getElement().setProperty("innerHTML", 
+        "<h3 style='margin-top: 0; color: var(--lumo-primary-text-color);'>Pedido #" + order.getId() + "</h3>");
+    
+    // Informações básicas
+    Div sellerInfo = new Div();
+    sellerInfo.getElement().setProperty("innerHTML", 
+        "<span style='" + labelStyle + "'>Vendedor:</span>" + 
+        "<span style='" + valueStyle + "'>" + order.getSeller().getFullName() + "</span>");
+    
+    Div statusInfo = new Div();
+    String statusColor = order.getOrderStatus() == OrderStatus.CANCELLED ? "color: red;" : 
+                        order.getOrderStatus() == OrderStatus.INVOICED ? "color: green;" : "";
+    statusInfo.getElement().setProperty("innerHTML", 
+        "<span style='" + labelStyle + "'>Status:</span>" + 
+        "<span style='" + valueStyle + statusColor + "'>" + order.getOrderStatus() + "</span>");
+    
+    Div totalInfo = new Div();
+    totalInfo.getElement().setProperty("innerHTML", 
+        "<span style='" + labelStyle + "'>Valor Total:</span>" + 
+        "<span style='" + valueStyle + "'>R$ " + String.format("%.2f", order.getTotalAmount()) + "</span>");
+    
+    // Seção de itens
+    VerticalLayout itemsSection = new VerticalLayout();
+    itemsSection.setSpacing(false);
+    itemsSection.setPadding(false);
+    
+    H4 itemsTitle = new H4("Itens do Pedido");
+    itemsTitle.getStyle().set("margin-bottom", "10px");
+    
+    if (order.getItems() != null && !order.getItems().isEmpty()) {
+        // Tabela de itens
+        Grid<OrderItem> itemsGrid = new Grid<>();
+        itemsGrid.setItems(order.getItems());
+        itemsGrid.addThemeVariants(GridVariant.LUMO_COMPACT, GridVariant.LUMO_ROW_STRIPES);
+        
+        // Configuração responsiva da altura da grid
+        if (order.getItems().size() <= 5) {
+            itemsGrid.setHeight("auto");
+            itemsGrid.setAllRowsVisible(true);
+        } else {
+            itemsGrid.setHeight("300px");
         }
-
-        Button close = new Button("Fechar", e -> dialog.close());
-        content.add(close);
-
-        dialog.add(content);
-        dialog.open();
+        
+        itemsGrid.addColumn(item -> item.getProduct().getName())
+            .setHeader("Produto")
+            .setAutoWidth(true);
+        
+        itemsGrid.addColumn(item -> item.getProduct().getSku())
+            .setHeader("SKU")
+            .setAutoWidth(true);
+        
+        itemsGrid.addColumn(OrderItem::getQuantity)
+            .setHeader("Quantidade")
+            .setAutoWidth(true);
+        
+        itemsGrid.addColumn(item -> "R$ " + String.format("%.2f", item.getPrice()))
+            .setHeader("Preço Unit.")
+            .setAutoWidth(true);
+        
+        itemsGrid.addColumn(item -> "R$ " + String.format("%.2f", 
+                item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
+            .setHeader("Total")
+            .setAutoWidth(true);
+        
+        itemsSection.add(itemsTitle, itemsGrid);
+    } else {
+        itemsSection.add(itemsTitle, new Span("Nenhum item encontrado neste pedido"));
     }
+    
+    // Botão de fechar
+    Button closeButton = new Button("Fechar", e -> dialog.close());
+    closeButton.getStyle().set("margin-top", "20px");
+    
+    // Adicionando todos os componentes ao layout
+    content.add(header, sellerInfo, statusInfo, totalInfo, itemsSection, closeButton);
+    dialog.add(content);
+    dialog.open();
+}
 
     private void openCreateOrderDialog() {
         Dialog createDialog = new Dialog();
@@ -483,7 +565,8 @@ public class OrderView extends VerticalLayout {
 
         Button cancelButton = new Button("Cancelar", e -> createDialog.close());
 
-        HorizontalLayout addItemLayout = new HorizontalLayout(productComboBox, quantityField, priceField, addItemButton);
+        HorizontalLayout addItemLayout = new HorizontalLayout(productComboBox, quantityField, priceField,
+                addItemButton);
         addItemLayout.setAlignItems(Alignment.END);
         addItemLayout.setWidthFull();
         productComboBox.setWidth("300px");
