@@ -1,6 +1,8 @@
 package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.Order;
+import com.codefathers.model.entity.OrderItem;
+import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Transaction;
@@ -74,24 +76,19 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Long count() {
+    public List<OrderItem> findAllOrderItemsByOrderId(UUID orderId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select count(*) from \"order\"", Long.class).uniqueResult();
+            return session.createQuery(
+                    "select oi from order_item oi " +
+                            "join fetch oi.orders o " +
+                            "join fetch oi.product p " +
+                            "where o.id = :ordersId",
+                    OrderItem.class)
+                    .setParameter("ordersId", orderId)
+                    .getResultList();
         } catch (Exception e) {
             e.printStackTrace();
-            return 0L;
-        }
-    }
-
-    @Override
-    public BigDecimal getTotalRevenue() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select sum(revenue) from \"order\"", BigDecimal.class)
-                    .uniqueResult();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return BigDecimal.ZERO;
+            return List.of();
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.codefathers.model.dto;
 
+import com.codefathers.model.enums.UmSelect;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,4 +37,7 @@ public class CreateProductDTO {
     private BigDecimal sellPrice;
 
     private boolean active = true;
+
+    @NotNull(message = "Campo obrigatório")
+    private UmSelect umSelect;
 }
