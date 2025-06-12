@@ -3,7 +3,9 @@ package com.codefathers.view.layout;
 import com.codefathers.view.*;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -35,8 +37,28 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         themeToggleButton.addClickListener(event -> toggleTheme());
         themeToggleButton.getStyle().set("margin-right", "0.5em");
 
+        Avatar avatarBasic = new Avatar();
+        avatarBasic.getStyle().set("margin-right", "0.5em");
+
+        Button avatarButton = new Button(avatarBasic);
+        avatarButton.addClickListener(event -> {
+            System.out.println("Avatar button clicked!"); // Placeholder action for demonstration
+        });
+        // Apply styles to make the button transparent and borderless, so it visually
+        // appears as just the avatar itself, but remains clickable as a button.
+        avatarButton.getStyle().set("background", "transparent");
+        avatarButton.getStyle().set("border", "none");
+        avatarButton.getStyle().set("padding", "0");
+        avatarButton.getStyle().set("min-width", "unset"); // Prevent button from forcing a minimum width
+        avatarButton.getStyle().set("cursor", "pointer"); // Ensure the button shows a pointer cursor on hover
+
+        HorizontalLayout navbarRightContext = new HorizontalLayout(themeToggleButton, avatarButton);
+        navbarRightContext.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        navbarRightContext.setAlignItems(FlexComponent.Alignment.CENTER);
+        navbarRightContext.setSpacing(true);
+
         // Arrange title and toggle button in a horizontal layout for the navbar
-        HorizontalLayout navbarContent = new HorizontalLayout(title, themeToggleButton);
+        HorizontalLayout navbarContent = new HorizontalLayout(title, navbarRightContext);
         navbarContent.setWidthFull();
         navbarContent.setAlignItems(FlexComponent.Alignment.CENTER);
         navbarContent.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
