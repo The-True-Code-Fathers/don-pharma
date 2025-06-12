@@ -36,11 +36,6 @@ public class CreateOrderDTO {
 
     private LocalDateTime createdAt;
 
-    // Shipping price will be computed
-    // Total amount will be computer
-    // Invoiced is false by default
-    // Cancelled is false by default
-
     @Data
     @AllArgsConstructor
     @NoArgsConstructor

@@ -60,7 +60,7 @@ public class StorageView extends VerticalLayout {
 
     private void setupRedirectButton() {
         openDialogButton.addClickListener(e -> {
-            getUI().ifPresent(ui -> ui.navigate("productOrder")); // <- redireciona para a rota "productOrder"
+            getUI().ifPresent(ui -> ui.navigate("purchaseOrder")); //
         });
     }
 
