@@ -74,19 +74,49 @@ public class OrderView extends VerticalLayout {
         var storageRepository = new StorageRepositoryImpl();
         Validator validator = ValidatorUtil.getValidator();
         this.orderService = new OrderService(orderRepository, employeeRepository, storageRepository, validator);
-        employeeComboBox = new ComboBox<>("Vendedor");
+
+        employeeComboBox = new ComboBox<>();
         setupEmployeeComboBox();
         searchStatusFilter();
         setupGrid();
         setupDialog();
-        setupCreateOrderButton();
 
+        Button createButton = new Button("Criar Pedido", new Icon(VaadinIcon.PLUS));
+        createButton.addClickListener(e -> openCreateOrderDialog());
+
+        // Layout dos filtros (vendedor e status)
         HorizontalLayout filters = new HorizontalLayout(employeeComboBox, statusFilter);
         filters.setAlignItems(Alignment.CENTER);
         filters.setSpacing(true);
-        add(filters, grid);
+
+        // Layout principal da linha superior: createButton + espaço expansível +
+        // filtros
+        HorizontalLayout topLayout = new HorizontalLayout(createButton, filters);
+        topLayout.setWidthFull();
+        topLayout.setAlignItems(Alignment.CENTER);
+        topLayout.expand(filters); // faz os filtros ficarem na direita
+
+        add(topLayout, grid);
 
         setupLazyDataProvider();
+    }
+
+    private void setupGrid() {
+        grid.setHeight("400px");
+        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+
+        grid.addColumn(Order::getId).setHeader("ID do Pedido");
+        grid.addColumn(order -> order.getSeller().getFullName()).setHeader("Nome do Vendedor").setAutoWidth(true);
+        grid.addColumn(Order::getOrderStatus).setHeader("Status do Pedido").setAutoWidth(true);
+        grid.addColumn(Order::getTotalAmount).setHeader("Valor Total (R$)").setAutoWidth(true);
+
+        grid.asSingleSelect().addValueChangeListener(event -> {
+            Order selected = event.getValue();
+            if (selected != null) {
+                showOrderDialog(selected);
+            }
+        });
     }
 
     private void setupEmployeeComboBox() {
@@ -103,38 +133,16 @@ public class OrderView extends VerticalLayout {
     }
 
     private void searchStatusFilter() {
-        List<String> statusItems = new ArrayList<>();
-        statusItems.add("TODOS");
-        for (OrderStatus status : OrderStatus.values()) {
-            statusItems.add(status.name());
-        }
+        List<String> statusItems = List.of("TODOS", "OPEN", "CANCELLED", "INVOICED");
 
         statusFilter.setItems(statusItems);
         statusFilter.setValue("TODOS");
-        statusFilter.setEmptySelectionAllowed(true);
-        statusFilter.setPlaceholder("All Statuses");
+        statusFilter.setEmptySelectionAllowed(false); // desativa seleção vazia
+        statusFilter.setPlaceholder("Selecione um status");
 
         statusFilter.addValueChangeListener(e -> {
             currentStatus = e.getValue();
             dataView.refreshAll();
-        });
-    }
-
-    private void setupGrid() {
-        grid.setHeight("400px");
-        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-
-        grid.addColumn(Order::getId).setHeader("ID");
-        grid.addColumn(Order::getSeller).setHeader("Vendedor").setAutoWidth(true);
-        grid.addColumn(Order::getOrderStatus).setHeader("Status").setAutoWidth(true);
-        grid.addColumn(Order::getTotalAmount).setHeader("Total").setAutoWidth(true);
-
-        grid.asSingleSelect().addValueChangeListener(event -> {
-            Order selected = event.getValue();
-            if (selected != null) {
-                showOrderDialog(selected);
-            }
         });
     }
 
