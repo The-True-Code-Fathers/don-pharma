@@ -46,7 +46,7 @@ public class PurchaseOrderService {
             throw new ConstraintViolationException(violations);
         }
 
-        Employee employee = employeeRepository.searchEmployeePerId(createPurchaseOrderDTO.getPurchaserId());
+        Employee employee = employeeRepository.findById(createPurchaseOrderDTO.getPurchaserId()).get();
         boolean isPurchaser = employee.getRole().equals(EmployeeRole.STORAGE);
         boolean isManager = employee.getRole().equals(EmployeeRole.LOCAL_MANAGER);
 
@@ -111,7 +111,7 @@ public class PurchaseOrderService {
     }
 
     public PurchaseOrder findPurchaseOrderById(UUID purchaseOrderId) {
-        return purchaseOrderRepository.findById(purchaseOrderId);
+        return purchaseOrderRepository.findById(purchaseOrderId).get();
     }
 
     public List<PurchaseOrder> getAllPurchaseOrders() {

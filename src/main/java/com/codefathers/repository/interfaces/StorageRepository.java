@@ -8,8 +8,12 @@ import com.codefathers.model.entity.Storage;
 
 public interface StorageRepository {
     void save(Storage storage);
+
     void update(Storage storage);
+
     void delete(UUID id);
+
     Optional<Storage> findByProductSku(String productSku);
+
     List<Storage> listAll();
 }

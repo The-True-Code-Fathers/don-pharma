@@ -8,8 +8,12 @@ import com.codefathers.model.entity.ShippingArea;
 
 public interface ShippingAreaRepository {
     void save(ShippingArea shippingArea);
+
     void update(ShippingArea shippingArea);
+
     void delete(UUID id);
+
     Optional<ShippingArea> findById(UUID id);
+
     List<ShippingArea> listAll();
 }

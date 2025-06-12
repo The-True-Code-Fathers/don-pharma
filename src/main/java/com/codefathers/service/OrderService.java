@@ -42,7 +42,7 @@ public class OrderService {
             throw new ConstraintViolationException(violations);
         }
 
-        Employee employee = employeeRepository.searchEmployeePerId(createOrderDTO.getSellerId());
+        Employee employee = employeeRepository.findById(createOrderDTO.getSellerId()).get();
         boolean isSeller = employee.getRole().equals(EmployeeRole.SALES);
         boolean isManager = employee.getRole().equals(EmployeeRole.LOCAL_MANAGER);
 
@@ -96,16 +96,16 @@ public class OrderService {
     }
 
     public Order findOrderById(UUID id) {
-        return orderRepository.findById(id);
+        return orderRepository.findById(id).get();
     }
 
     public void cancelOrder(UUID id) {
-        Order order = orderRepository.findById(id);
+        Order order = orderRepository.findById(id).get();
         order.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.update(order);
     }
 
     public List<Order> findAll() {
-        return orderRepository.findAll();
+        return orderRepository.listAll();
     }
 }

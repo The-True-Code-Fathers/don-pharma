@@ -50,7 +50,7 @@ public class ProductService {
 
         //var violations = validator.validate(updateProductDTO);
 
-        Product product = productRepository.findBySKU(productSku);
+        Product product = productRepository.findBySKU(productSku).get();
 
         // if (!violations.isEmpty()) {
         //     throw new jakarta.validation.ConstraintViolationException(violations);
@@ -71,11 +71,11 @@ public class ProductService {
     }
 
     public Product findProductBySKU(String productSku) {
-        return productRepository.findBySKU(productSku);
+        return productRepository.findBySKU(productSku).get();
     }
 
     public List<Product> findAllProducts() {
-        return productRepository.listAllProducts();
+        return productRepository.listAll();
     }
 
 }

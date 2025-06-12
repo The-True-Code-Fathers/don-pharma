@@ -8,11 +8,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PurchaseOrderRepository {
-        void save(PurchaseOrder purchaseOrder);
-        void update(PurchaseOrder purchaseOrder);
-        void delete(UUID id);
-        Optional<PurchaseOrder> findById(UUID id);
-        List<PurchaseOrder> findAll();
-        List<PurchaseOrderItem> findAllPurchaseOrderItemByPurchaseOrderId(UUID purchaseOrderId);
-    }
+    void save(PurchaseOrder purchaseOrder);
 
+    void update(PurchaseOrder purchaseOrder);
+
+    void delete(UUID id);
+
+    Optional<PurchaseOrder> findById(UUID id);
+
+    List<PurchaseOrder> findAll();
+
+    List<PurchaseOrderItem> findAllPurchaseOrderItemByPurchaseOrderId(UUID purchaseOrderId);
+}

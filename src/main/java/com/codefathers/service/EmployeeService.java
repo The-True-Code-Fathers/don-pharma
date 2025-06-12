@@ -36,8 +36,12 @@ public class EmployeeService {
         employeeRepository.save(employee);
     }
 
-    public List<Employee> employeeList(){
-        return employeeRepository.listAllEmployees();
+    public void deleteEmployeeByID(UUID uuid) {
+        employeeRepository.delete(uuid);
+    }
+
+    public List<Employee> employeeList() {
+        return employeeRepository.listAll();
     }
 
     public void findEmployeeById(UUID employeeId) {
@@ -45,17 +49,12 @@ public class EmployeeService {
             employeeList()
                     .stream()
                     .filter(employee -> employee.getId()
-                    .equals(employeeId))
-                    .findFirst().
-                    ifPresentOrElse(employee -> System.out.println("Encontrado: " + employee),
+                            .equals(employeeId))
+                    .findFirst().ifPresentOrElse(employee -> System.out.println("Encontrado: " + employee),
                             () -> System.out.println("Não foi possível encontrar o funcionário pelo id."));
         } catch (Exception e) {
             e.getMessage();
         }
-    }
-
-    public void deleteEmployeeByID(UUID uuid) {
-        employeeRepository.deleteEmployeeByID(uuid);
     }
 
     private void validateDTOFunctions(CreateEmployeeDTO createEmployeeDTO) {
@@ -71,7 +70,8 @@ public class EmployeeService {
     private void validateAge(LocalDate birthDate) {
         int age = Period.between(birthDate, LocalDate.now()).getYears();
         if (age < 16) {
-            throw new IllegalArgumentException("O funcionário deve ter no mínimo 16 (dezesseis) anos para ser registrado");
+            throw new IllegalArgumentException(
+                    "O funcionário deve ter no mínimo 16 (dezesseis) anos para ser registrado");
         }
     }
 }

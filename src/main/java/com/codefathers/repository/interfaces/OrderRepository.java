@@ -8,8 +8,12 @@ import java.util.UUID;
 
 public interface OrderRepository {
     void save(Order order);
+
     void update(Order order);
+
     void delete(Order order);
+
     Optional<Order> findById(UUID id);
+
     List<Order> listAll();
 }

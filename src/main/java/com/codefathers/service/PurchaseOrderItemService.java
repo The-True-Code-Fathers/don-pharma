@@ -43,7 +43,8 @@ public class PurchaseOrderItemService {
     }
 
     public Optional<PurchaseOrderItem> findById(UUID id) {
-        return purchaseOrderItemRepository.findById(id);
+        Optional<PurchaseOrderItem> purchaseOrderItem = purchaseOrderItemRepository.findById(id);
+        return purchaseOrderItem;
     }
 
     public void updatePurchaseOrderItem(PurchaseOrderItem item) {
