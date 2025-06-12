@@ -15,10 +15,15 @@ public class ShippingProviderRepositoryImpl implements ShippingProviderRepositor
     public void saveShippingProvider(ShippingProvider shippingProvider) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
-            session.persist(shippingProvider);
+
+            if (shippingProvider.getId() == null) {
+                session.persist(shippingProvider); // Novo registro
+            } else {
+                session.merge(shippingProvider); // Atualização
+            }
+
             session.getTransaction().commit();
         } catch (Exception e) {
-            System.out.println("Erro ao salvar a transportadora: " + e.getMessage());
             throw new RuntimeException("Erro ao salvar transportadora", e);
         }
     }
@@ -74,13 +79,20 @@ public class ShippingProviderRepositoryImpl implements ShippingProviderRepositor
     public void updateShippingProvider(ShippingProvider shippingProvider) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
+
+            // Atualiza o provider e suas áreas
+            ShippingProvider merged = session.merge(shippingProvider);
+
+            // Garante que as áreas estão sincronizadas
             if (shippingProvider.getShippingAreas() != null) {
-                shippingProvider.getShippingAreas().forEach(session::merge);
+                shippingProvider.getShippingAreas().forEach(area -> {
+                    area.setShippingProvider(merged);
+                    session.merge(area);
+                });
             }
-            session.merge(shippingProvider);
+
             session.getTransaction().commit();
         } catch (Exception e) {
-            System.out.println("Erro ao atualizar a transportadora: " + e.getMessage());
             throw new RuntimeException("Erro ao atualizar transportadora", e);
         }
     }

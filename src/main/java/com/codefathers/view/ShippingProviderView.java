@@ -101,11 +101,11 @@ public class ShippingProviderView extends VerticalLayout {
                 );
 
                 if (provider != null) {
-                    dto.setId(provider.getId());
+                    dto.setId(provider.getId()); // Seta o ID apenas para atualização
                     service.updateShippingProvider(dto);
                     Notification.show("Atualizado com sucesso!");
                 } else {
-                    dto.setId(UUID.randomUUID());
+                    // Não seta ID para novo registro
                     service.registerShippingProvider(dto);
                     Notification.show("Cadastrado com sucesso!");
                 }

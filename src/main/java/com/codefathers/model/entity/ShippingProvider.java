@@ -5,16 +5,15 @@ import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Entity(name = "shipping_provider")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 public class ShippingProvider {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Id
@@ -35,11 +34,7 @@ public class ShippingProvider {
     @Column(name = "average_delivery_days", nullable = false)
     private int averageDeliveryDays;
 
-    @OneToMany(
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "shippingProvider", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ShippingArea> shippingAreas;
     
 

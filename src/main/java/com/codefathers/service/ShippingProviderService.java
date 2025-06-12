@@ -3,8 +3,9 @@ package com.codefathers.service;
 import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.model.entity.ShippingProvider;
-import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
+import com.codefathers.util.HibernateUtil;
+import org.hibernate.Session;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,13 +24,16 @@ public class ShippingProviderService {
         validateShippingProviderDTO(dto);
 
         ShippingProvider shippingProvider = ShippingProvider.builder()
-                .id(dto.getId() != null ? dto.getId() : UUID.randomUUID())
                 .cnpj(dto.getCnpj())
                 .name(dto.getName())
                 .basePrice(dto.getBasePrice())
                 .dailyCapacity(dto.getDailyCapacity())
-                .shippingAreas(processShippingAreas(dto.getShippingAreas()))
+                .averageDeliveryDays(1)
                 .build();
+
+        // Processa as áreas de entrega
+        List<ShippingArea> areas = processShippingAreas(dto.getShippingAreas(), shippingProvider);
+        shippingProvider.setShippingAreas(areas);
 
         shippingProviderRepository.saveShippingProvider(shippingProvider);
     }
@@ -39,7 +43,7 @@ public class ShippingProviderService {
             throw new IllegalArgumentException("ID da transportadora não pode ser nulo");
         }
 
-        // Usa diretamente o repositório que já está otimizado
+
         return shippingProviderRepository.searchShippingProviderPerId(shippingId);
     }
 
@@ -60,25 +64,29 @@ public class ShippingProviderService {
     }
 
     public void updateShippingProvider(CreateShippingProviderDTO dto) {
-        validateShippingProviderDTO(dto);
-
         if (dto.getId() == null) {
             throw new IllegalArgumentException("ID da transportadora é obrigatório para atualização");
         }
 
+        // Busca a transportadora existente
         ShippingProvider existing = shippingProviderRepository.searchShippingProviderPerId(dto.getId());
         if (existing == null) {
-            throw new IllegalArgumentException("Transportadora não encontrada para atualização");
+            throw new IllegalArgumentException("Transportadora não encontrada");
         }
 
+        // Atualiza os campos
         existing.setName(dto.getName());
         existing.setCnpj(dto.getCnpj());
         existing.setBasePrice(dto.getBasePrice());
         existing.setDailyCapacity(dto.getDailyCapacity());
-        existing.setShippingAreas(processShippingAreas(dto.getShippingAreas()));
+
+        // Processa as áreas de entrega
+        List<ShippingArea> areas = processShippingAreas(dto.getShippingAreas(), existing);
+        existing.setShippingAreas(areas);
 
         shippingProviderRepository.updateShippingProvider(existing);
     }
+
 
     private void validateShippingProviderDTO(CreateShippingProviderDTO dto) {
         if (dto == null) {
@@ -102,16 +110,20 @@ public class ShippingProviderService {
         }
     }
 
-    private List<ShippingArea> processShippingAreas(List<ShippingArea> areas) {
-        if (areas == null) {
+    private List<ShippingArea> processShippingAreas(List<ShippingArea> areas, ShippingProvider provider) {
+        if (areas == null || areas.isEmpty()) {
             return List.of();
         }
 
         return areas.stream()
                 .map(area -> ShippingArea.builder()
+                        .id(area.getId() != null ? area.getId() : UUID.randomUUID()) // garante UUID
                         .description(area.getDescription())
                         .states(area.getStates())
+                        .shippingProvider(provider)
                         .build())
                 .collect(Collectors.toList());
     }
+
+
 }
