@@ -19,8 +19,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         }
     }
 
-    @Override
-    public void saveEmployee(Employee employee) {
+    public void save(Employee employee) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
             session.persist(employee);

@@ -3,12 +3,13 @@ package com.codefathers.repository.interfaces;
 import com.codefathers.model.entity.Employee;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface EmployeeRepository {
+    void save(Employee employee);
     void update(Employee employee);
-    void saveEmployee(Employee employee);
-    Employee searchEmployeePerId(UUID id);
-    List<Employee> listAllEmployees();
-    void deleteEmployeeByID(UUID id);
+    void delete(UUID id);
+    Optional<Employee> findById(UUID id);
+    List<Employee> listAll();
 }

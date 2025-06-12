@@ -1,16 +1,15 @@
 package com.codefathers.repository.interfaces;
 
-import com.codefathers.model.entity.ShippingArea;
-
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.codefathers.model.entity.ShippingArea;
 
 public interface ShippingAreaRepository {
-    void saveShippingArea(ShippingArea shippingArea);
-    ShippingArea searchShippingAreaPerID(UUID areaId);
+    void save(ShippingArea shippingArea);
+    void update(ShippingArea shippingArea);
+    void delete(UUID id);
+    Optional<ShippingArea> searchShippingAreaPerID(UUID id);
     List<ShippingArea> listAllShippingAreas();
-    ShippingArea removeShippingAreaPerId(UUID areaId);
-    void updateShippingArea(ShippingArea shippingArea);
 }

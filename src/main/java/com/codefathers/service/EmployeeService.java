@@ -33,7 +33,7 @@ public class EmployeeService {
                 .role(createEmployeeDTO.getRole())
                 .birthDate(createEmployeeDTO.getBirthDate())
                 .build();
-        employeeRepository.saveEmployee(employee);
+        employeeRepository.save(employee);
     }
 
     public List<Employee> employeeList(){
