@@ -1,5 +1,6 @@
 package com.codefathers.view;
 
+import com.codefathers.factory.ServiceFactory;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.Product;
@@ -22,10 +23,7 @@ import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.HasDynamicTitle;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Inject;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -34,17 +32,10 @@ import java.util.List;
 @Route("")
 public class DashboardView extends VerticalLayout implements HasDynamicTitle {
 
-    @Inject
-    private EmployeeService employeeService;
-
-    @Inject
-    private OrderService orderService;
-
-    @Inject
-    private ProductService productService;
-
-    @Inject
-    private PurchaseOrderService purchaseOrderService;
+    private EmployeeService employeeService = ServiceFactory.getEmployeeService();
+    private OrderService orderService = ServiceFactory.getOrderService();
+    private ProductService productService = ServiceFactory.getProductService();
+    private PurchaseOrderService purchaseOrderService = ServiceFactory.getPurchaseOrderService();
 
     // Componentes principais
     private Grid<Employee> employeeGrid;
@@ -58,17 +49,7 @@ public class DashboardView extends VerticalLayout implements HasDynamicTitle {
     private Div totalRevenueCard;
     private Div pendingOrdersCard;
 
-    /*public DashboardView(EmployeeService employeeService,
-                         OrderService orderService,
-                         ProductService productService,
-                         PurchaseOrderService purchaseOrderService) {
-        this.employeeService = employeeService;
-        this.orderService = orderService;
-        this.productService = productService;
-        this.purchaseOrderService = purchaseOrderService;*/
-
-    @PostConstruct
-    public void init() {
+    public DashboardView() {
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -76,10 +57,6 @@ public class DashboardView extends VerticalLayout implements HasDynamicTitle {
         initializeComponents();
         createLayout();
         loadData();
-    }
-
-    public DashboardView() {
-
     }
 
     private void initializeComponents() {
