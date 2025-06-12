@@ -29,8 +29,8 @@ public class PurchaseOrder {
     @JoinColumn(name = "purchaser_id", nullable = false)
     private Employee purchaserId;
 
-    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PurchaseOrderItem> purchaseItems = new ArrayList<>();
+    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<PurchaseOrderItem> purchaseItems;
 
     @Column(name = "purchase_total_price_amount", nullable = false)
     private BigDecimal purchaseTotalPriceAmount;

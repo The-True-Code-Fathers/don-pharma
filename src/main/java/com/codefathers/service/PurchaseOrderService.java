@@ -71,21 +71,6 @@ public class PurchaseOrderService {
             return purchaseOrderItem;
         }).toList();
 
-        for (PurchaseOrderItem item : purchaseOrderItems) {
-            String productSku = item.getProduct().getSku();
-
-            storageRepository.findByProductSku(productSku).ifPresentOrElse(existingStorage -> {
-                existingStorage.setProductQuantity(existingStorage.getProductQuantity() + item.getQuantity());
-                storageRepository.update(existingStorage);
-            }, () -> {
-                Storage newStorage = Storage.builder()
-                        .product(item.getProduct())
-                        .productQuantity(item.getQuantity())
-                        .build();
-                storageRepository.save(newStorage);
-            });
-        }
-
         BigDecimal purchaseProductsPrice = purchaseOrderItems.stream().map(PurchaseOrderItem::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -100,6 +85,31 @@ public class PurchaseOrderService {
         purchaseOrderRepository.save(purchaseOrder);
     }
 
+    public void udpatePurchaseOrder(PurchaseOrder purchaseOrder) {
+
+        var tempPurchaseOrder = purchaseOrder;
+
+        List<PurchaseOrderItem> purchaseOrderItems = purchaseOrder.getPurchaseItems().stream().map(dto -> {
+            PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
+            purchaseOrderItem.setPurchaseOrder(purchaseOrder);
+            purchaseOrderItem.setQuantity(dto.getQuantity());
+            purchaseOrderItem.setPrice(dto.getPrice());
+            purchaseOrderItem.setProduct(dto.getProduct());
+            return purchaseOrderItem;
+        }).toList();
+
+        BigDecimal purchaseProductsPrice = purchaseOrderItems.stream().map(PurchaseOrderItem::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int purchaseProductsQuantity = purchaseOrderItems.stream()
+                .mapToInt(PurchaseOrderItem::getQuantity)
+                .sum();
+
+        tempPurchaseOrder.setPurchaseTotalPriceAmount(purchaseProductsPrice);
+        tempPurchaseOrder.setPurchaseTotalProductAmount(purchaseProductsQuantity);
+        purchaseOrderRepository.update(tempPurchaseOrder);
+    }
+
     public PurchaseOrder findPurchaseOrderById(UUID purchaseOrderId) {
         return purchaseOrderRepository.findById(purchaseOrderId);
     }
@@ -107,4 +117,42 @@ public class PurchaseOrderService {
     public List<PurchaseOrder> getAllPurchaseOrders() {
         return purchaseOrderRepository.findAll();
     }
+
+    public void finishPurchaseOrder(PurchaseOrder purchaseOrder) {
+        purchaseOrder.setPurchaseOrderStatus(PurchaseOrderStatus.INVOICED);
+        purchaseOrderRepository.update(purchaseOrder);
+    }
+
+    public void cancelPurchaseOrder(PurchaseOrder purchaseOrder) {
+        List<PurchaseOrderItem> purchaseOrderItems = purchaseOrder.getPurchaseItems().stream().map(dto -> {
+            PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
+            purchaseOrderItem.setPurchaseOrder(purchaseOrder);
+            purchaseOrderItem.setQuantity(dto.getQuantity());
+            purchaseOrderItem.setPrice(dto.getPrice());
+            purchaseOrderItem.setProduct(dto.getProduct());
+            return purchaseOrderItem;
+        }).toList();
+
+        for (PurchaseOrderItem item : purchaseOrderItems) {
+            String productSku = item.getProduct().getSku();
+
+            storageRepository.findByProductSku(productSku).ifPresentOrElse(existingStorage -> {
+                existingStorage.setProductQuantity(existingStorage.getProductQuantity() + item.getQuantity());
+                storageRepository.update(existingStorage);
+            }, () -> {
+                Storage newStorage = Storage.builder()
+                        .product(item.getProduct())
+                        .productQuantity(item.getQuantity())
+                        .build();
+                storageRepository.save(newStorage);
+            });
+        }
+        purchaseOrder.setPurchaseOrderStatus(PurchaseOrderStatus.CANCELLED);
+        purchaseOrderRepository.update(purchaseOrder);
+    }
+
+    public List<PurchaseOrderItem> findAllPurchaseOrderItemByPurchaseOrderId(UUID purchaseOrderId) {
+        return purchaseOrderRepository.findAllPurchaseOrderItemByPurchaseOrderId(purchaseOrderId);
+    }
+
 }
