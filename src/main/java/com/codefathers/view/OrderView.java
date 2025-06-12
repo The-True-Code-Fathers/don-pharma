@@ -1,10 +1,7 @@
 package com.codefathers.view;
 
 import com.codefathers.model.dto.CreateOrderDTO;
-import com.codefathers.model.entity.Employee;
-import com.codefathers.model.entity.Order;
-import com.codefathers.model.entity.Product;
-import com.codefathers.model.entity.ShippingProvider;
+import com.codefathers.model.entity.*;
 import com.codefathers.model.enums.EmployeeRole;
 import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.implementations.*;
@@ -71,7 +68,6 @@ public class OrderView extends VerticalLayout {
         Validator validator = ValidatorUtil.getValidator();
         this.orderService = new OrderService(orderRepository, employeeRepository, storageRepository, validator);
         employeeComboBox = new ComboBox<>("Vendedor");
-
         setupEmployeeComboBox();
         searchStatusFilter();
         setupGrid();
@@ -122,10 +118,8 @@ public class OrderView extends VerticalLayout {
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
-        grid.addColumn(order ->
-                order.getId()).setHeader("ID").setAutoWidth(true);
-        grid.addColumn(order ->
-                order.getSeller().getFullName()).setHeader("Vendedor").setAutoWidth(true);
+        grid.addColumn(Order::getId).setHeader("ID");
+        grid.addColumn(Order::getSeller).setHeader("Vendedor").setAutoWidth(true);
         grid.addColumn(Order::getOrderStatus).setHeader("Status").setAutoWidth(true);
         grid.addColumn(Order::getTotalAmount).setHeader("Total").setAutoWidth(true);
 
