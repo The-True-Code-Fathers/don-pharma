@@ -11,5 +11,5 @@ public interface StorageRepository {
     void update(Storage storage);
     void delete(UUID id);
     Optional<Storage> findByProductSku(String productSku);
-    List<Storage> listALl();
+    List<Storage> listAll();
 }

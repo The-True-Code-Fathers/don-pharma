@@ -7,6 +7,7 @@ import org.hibernate.Transaction;
 import org.hibernate.Session;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class OrderRepositoryImpl implements OrderRepository {
@@ -20,7 +21,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         } catch (Exception e) {
             if (transaction != null)
                 transaction.rollback();
-            e.printStackTrace(); // melhor usar logger
+            e.printStackTrace();
         }
     }
 
@@ -43,7 +44,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.delete(order);
+            session.remove(order);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null)
@@ -53,9 +54,10 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Order findById(UUID id) {
+    public Optional<Order> findById(UUID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(Order.class, id);
+            var order = session.get(Order.class, id);
+            return Optional.ofNullable(order);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -63,7 +65,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<Order> findAll() {
+    public List<Order> listAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("select o from orders o", Order.class).list();
         } catch (Exception e) {

@@ -8,6 +8,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
@@ -41,22 +42,18 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
     }
 
     @Override
-    public PurchaseOrder findById(UUID id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(PurchaseOrder.class, id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+    public void delete(UUID id) {
+
     }
 
     @Override
-    public List<PurchaseOrder> findAll() {
+    public Optional<PurchaseOrder> findById(UUID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select o from purchase_order o", PurchaseOrder.class).getResultList();
+            var purchaseOrder = session.get(PurchaseOrder.class, id);
+            return Optional.ofNullable(purchaseOrder);
         } catch (Exception e) {
             e.printStackTrace();
-            return List.of();
+            return null;
         }
     }
 
@@ -78,16 +75,13 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
     }
 
     @Override
-    public void delete(PurchaseOrder purchaseOrder) {
-        Transaction transaction = null;
+    public List<PurchaseOrder> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-            session.delete(purchaseOrder);
-            transaction.commit();
+            return session.createQuery("select o from purchase_order o", PurchaseOrder.class).getResultList();
         } catch (Exception e) {
-            if (transaction != null)
-                transaction.rollback();
             e.printStackTrace();
+            return List.of();
         }
     }
+
 }

@@ -10,6 +10,6 @@ public interface ShippingAreaRepository {
     void save(ShippingArea shippingArea);
     void update(ShippingArea shippingArea);
     void delete(UUID id);
-    Optional<ShippingArea> searchShippingAreaPerID(UUID id);
-    List<ShippingArea> listAllShippingAreas();
+    Optional<ShippingArea> findById(UUID id);
+    List<ShippingArea> listAll();
 }

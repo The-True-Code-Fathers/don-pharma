@@ -5,19 +5,10 @@ import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.util.HibernateUtil;
 import org.hibernate.Session;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class EmployeeRepositoryImpl implements EmployeeRepository {
-
-    @Override
-    public void update(Employee employee) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            session.merge(employee);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
 
     public void save(Employee employee) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -30,17 +21,17 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public List<Employee> listAllEmployees() {
+    public void update(Employee employee) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select e from employee e", Employee.class).list();
+            session.beginTransaction();
+            session.merge(employee);
         } catch (Exception e) {
-            e.getMessage();
-            return List.of();
+            System.out.println(e.getMessage());
         }
     }
 
     @Override
-    public void deleteEmployeeByID(UUID id) {
+    public void delete(UUID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             session.beginTransaction();
             Employee employee = session.get(Employee.class, id);
@@ -57,12 +48,24 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public Employee searchEmployeePerId(UUID id) {
+    public Optional<Employee> findById(UUID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(Employee.class, id);
+            var employee = session.get(Employee.class, id);
+            return Optional.ofNullable(employee);
         } catch (Exception e) {
             System.out.println("Erro ao buscar funcionário por ID: " + e.getMessage());
             return null;
         }
     }
+
+    @Override
+    public List<Employee> listAll() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("select e from employee e", Employee.class).list();
+        } catch (Exception e) {
+            e.getMessage();
+            return List.of();
+        }
+    }
+
 }

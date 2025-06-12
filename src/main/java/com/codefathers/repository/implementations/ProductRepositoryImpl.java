@@ -1,6 +1,8 @@
 package com.codefathers.repository.implementations;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import com.codefathers.repository.interfaces.ProductRepository;
 import org.hibernate.Session;
@@ -10,24 +12,6 @@ import com.codefathers.model.entity.Product;
 import com.codefathers.util.HibernateUtil;
 
 public class ProductRepositoryImpl implements ProductRepository {
-    @Override
-    public Product findBySKU(String sku) {
-        try (var session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("from product where sku = :sku", Product.class).setParameter("sku", sku)
-                    .uniqueResult();
-        }
-    }
-
-    @Override
-    public List<Product> listAllProducts() {
-        try (Session session = HibernateUtil.sessionFactory.openSession()) {
-            String hql = "select p from product p";
-            return session.createQuery(hql, Product.class).list();
-        } catch (Exception e) {
-            e.getMessage();
-            return List.of();
-        }
-    }
 
     @Override
     public void save(Product product) {
@@ -48,6 +32,32 @@ public class ProductRepositoryImpl implements ProductRepository {
             session.getTransaction().commit();
         } catch (ConstraintViolationException e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    @Override
+    public void delete(UUID id) {
+
+    }
+
+    @Override
+    public Optional<Product> findBySKU(String sku) {
+        try (var session = HibernateUtil.getSessionFactory().openSession()) {
+            var productFound = session.createQuery("from product where sku = :sku", Product.class)
+                    .setParameter("sku", sku)
+                    .uniqueResult();
+            return Optional.of(productFound);
+        }
+    }
+
+    @Override
+    public List<Product> listAll() {
+        try (Session session = HibernateUtil.sessionFactory.openSession()) {
+            String hql = "select p from product p";
+            return session.createQuery(hql, Product.class).list();
+        } catch (Exception e) {
+            e.getMessage();
+            return List.of();
         }
     }
 

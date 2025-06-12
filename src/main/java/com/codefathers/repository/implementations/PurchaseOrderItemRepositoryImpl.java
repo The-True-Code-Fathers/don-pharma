@@ -14,11 +14,6 @@ import com.codefathers.util.HibernateUtil;
 public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemRepository {
 
     @Override
-    public void delete(PurchaseOrderItem purchaseOrderItem) {
-    
-    }
-
-    @Override
     public void save(PurchaseOrderItem purchaseOrderItem) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -33,16 +28,21 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.persist(purchaseOrderItem);
+            session.merge(purchaseOrderItem);
             transaction.commit();
         }
     }
 
     @Override
+    public void delete(PurchaseOrderItem purchaseOrderItem) {
+
+    }
+
+    @Override
     public Optional<PurchaseOrderItem> findById(UUID id) {
-        try(Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             var purchaseOrderItem = session.get(PurchaseOrderItem.class, id);
-            return Optional.of(purchaseOrderItem);
+            return Optional.ofNullable(purchaseOrderItem);
         }
     }
 
