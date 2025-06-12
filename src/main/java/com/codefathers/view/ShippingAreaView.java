@@ -10,131 +10,137 @@ import com.codefathers.service.ShippingProviderService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Route("shipping-areas")
 @PageTitle("Shipping Areas")
 public class ShippingAreaView extends VerticalLayout {
 
-    private final ShippingAreaService shippingAreaService;
-    private final ShippingProviderService shippingProviderService;
-
-    private final Grid<ShippingArea> grid = new Grid<>(ShippingArea.class);
-    private final Button addButton = new Button("Nova Área de Entrega");
+    private final ShippingAreaService areaService;
+    private final ShippingProviderService providerService;
+    private final Grid<ShippingArea> grid = new Grid<>(ShippingArea.class, false);
 
     public ShippingAreaView() {
+        this.areaService = new ShippingAreaService(new ShippingAreaRepositoryImpl(), Validation.buildDefaultValidatorFactory().getValidator());
+        this.providerService = new ShippingProviderService(new ShippingProviderRepositoryImpl());
 
-        this.shippingAreaService = new ShippingAreaService(
-                new ShippingAreaRepositoryImpl(),
-                Validation.buildDefaultValidatorFactory().getValidator()
-        );
-        this.shippingProviderService = new ShippingProviderService(new ShippingProviderRepositoryImpl());
+        Button newButton = new Button("Nova Área de Entrega", e -> openFormDialog(null));
 
-        configureGrid();
-        configureAddButton();
-
-        add(addButton, grid);
+        setupGrid();
+        add(newButton, grid);
         updateGrid();
     }
 
-    private void configureGrid() {
+    private void setupGrid() {
         grid.removeAllColumns();
+        grid.addColumn(ShippingArea::getDescription).setHeader("Descrição").setAutoWidth(true);
+        grid.addColumn(area -> area.getShippingProvider() != null ? area.getShippingProvider().getName() : "Nenhuma")
+                .setHeader("Transportadora").setAutoWidth(true);
+        grid.addColumn(area -> String.join(", ", area.getStates())).setHeader("Estados").setAutoWidth(true);
 
-        // Adicione colunas de forma explícita
-        grid.addColumn(ShippingArea::getDescription)
-                .setHeader("Descrição")
-                .setAutoWidth(true);
-
-        grid.addColumn(area -> area.getShippingProvider() != null ?
-                        area.getShippingProvider().getName() : "N/A")
-                .setHeader("Transportadora")
-                .setAutoWidth(true);
-
-        grid.addColumn(area -> String.join(", ", area.getStates()))
-                .setHeader("Estados")
-                .setAutoWidth(true);
+        grid.addItemDoubleClickListener(event -> openFormDialog(event.getItem()));
+        grid.setHeight("300px");
+        grid.setWidthFull();
+        grid.getStyle().set("margin-top", "10px");
     }
 
-    private void updateGrid() {
-        try {
-            List<ShippingArea> areas = shippingAreaService.findAllShippingAreas();
-            System.out.println("[DEBUG] Áreas carregadas: " + areas.size()); // Log para debug
-
-            if (areas.isEmpty()) {
-                Notification.show("Nenhuma área encontrada", 3000, Notification.Position.MIDDLE);
-            } else {
-                grid.setItems(areas);
-                Notification.show("Dados atualizados", 2000, Notification.Position.BOTTOM_END);
-            }
-        } catch (Exception e) {
-            Notification.show("Erro ao carregar: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
-        }
-    }
-
-
-    private void configureAddButton() {
-        addButton.addClickListener(e -> openCreateDialog());
-    }
-
-    private void openCreateDialog() {
+    private void openFormDialog(ShippingArea area) {
         Dialog dialog = new Dialog();
-        dialog.setWidth("400px");
-
-        FormLayout formLayout = new FormLayout();
+        dialog.setWidth("600px");
 
         TextField descriptionField = new TextField("Descrição");
-        descriptionField.setRequired(true);
+        TextArea statesField = new TextArea("Estados (separados por vírgula)");
 
+        // ComboBox de transportadoras
         ComboBox<ShippingProvider> providerComboBox = new ComboBox<>("Transportadora");
-        List<ShippingProvider> providers = shippingProviderService.listAllShippingProviders();
-        providerComboBox.setItems(providers);
+        List<ShippingProvider> allProviders = providerService.listAllShippingProviders();
+        providerComboBox.setItems(allProviders);
         providerComboBox.setItemLabelGenerator(ShippingProvider::getName);
-        providerComboBox.setRequired(true);
 
-        TextField statesField = new TextField("Estados (separados por vírgula)");
-        statesField.setRequired(true);
-
-        formLayout.add(descriptionField, providerComboBox, statesField);
-
-        Button saveButton = new Button("Salvar", event -> {
-            if (descriptionField.isEmpty() || providerComboBox.isEmpty() || statesField.isEmpty()) {
-                Notification.show("Todos os campos são obrigatórios", 3000, Notification.Position.MIDDLE);
-                return;
+        // Preenchimento em caso de edição
+        if (area != null) {
+            descriptionField.setValue(area.getDescription());
+            statesField.setValue(String.join(", ", area.getStates()));
+            if (area.getShippingProvider() != null) {
+                providerComboBox.setValue(area.getShippingProvider());
             }
+        }
 
-            CreateShippingAreaDTO dto = CreateShippingAreaDTO.builder()
-                    .description(descriptionField.getValue())
-                    .shippingProvider(providerComboBox.getValue())
-                    .states(statesField.getValue().split("\\s*,\\s*"))
-                    .build();
-
+        Button saveButton = new Button(area == null ? "Cadastrar" : "Atualizar", e -> {
             try {
-                shippingAreaService.saveShippingArea(dto);
-                Notification.show("Área de entrega salva com sucesso!");
-                dialog.close();
+                String[] states = Arrays.stream(statesField.getValue().split(","))
+                        .map(String::trim)
+                        .toArray(String[]::new);
+
+                ShippingProvider selectedProvider = providerComboBox.getValue();
+                if (selectedProvider == null) {
+                    Notification.show("Selecione uma transportadora.", 3000, Notification.Position.MIDDLE);
+                    return;
+                }
+
+                CreateShippingAreaDTO dto = CreateShippingAreaDTO.builder()
+                        .description(descriptionField.getValue())
+                        .shippingProvider(selectedProvider)
+                        .states(states)
+                        .build();
+
+                if (area == null) {
+                    areaService.saveShippingArea(dto);
+                    Notification.show("Área criada com sucesso!");
+                } else {
+                    ShippingArea updated = ShippingArea.builder()
+                            .id(area.getId())
+                            .description(dto.getDescription())
+                            .shippingProvider(dto.getShippingProvider())
+                            .states(dto.getStates())
+                            .build();
+                    areaService.updateShippingArea(updated);
+                    Notification.show("Área atualizada com sucesso!");
+                }
                 updateGrid();
+                dialog.close();
             } catch (Exception ex) {
-                Notification.show("Erro ao salvar: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+                Notification.show("Erro: " + ex.getMessage(), 4000, Notification.Position.MIDDLE);
+                ex.printStackTrace();
             }
         });
 
+        Button deleteButton = new Button("Deletar", e -> {
+            try {
+                areaService.deleteShippingAreaById(area.getId());
+                Notification.show("Área deletada com sucesso!");
+                updateGrid();
+                dialog.close();
+            } catch (Exception ex) {
+                Notification.show("Erro ao deletar: " + ex.getMessage(), 4000, Notification.Position.MIDDLE);
+                ex.printStackTrace();
+            }
+        });
+        deleteButton.setVisible(area != null);
+
         Button cancelButton = new Button("Cancelar", e -> dialog.close());
 
-        HorizontalLayout buttonsLayout = new HorizontalLayout(saveButton, cancelButton);
-
-        VerticalLayout dialogLayout = new VerticalLayout(formLayout, buttonsLayout);
-        dialog.add(dialogLayout);
+        dialog.add(new VerticalLayout(
+                descriptionField,
+                providerComboBox,
+                statesField,
+                new HorizontalLayout(saveButton, deleteButton, cancelButton)
+        ));
         dialog.open();
+    }
+
+    private void updateGrid() {
+        grid.setItems(areaService.findAllShippingAreas());
     }
 }

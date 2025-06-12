@@ -66,7 +66,30 @@ public class ShippingAreaService {
     }
 
     public List<ShippingArea> findAllShippingAreas() {
-        return shippingAreaRepository.listAllShippingAreas();
+        try {
+            List<ShippingArea> areas = shippingAreaRepository.listAllShippingAreas();
+
+            // Log detalhado para diagnóstico
+            System.out.println("Total de áreas encontradas: " + areas.size());
+            areas.forEach(area -> {
+                System.out.println("Área ID: " + area.getId());
+                System.out.println("Descrição: " + area.getDescription());
+                System.out.println("Estados: " + String.join(", ", area.getStates()));
+
+                if (area.getShippingProvider() != null) {
+                    System.out.println("Transportadora: " + area.getShippingProvider().getName());
+                } else {
+                    System.out.println("Transportadora: Nenhuma associada");
+                }
+                System.out.println("-------------------");
+            });
+
+            return areas;
+        } catch (Exception e) {
+            System.out.println("Erro ao buscar áreas: " + e.getMessage());
+            e.printStackTrace();
+            return List.of();
+        }
     }
 
 }

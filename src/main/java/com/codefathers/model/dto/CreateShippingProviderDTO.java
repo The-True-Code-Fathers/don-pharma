@@ -1,6 +1,7 @@
 package com.codefathers.model.dto;
 
 import com.codefathers.model.entity.ShippingArea;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -35,6 +36,9 @@ public class CreateShippingProviderDTO {
 
     @NotNull
     private BigDecimal dailyCapacity;
+
+    @Column(name = "average_delivery_days", nullable = false)
+    private int averageDeliveryDays;
 
     @NotNull
     private List<ShippingArea> shippingAreas = new ArrayList<>();
