@@ -202,7 +202,8 @@ public class DashboardView extends VerticalLayout {
         chartBuilder.withChart(
                 ChartBuilder.get()
                         .withType(Type.LINE)
-                        .withHeight("300px")
+                        .withWidth("1567px")
+                        .withHeight("700px")
                         .build()
         );
 
