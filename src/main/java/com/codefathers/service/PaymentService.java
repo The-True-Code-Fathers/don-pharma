@@ -33,14 +33,8 @@ public class PaymentService {
             throw new IllegalArgumentException("Negative value");
         }
 
-        BigDecimal totalDiscounts = createPaymentDTO.getAmountInTaxes()
-                .add(createPaymentDTO.getMealVoucherAmount())
-                .add(createPaymentDTO.getFoodVoucherAmount())
-                .add(createPaymentDTO.getHealthInsuranceAmount())
-                .add(createPaymentDTO.getDentalInsuranceAmount());
-
-        if (createPaymentDTO.getGrossIncome().compareTo(totalDiscounts) < 0) {
-            throw new IllegalArgumentException("Gross income needs to be higher than total discounts");
+        if (createPaymentDTO.getGrossIncome().compareTo(createPaymentDTO.getAmountInTaxes()) < 0) {
+            throw new IllegalArgumentException("Gross income needs to be higher than amount in taxxes");
         }
 
         Payment payment = Payment.builder()
@@ -87,12 +81,12 @@ public class PaymentService {
         return paymentRepository.findByEmployee(employee);
     }
 
-    public List<Payment> getAllPayments() {
+    public List<Payment> listAll() {
         return paymentRepository.listAll();
     }
 
-    public Employee findEmployeeById(UUID employeeId) {
-        return employeeRepository.findById(employeeId);
+    public Employee findByEmployeeId(UUID id) {
+        return employeeRepository.findById(id);
     }
 
     public Optional<Payment> findById(UUID id) {

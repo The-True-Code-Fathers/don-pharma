@@ -105,11 +105,14 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         var purchaseOrderLink = new SideNavItem("Purchase Order",
                 PurchaseOrderView.class, VaadinIcon.CART.create());
 
+        var paymentLink = new SideNavItem("Payment", PaymentView.class, VaadinIcon.CASH.create());
+        
         sideNav.addItem(
                 dashboardLink,
                 employeeLink,
                 productLink,
                 shippingLink,
+                paymentLink,
                 orderLink,
                 purchaseOrderLink,
                 storageLink
