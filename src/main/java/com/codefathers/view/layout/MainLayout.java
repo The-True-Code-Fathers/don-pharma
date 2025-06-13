@@ -1,8 +1,7 @@
 package com.codefathers.view.layout;
 
 import com.codefathers.view.*;
-import com.codefathers.view.PurchaseOrderView;
-import com.codefathers.view.StorageView;
+import com.codefathers.view.PaymentView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -91,11 +90,14 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         var purchaseOrderLink = new SideNavItem("Purchase Order",
                 PurchaseOrderView.class, VaadinIcon.CART.create());
 
+        var paymentLink = new SideNavItem("Payment", PaymentView.class, VaadinIcon.CASH.create());
+        
         sideNav.addItem(
                 dashboardLink,
                 employeeLink,
                 productLink,
                 shippingLink,
+                paymentLink,
                 orderLink,
                 storageLink,
                 purchaseOrderLink

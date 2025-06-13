@@ -81,12 +81,12 @@ public class PaymentService {
         return paymentRepository.findByEmployee(employee);
     }
 
-    public List<Payment> getAllPayments() {
+    public List<Payment> listAll() {
         return paymentRepository.listAll();
     }
 
-    public Employee findEmployeeById(UUID employeeId) {
-        return employeeRepository.findById(employeeId);
+    public Employee findByEmployeeId(UUID id) {
+        return employeeRepository.findById(id);
     }
 
     public Optional<Payment> findById(UUID id) {
