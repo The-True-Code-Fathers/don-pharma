@@ -42,4 +42,8 @@ public class CreateShippingProviderDTO {
 
     @NotNull
     private List<ShippingArea> shippingAreas = new ArrayList<>();
+
+    @NotNull(message = "Campo obrigatório")
+    private boolean active;
+    
 }

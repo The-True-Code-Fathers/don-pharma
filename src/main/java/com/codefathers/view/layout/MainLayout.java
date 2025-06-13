@@ -52,6 +52,8 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         themeToggleButton.getStyle().set("margin-right", "0.5em");
         themeToggleButton.getStyle().set("background", "transparent");
 
+        toggleTheme();
+
         Avatar avatarBasic = new Avatar();
         avatarBasic.getStyle().set("margin-right", "1em");
 

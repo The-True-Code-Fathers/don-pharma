@@ -42,3 +42,9 @@ src/main/frontend/generated/*
 
 ### Vaadin lock files ###
 *.lock
+
+### Node modules ###
+node_modules
+
+### Generated bundles ###
+src/main/bundles

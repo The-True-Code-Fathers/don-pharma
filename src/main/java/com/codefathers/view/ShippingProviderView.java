@@ -1,5 +1,11 @@
 package com.codefathers.view;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.model.entity.ShippingProvider;
@@ -16,12 +22,6 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 
 @Route("shipping-providers")
 public class ShippingProviderView extends VerticalLayout {
@@ -45,10 +45,22 @@ public class ShippingProviderView extends VerticalLayout {
         grid.addColumn(ShippingProvider::getCnpj).setHeader("CNPJ").setAutoWidth(true);
         grid.addColumn(sp -> sp.getBasePrice().toString()).setHeader("Preço Base").setAutoWidth(true);
         grid.addColumn(sp -> sp.getDailyCapacity().toString()).setHeader("Capacidade Diária").setAutoWidth(true);
+
+        // Nova coluna para mostrar os estados atendidos
+        grid.addColumn(sp -> {
+            if (sp.getShippingAreas() == null || sp.getShippingAreas().isEmpty()) {
+                return "Nenhum";
+            }
+            return sp.getShippingAreas().stream()
+                    .flatMap(area -> Arrays.stream(area.getStates()))
+                    .distinct()
+                    .collect(Collectors.joining(", "));
+        }).setHeader("Estados Atendidos").setAutoWidth(true);
+
         grid.setId("custom-grid");
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
-
+        // Restante do método permanece igual...
         grid.addItemDoubleClickListener(event -> {
             try {
                 ShippingProvider item = event.getItem();
@@ -71,15 +83,30 @@ public class ShippingProviderView extends VerticalLayout {
 
     private void openFormDialog(ShippingProvider provider) {
         Dialog dialog = new Dialog();
-        dialog.setWidth("700px");
+        dialog.setWidth("480px"); // Largura mais compacta
 
+        // Campos
         TextField nameField = new TextField("Nome");
+        nameField.setPlaceholder("Digite o nome...");
+        nameField.setWidthFull();
+
         TextField cnpjField = new TextField("CNPJ");
+        cnpjField.setPlaceholder("Apenas números");
+        cnpjField.setWidthFull();
+
         TextField basePriceField = new TextField("Preço Base");
+        basePriceField.setPlaceholder("Ex: 199.90");
+        basePriceField.setWidthFull();
+
         IntegerField dailyCapacityField = new IntegerField("Capacidade Diária");
+        dailyCapacityField.setPlaceholder("Ex: 50");
+        dailyCapacityField.setWidthFull();
+
         TextArea areasField = new TextArea("Áreas de Atendimento");
         areasField.setPlaceholder("Ex: Norte: AM, PA; Sul: RS, SC");
+        areasField.setWidthFull();
 
+        // Preenche os campos se for edição
         if (provider != null) {
             nameField.setValue(provider.getName());
             cnpjField.setValue(provider.getCnpj());
@@ -94,6 +121,7 @@ public class ShippingProviderView extends VerticalLayout {
             areasField.setValue(sb.toString().trim());
         }
 
+        // Botões
         Button saveButton = new Button(provider == null ? "Cadastrar" : "Atualizar", e -> {
             try {
                 CreateShippingProviderDTO dto = buildDTO(
@@ -105,11 +133,10 @@ public class ShippingProviderView extends VerticalLayout {
                 );
 
                 if (provider != null) {
-                    dto.setId(provider.getId()); // Seta o ID apenas para atualização
+                    dto.setId(provider.getId());
                     service.updateShippingProvider(dto);
                     Notification.show("Atualizado com sucesso!");
                 } else {
-                    // Não seta ID para novo registro
                     service.registerShippingProvider(dto);
                     Notification.show("Cadastrado com sucesso!");
                 }
@@ -135,13 +162,24 @@ public class ShippingProviderView extends VerticalLayout {
 
         Button cancelButton = new Button("Cancelar", e -> dialog.close());
 
-        dialog.add(new VerticalLayout(
-                nameField, cnpjField, basePriceField, dailyCapacityField, areasField,
+        // Layout final
+        VerticalLayout formLayout = new VerticalLayout(
+                nameField,
+                cnpjField,
+                basePriceField,
+                dailyCapacityField,
+                areasField,
                 new HorizontalLayout(saveButton, deleteButton, cancelButton)
-        ));
+        );
+        formLayout.setPadding(false);
+        formLayout.setSpacing(true);
+        formLayout.setWidthFull();
 
+        dialog.add(formLayout);
         dialog.open();
     }
+
+
 
     private CreateShippingProviderDTO buildDTO(String name, String cnpj, String priceStr, Integer capacity, String areasText) {
         if (name == null || name.isBlank()) {

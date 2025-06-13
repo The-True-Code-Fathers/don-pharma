@@ -274,7 +274,6 @@ public class PurchaseOrderView extends VerticalLayout {
         try {
             currentOrderEditing.setPurchaseOrderStatus(newStatus);
             purchaseOrderService.udpatePurchaseOrder(currentOrderEditing);
-            // purchaseOrderService.finishPurchaseOrder(currentOrderEditing);
 
             Notification.show("Order status updated successfully.");
             refreshGrid();
