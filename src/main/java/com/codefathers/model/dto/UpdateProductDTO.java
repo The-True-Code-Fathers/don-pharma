@@ -1,6 +1,6 @@
 package com.codefathers.model.dto;
 
-import com.codefathers.model.enums.UmSelect;
+import com.codefathers.model.enums.MeasurementUnit;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -28,5 +28,5 @@ public class UpdateProductDTO {
     private boolean active;
 
     @NotNull(message = "Campo obrigatório")
-    private UmSelect umSelect;
+    private MeasurementUnit measurementUnit;
 }

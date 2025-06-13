@@ -1,6 +1,6 @@
 package com.codefathers.model.enums;
 
-public enum UmSelect {
+public enum MeasurementUnit {
     mg,
     g,
     Kg,

@@ -2,7 +2,7 @@ package com.codefathers.model.entity;
 
 import java.math.BigDecimal;
 
-import com.codefathers.model.enums.UmSelect;
+import com.codefathers.model.enums.MeasurementUnit;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -26,7 +26,7 @@ public class Product {
     private String name;
 
     @Column(nullable = false)
-    private UmSelect umSelect;
+    private MeasurementUnit measurementUnit;
 
     @Column(columnDefinition = "text")
     private String description;

@@ -36,7 +36,7 @@ public class ProductService {
                     .name(createProductDTO.getName())
                     .description(createProductDTO.getDescription())
                     .active(true)
-                    .umSelect(createProductDTO.getUmSelect())
+                    .measurementUnit(createProductDTO.getMeasurementUnit())
                     .build();
         try {
             productRepository.save(product);
@@ -60,7 +60,7 @@ public class ProductService {
         product.setBuyPrice(updateProductDTO.getBuyPrice());
         product.setSellPrice(updateProductDTO.getSellPrice());
         product.setActive(updateProductDTO.isActive());
-        product.setUmSelect(updateProductDTO.getUmSelect());
+        product.setMeasurementUnit(updateProductDTO.getMeasurementUnit());
         try {
             productRepository.update(product);
         } catch (ConstraintViolationException e) {
