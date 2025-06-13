@@ -1,5 +1,6 @@
 package com.codefathers.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,8 +18,8 @@ public class ShippingOrderService {
     private final Validator validator;
 
     public ShippingOrderService(ShippingOrderRepository shippingOrderRepository,
-                                ShippingProviderRepository shippingProviderRepository,
-                                Validator validator) {
+            ShippingProviderRepository shippingProviderRepository,
+            Validator validator) {
         this.shippingOrderRepository = shippingOrderRepository;
         this.shippingProviderRepository = shippingProviderRepository;
         this.validator = validator;
@@ -36,7 +37,8 @@ public class ShippingOrderService {
                 .findById(dto.getShippingProviderId()).get();
 
         if (provider == null) {
-            throw new IllegalArgumentException("Provedor de entrega não encontrado para o id: " + dto.getShippingProviderId());
+            throw new IllegalArgumentException(
+                    "Provedor de entrega não encontrado para o id: " + dto.getShippingProviderId());
         }
 
         // Cria o novo pedido
@@ -50,6 +52,8 @@ public class ShippingOrderService {
                 .deliveryDate(dto.getDeliveryDate())
                 .shipmentDate(dto.getShipmentDate())
                 .shippingCost(dto.getShippingCost())
+                .createdAt(LocalDateTime.now())
+                .active(true)
                 .build();
 
         shippingOrderRepository.save(order);
@@ -93,7 +97,8 @@ public class ShippingOrderService {
                 .findById(dto.getShippingProviderId()).get();
 
         if (provider == null) {
-            throw new IllegalArgumentException("Provedor de entrega não encontrado para o id: " + dto.getShippingProviderId());
+            throw new IllegalArgumentException(
+                    "Provedor de entrega não encontrado para o id: " + dto.getShippingProviderId());
         }
 
         // Atualiza os campos do pedido
@@ -109,4 +114,33 @@ public class ShippingOrderService {
 
         shippingOrderRepository.update(existingOrder);
     }
+
+    public void update(ShippingOrder shippingOrder) {
+        shippingOrderRepository.update(shippingOrder);
+    }
+
+    public void updateOrder(UUID id, CreateShippingOrderDTO dto, boolean active) throws Exception {
+        // Busca o pedido pelo ID
+        ShippingOrder existingOrder = shippingOrderRepository.findById(id)
+                .orElseThrow(() -> new Exception("Pedido não encontrado com ID: " + id));
+
+        // Atualiza os campos da entidade com os valores do DTO
+        ShippingProvider provider = shippingProviderRepository.findById(dto.getShippingProviderId())
+                .orElseThrow(
+                        () -> new Exception("Provedor de frete não encontrado com ID: " + dto.getShippingProviderId()));
+
+        existingOrder.setShippingProvider(provider);
+        existingOrder.setDestinationState(dto.getDestinationState());
+        existingOrder.setDestinationCity(dto.getDestinationCity());
+        existingOrder.setWeight(dto.getWeight());
+        existingOrder.setStatus(dto.getStatus());
+        existingOrder.setEstimatedDeliveryDays(dto.getEstimatedDeliveryDays());
+        existingOrder.setShipmentDate(dto.getShipmentDate());
+        existingOrder.setDeliveryDate(dto.getDeliveryDate());
+        existingOrder.setShippingCost(dto.getShippingCost());
+        existingOrder.setActive(active);
+
+        shippingOrderRepository.update(existingOrder);
+    }
+
 }

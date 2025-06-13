@@ -1,6 +1,7 @@
 package com.codefathers.model.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import com.codefathers.model.enums.MeasurementUnit;
 import jakarta.persistence.Column;
@@ -39,6 +40,9 @@ public class Product {
 
     @Column(name = "active", nullable = false)
     private boolean active;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
 
 }

@@ -11,6 +11,7 @@ import jakarta.persistence.*;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -38,8 +39,11 @@ public class Employee {
     @Column(nullable = false)
     private EmployeeRole role;
 
-    @Column(nullable = false)
+    @Column(name = "active", nullable = false)
     private boolean active;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     public Employee(String fullName, LocalDate birthDate, EmployeeGender gender, EmployeeRole role, boolean active) {
         this.fullName = fullName;
