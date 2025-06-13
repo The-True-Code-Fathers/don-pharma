@@ -66,6 +66,7 @@ public class PurchaseOrderService {
             purchaseOrderItem.setQuantity(dto.getQuantity());
             purchaseOrderItem.setPrice(dto.getPrice());
             purchaseOrderItem.setProduct(dto.getProduct());
+            purchaseOrderItem.setCreatedAt(LocalDateTime.now());
             return purchaseOrderItem;
         }).toList();
 
