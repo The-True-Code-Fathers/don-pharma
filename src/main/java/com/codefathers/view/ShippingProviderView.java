@@ -8,6 +8,7 @@ import com.codefathers.service.ShippingProviderService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -44,6 +45,9 @@ public class ShippingProviderView extends VerticalLayout {
         grid.addColumn(ShippingProvider::getCnpj).setHeader("CNPJ").setAutoWidth(true);
         grid.addColumn(sp -> sp.getBasePrice().toString()).setHeader("Preço Base").setAutoWidth(true);
         grid.addColumn(sp -> sp.getDailyCapacity().toString()).setHeader("Capacidade Diária").setAutoWidth(true);
+        grid.setId("custom-grid");
+        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+
 
         grid.addItemDoubleClickListener(event -> {
             try {

@@ -12,6 +12,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -55,6 +56,10 @@ public class ShippingAreaView extends VerticalLayout {
         grid.setHeight("300px");
         grid.setWidthFull();
         grid.getStyle().set("margin-top", "10px");
+        grid.setId("custom-grid");
+        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+
+
     }
 
     private void openFormDialog(ShippingArea area) {

@@ -14,6 +14,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -57,6 +58,9 @@ public class ShippingOrderView extends VerticalLayout {
         grid.addColumn(ShippingOrder::getStatus).setHeader("Status");
         grid.addColumn(ShippingOrder::getShippingCost).setHeader("Custo Frete");
         grid.setHeight("400px");
+        grid.setId("custom-grid");
+        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
+
 
         grid.addItemDoubleClickListener(event -> {
             if (event.getItem() != null) {
