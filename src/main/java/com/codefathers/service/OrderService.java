@@ -71,6 +71,7 @@ public class OrderService {
             BigDecimal itemPrice = dto.getProduct().getSellPrice().multiply(new BigDecimal(dto.getQuantity()));
             orderItem.setPrice(itemPrice);
             orderItem.setOrder(order);
+            orderItem.setCreatedAt(LocalDateTime.now());
             return orderItem;
         }).toList();
 
