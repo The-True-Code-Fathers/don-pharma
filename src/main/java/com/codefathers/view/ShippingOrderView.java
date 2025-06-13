@@ -1,5 +1,9 @@
 package com.codefathers.view;
 
+import static com.codefathers.util.CepUtils.getStateByCep;
+
+import java.util.List;
+
 import com.codefathers.model.dto.CreateShippingOrderDTO;
 import com.codefathers.model.entity.ShippingOrder;
 import com.codefathers.model.entity.ShippingProvider;
@@ -22,10 +26,6 @@ import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
-import java.util.List;
-
-import static com.codefathers.util.CepUtils.getStateByCep;
-
 @Route("shipping-orders")
 public class ShippingOrderView extends VerticalLayout {
 
@@ -40,8 +40,7 @@ public class ShippingOrderView extends VerticalLayout {
         this.shippingOrderService = new ShippingOrderService(
                 orderRepository,
                 providerRepository,
-                ValidatorUtil.getValidator()
-        );
+                ValidatorUtil.getValidator());
 
         configureGrid();
         Button newOrderButton = new Button("Novo Pedido", e -> openEditDialog(null));
@@ -140,8 +139,8 @@ public class ShippingOrderView extends VerticalLayout {
                 destinationCity.setValue(order.getDestinationCity());
                 weight.setValue(order.getWeight());
                 status.setValue(order.getStatus());
-                estimatedDays.setValue(order.getEstimatedDeliveryDays() != null ?
-                        order.getEstimatedDeliveryDays().toString() : "");
+                estimatedDays.setValue(
+                        order.getEstimatedDeliveryDays() != null ? order.getEstimatedDeliveryDays().toString() : "");
                 shipmentDate.setValue(order.getShipmentDate());
                 deliveryDate.setValue(order.getDeliveryDate());
                 shippingCost.setValue(order.getShippingCost());
@@ -176,8 +175,7 @@ public class ShippingOrderView extends VerticalLayout {
                 status,
                 new HorizontalLayout(shipmentDate, deliveryDate),
                 estimatedDays,
-                new HorizontalLayout(saveButton, deleteButton, cancelButton)
-        );
+                new HorizontalLayout(saveButton, deleteButton, cancelButton));
         formLayout.setSpacing(true);
 
         dialog.add(formLayout);
@@ -185,11 +183,11 @@ public class ShippingOrderView extends VerticalLayout {
     }
 
     private void saveOrder(ShippingOrder existingOrder, Dialog dialog,
-                           ComboBox<ShippingProvider> providerComboBox,
-                           TextField destinationState, TextField destinationCity,
-                           BigDecimalField weight, ComboBox<ShippingServiceStatus> status,
-                           TextField estimatedDays, DatePicker shipmentDate,
-                           DatePicker deliveryDate, BigDecimalField shippingCost) {
+            ComboBox<ShippingProvider> providerComboBox,
+            TextField destinationState, TextField destinationCity,
+            BigDecimalField weight, ComboBox<ShippingServiceStatus> status,
+            TextField estimatedDays, DatePicker shipmentDate,
+            DatePicker deliveryDate, BigDecimalField shippingCost) {
         try {
             if (providerComboBox.isEmpty() || destinationState.isEmpty() ||
                     destinationCity.isEmpty() || weight.isEmpty() || status.isEmpty()) {
@@ -203,8 +201,8 @@ public class ShippingOrderView extends VerticalLayout {
                     .destinationCity(destinationCity.getValue())
                     .weight(weight.getValue())
                     .status(status.getValue())
-                    .estimatedDeliveryDays(estimatedDays.getValue().isEmpty() ?
-                            null : Integer.parseInt(estimatedDays.getValue()))
+                    .estimatedDeliveryDays(
+                            estimatedDays.getValue().isEmpty() ? null : Integer.parseInt(estimatedDays.getValue()))
                     .shipmentDate(shipmentDate.getValue())
                     .deliveryDate(deliveryDate.getValue())
                     .shippingCost(shippingCost.getValue())

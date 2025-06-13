@@ -2,6 +2,7 @@ package com.codefathers.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -10,14 +11,6 @@ import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
-import com.codefathers.util.HibernateUtil;
-import org.hibernate.Session;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class ShippingProviderService {
     private final ShippingProviderRepository shippingProviderRepository;
