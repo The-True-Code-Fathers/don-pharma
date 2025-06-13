@@ -48,9 +48,6 @@ public class PurchaseOrder {
     @Column(name = "purchase_total_product_amount", precision = 19, scale = 4, nullable = false)
     private int purchaseTotalProductAmount;
 
-    @Column(name = "active", nullable = false)
-    private boolean active;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

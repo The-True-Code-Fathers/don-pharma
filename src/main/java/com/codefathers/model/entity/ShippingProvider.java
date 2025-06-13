@@ -13,8 +13,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Getter
-@Setter
 public class ShippingProvider {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Id

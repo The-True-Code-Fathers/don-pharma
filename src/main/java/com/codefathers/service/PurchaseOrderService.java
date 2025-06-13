@@ -58,7 +58,6 @@ public class PurchaseOrderService {
                 .purchaseTotalProductAmount(0)
                 .purchaseOrderStatus(PurchaseOrderStatus.OPEN)
                 .createdAt(LocalDateTime.now())
-                .active(true)
                 .build();
 
         List<PurchaseOrderItem> purchaseOrderItems = createPurchaseOrderDTO.getItem().stream().map(dto -> {

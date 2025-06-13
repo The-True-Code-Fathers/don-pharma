@@ -1,40 +1,45 @@
 package com.codefathers.view;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
 import com.codefathers.service.ShippingProviderService;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 
 @Route("shipping-providers")
 public class ShippingProviderView extends VerticalLayout {
 
     private final ShippingProviderService service;
     private final Grid<ShippingProvider> grid = new Grid<>(ShippingProvider.class, false);
+    private final Checkbox showInactiveCheckbox = new Checkbox("Mostrar inativos");
 
     public ShippingProviderView() {
         this.service = new ShippingProviderService(new ShippingProviderRepositoryImpl());
 
         Button newButton = new Button("Nova Transportadora", e -> openFormDialog(null));
+        showInactiveCheckbox.addValueChangeListener(e -> updateGrid());
 
         setupGrid();
-        add(newButton, grid);
+        HorizontalLayout header = new HorizontalLayout(newButton, showInactiveCheckbox);
+        header.setAlignItems(Alignment.CENTER);
+        showInactiveCheckbox.getStyle().set("margin-left", "auto");
+        add(header, grid);
         updateGrid();
     }
 
@@ -44,6 +49,7 @@ public class ShippingProviderView extends VerticalLayout {
         grid.addColumn(ShippingProvider::getCnpj).setHeader("CNPJ").setAutoWidth(true);
         grid.addColumn(sp -> sp.getBasePrice().toString()).setHeader("Preço Base").setAutoWidth(true);
         grid.addColumn(sp -> sp.getDailyCapacity().toString()).setHeader("Capacidade Diária").setAutoWidth(true);
+        grid.addColumn(sp -> sp.isActive() ? "Ativo" : "Inativo").setHeader("Status").setAutoWidth(true);
 
         grid.addItemDoubleClickListener(event -> {
             try {
@@ -71,16 +77,20 @@ public class ShippingProviderView extends VerticalLayout {
 
         TextField nameField = new TextField("Nome");
         TextField cnpjField = new TextField("CNPJ");
-        TextField basePriceField = new TextField("Preço Base");
-        IntegerField dailyCapacityField = new IntegerField("Capacidade Diária");
+        NumberField basePriceField = new NumberField("Preço Base");
+        basePriceField.setStepButtonsVisible(true);
+
+        NumberField dailyCapacityField = new NumberField("Capacidade Diária");
+        dailyCapacityField.setStepButtonsVisible(true);
+
         TextArea areasField = new TextArea("Áreas de Atendimento");
         areasField.setPlaceholder("Ex: Norte: AM, PA; Sul: RS, SC");
 
         if (provider != null) {
             nameField.setValue(provider.getName());
             cnpjField.setValue(provider.getCnpj());
-            basePriceField.setValue(provider.getBasePrice().toString());
-            dailyCapacityField.setValue(provider.getDailyCapacity().intValue());
+            basePriceField.setValue(provider.getBasePrice().doubleValue());
+            dailyCapacityField.setValue(provider.getDailyCapacity().doubleValue());
 
             StringBuilder sb = new StringBuilder();
             for (ShippingArea area : provider.getShippingAreas()) {
@@ -97,15 +107,16 @@ public class ShippingProviderView extends VerticalLayout {
                         cnpjField.getValue(),
                         basePriceField.getValue(),
                         dailyCapacityField.getValue(),
-                        areasField.getValue()
-                );
+                        areasField.getValue());
 
                 if (provider != null) {
-                    dto.setId(provider.getId()); // Seta o ID apenas para atualização
+                    dto.setId(provider.getId());
+                    provider.setActive(!provider.isActive());
+                    service.update(provider);
                     service.updateShippingProvider(dto);
                     Notification.show("Atualizado com sucesso!");
                 } else {
-                    // Não seta ID para novo registro
+                    dto.setActive(true);
                     service.registerShippingProvider(dto);
                     Notification.show("Cadastrado com sucesso!");
                 }
@@ -117,29 +128,43 @@ public class ShippingProviderView extends VerticalLayout {
             }
         });
 
-        Button deleteButton = new Button("Deletar", e -> {
-            try {
-                service.removeShippingProvider(provider.getId());
-                Notification.show("Removido com sucesso!");
-                updateGrid();
-                dialog.close();
-            } catch (Exception ex) {
-                showError(ex);
-            }
-        });
-        deleteButton.setVisible(provider != null);
+        Button toggleStatusButton = new Button(provider != null && provider.isActive() ? "Inativar" : "Ativar",
+                event -> {
+                    try {
+                        if (provider != null) {
+                            CreateShippingProviderDTO dto = buildDTO(
+                                    nameField.getValue(),
+                                    cnpjField.getValue(),
+                                    basePriceField.getValue(),
+                                    dailyCapacityField.getValue(),
+                                    areasField.getValue());
+                            dto.setId(provider.getId());
+                            dto.setActive(!provider.isActive());
+                            provider.setActive(!provider.isActive());
+
+                            service.update(provider);
+                            service.updateShippingProvider(dto);
+                            Notification.show((dto.isActive() ? "Ativado" : "Inativado") + " com sucesso!");
+                            updateGrid();
+                            dialog.close();
+                        }
+                    } catch (Exception ex) {
+                        showError(ex);
+                    }
+                });
+        toggleStatusButton.setVisible(provider != null);
 
         Button cancelButton = new Button("Cancelar", e -> dialog.close());
 
         dialog.add(new VerticalLayout(
                 nameField, cnpjField, basePriceField, dailyCapacityField, areasField,
-                new HorizontalLayout(saveButton, deleteButton, cancelButton)
-        ));
+                new HorizontalLayout(saveButton, toggleStatusButton, cancelButton)));
 
         dialog.open();
     }
 
-    private CreateShippingProviderDTO buildDTO(String name, String cnpj, String priceStr, Integer capacity, String areasText) {
+    private CreateShippingProviderDTO buildDTO(String name, String cnpj, Double priceVal, Double capacityVal,
+            String areasText) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Nome é obrigatório.");
         }
@@ -152,21 +177,14 @@ public class ShippingProviderView extends VerticalLayout {
             throw new IllegalArgumentException("CNPJ deve conter 14 dígitos numéricos.");
         }
 
-        BigDecimal basePrice;
-        try {
-            basePrice = new BigDecimal(priceStr);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Preço Base inválido.");
+        BigDecimal basePrice = priceVal != null ? BigDecimal.valueOf(priceVal) : BigDecimal.ZERO;
+        if (basePrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Preço Base deve ser positivo.");
         }
 
-        BigDecimal dailyCapacity;
-        try {
-            dailyCapacity = capacity != null ? new BigDecimal(capacity) : BigDecimal.ZERO;
-            if (dailyCapacity.compareTo(BigDecimal.ZERO) < 0) {
-                throw new IllegalArgumentException("Capacidade Diária deve ser positiva.");
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Capacidade Diária inválida.");
+        BigDecimal dailyCapacity = capacityVal != null ? BigDecimal.valueOf(capacityVal) : BigDecimal.ZERO;
+        if (dailyCapacity.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Capacidade Diária deve ser positiva.");
         }
 
         return CreateShippingProviderDTO.builder()
@@ -180,7 +198,8 @@ public class ShippingProviderView extends VerticalLayout {
 
     private List<ShippingArea> parseAreas(String input) {
         List<ShippingArea> areas = new ArrayList<>();
-        if (input == null || input.isBlank()) return areas;
+        if (input == null || input.isBlank())
+            return areas;
 
         Arrays.stream(input.split(";"))
                 .map(String::trim)
@@ -190,7 +209,6 @@ public class ShippingProviderView extends VerticalLayout {
                     if (parts.length == 2) {
                         ShippingArea area = new ShippingArea();
                         area.setDescription(parts[0].trim());
-                        // Convertendo a string de estados para array
                         String[] states = Arrays.stream(parts[1].trim().split(","))
                                 .map(String::trim)
                                 .toArray(String[]::new);
@@ -208,6 +226,10 @@ public class ShippingProviderView extends VerticalLayout {
     }
 
     private void updateGrid() {
-        grid.setItems(service.listAllShippingProviders());
+        List<ShippingProvider> all = service.listAllShippingProviders();
+        if (!showInactiveCheckbox.getValue()) {
+            all = all.stream().filter(ShippingProvider::isActive).toList();
+        }
+        grid.setItems(all);
     }
 }

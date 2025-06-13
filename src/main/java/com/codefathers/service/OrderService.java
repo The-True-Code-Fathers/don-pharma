@@ -62,7 +62,6 @@ public class OrderService {
                 .totalAmount(BigDecimal.ZERO)
                 .orderStatus(OrderStatus.OPEN)
                 .createdAt(LocalDateTime.now())
-                .active(true)
                 .build();
 
         List<OrderItem> orderItems = createOrderDTO.getItem().stream().map(dto -> {
