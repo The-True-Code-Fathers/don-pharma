@@ -162,4 +162,39 @@ public class OrderService {
         orderRepository.update(order);
     }
 
+    // Adicione este método ao seu OrderService
+
+    public void updateOrder(UUID orderId, OrderStatus newStatus, Employee newSeller, String newDescription) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with id: " + orderId));
+
+        // Verificar se o pedido pode ser editado
+        if (order.getOrderStatus() == OrderStatus.CANCELLED || order.getOrderStatus() == OrderStatus.INVOICED) {
+            throw new BusinessRuleException("Cannot update order with status: " + order.getOrderStatus());
+        }
+
+        // Verificar se o novo vendedor tem permissão
+        if (newSeller != null) {
+            boolean isSeller = newSeller.getRole().equals(EmployeeRole.SALES);
+            boolean isManager = newSeller.getRole().equals(EmployeeRole.LOCAL_MANAGER);
+
+            if (!(isSeller || isManager)) {
+                throw new BusinessRuleException("Provided employee is not allowed to be assigned to order");
+            }
+            order.setSeller(newSeller);
+        }
+
+        // Atualizar status se fornecido
+        if (newStatus != null) {
+            order.setOrderStatus(newStatus);
+        }
+
+        // Atualizar descrição
+        if (newDescription != null) {
+            order.setDescription(newDescription);
+        }
+
+        orderRepository.update(order);
+    }
+
 }
