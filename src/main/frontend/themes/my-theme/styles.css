@@ -6,435 +6,435 @@
 
 /* Example: CSS class name to center align the content . */
 .centered-content {
-  margin: 0 auto;
-  max-width: 250px;
+    margin: 0 auto;
+    max-width: 250px;
 }
 
 /* Example: the style is applied only to the textfields which have the `bordered` class name. */
 vaadin-text-field.bordered::part(input-field) {
-  box-shadow: inset 0 0 0 1px var(--lumo-contrast-30pct);
-  background-color: var(--lumo-base-color);
+    box-shadow: inset 0 0 0 1px var(--lumo-contrast-30pct);
+    background-color: var(--lumo-base-color);
 }
 
 
 html:not([theme~="dark"]) {
-       /* Typography - Cores dos textos apenas no tema claro */
-       --lumo-header-text-color: #1a1a1a;
-       --lumo-body-text-color: #2d2d2d;
-       --lumo-secondary-text-color: #374151;
-       --lumo-tertiary-text-color: #4b5563;
-       --lumo-disabled-text-color: #9ca3af;
-
-       /* Color - Variáveis de contraste apenas no tema claro */
-       --lumo-contrast-90pct: #1a1a1a;
-       --lumo-contrast-80pct: #2d2d2d;
-       --lumo-contrast-70pct: #374151;
-       --lumo-contrast-60pct: #4b5563;
-       --lumo-contrast-50pct: #6b7280;
-       --lumo-contrast-40pct: #9ca3af;
-       --lumo-contrast-30pct: #d1d5db;
-       --lumo-contrast-20pct: #e5e7eb;
-       --lumo-contrast-10pct: #f3f4f6;
-       --lumo-contrast-5pct: #f9fafb;
-
-       /* Cores específicas para estados apenas no tema claro */
-       --lumo-primary-text-color: #1a1a1a;
-       --lumo-primary-color-50pct: rgba(26, 26, 26, 0.5);
-       --lumo-primary-color-10pct: rgba(26, 26, 26, 0.1);
-     }
-
-     /* ===== TYPOGRAPHY OVERRIDES APENAS NO TEMA CLARO ===== */
-
-     /* Headers usando as variáveis do Lumo typography apenas no tema claro */
-     html:not([theme~="dark"]) h1 {
-       color: var(--lumo-header-text-color) !important;
-     }
-
-     html:not([theme~="dark"]) h2,
-     html:not([theme~="dark"]) h3,
-     html:not([theme~="dark"]) h4,
-     html:not([theme~="dark"]) h5,
-     html:not([theme~="dark"]) h6 {
-       color: var(--lumo-header-text-color) !important;
-     }
-
-     /* Body text apenas no tema claro */
-     html:not([theme~="dark"]) p,
-     html:not([theme~="dark"]) div,
-     html:not([theme~="dark"]) span {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Secondary text apenas no tema claro */
-     html:not([theme~="dark"]) small,
-     html:not([theme~="dark"]) .lumo-secondary {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-side-nav-item[selected]::part(link),
-     html:not([theme~="dark"]) vaadin-side-nav-item[selected]::part(content),
-     html:not([theme~="dark"]) vaadin-side-nav-item[selected] {
-       color: #1a1a1a !important;
-       --lumo-primary-color: #1a1a1a !important;
-       --lumo-primary-text-color: #1a1a1a !important;
-       --lumo-primary-color-50pct: rgba(26, 26, 26, 0.5) !important;
-     }
-
-     /* Força a cor preta no hover */
-     html:not([theme~="dark"]) vaadin-side-nav-item:hover::part(link),
-     html:not([theme~="dark"]) vaadin-side-nav-item:hover::part(content),
-     html:not([theme~="dark"]) vaadin-side-nav-item:hover {
-       color: #1a1a1a !important;
-     }
-
-     /* Se for vaadin-tabs no sidebar */
-     html:not([theme~="dark"]) vaadin-tab[selected] {
-       color: #1a1a1a !important;
-       --lumo-primary-color: #1a1a1a !important;
-       --lumo-primary-text-color: #1a1a1a !important;
-     }
-
-     /* Se for vaadin-list-box */
-     html:not([theme~="dark"]) vaadin-list-box vaadin-item[selected] {
-       color: #1a1a1a !important;
-       --lumo-primary-color: #1a1a1a !important;
-     }
-
-     /* Para elementos com classe customizada */
-     html:not([theme~="dark"]) .sidebar-nav a.router-link-active,
-     html:not([theme~="dark"]) .sidebar-nav a.active,
-     html:not([theme~="dark"]) .sidebar-nav li.active a,
-     html:not([theme~="dark"]) .sidebar-nav .selected,
-     html:not([theme~="dark"]) .sidebar-nav .selected a {
-       color: #1a1a1a !important;
-     }
-
-     /* Força override em qualquer elemento do sidebar que tenha cor azul */
-     html:not([theme~="dark"]) [class*="sidebar"] [style*="color"],
-     html:not([theme~="dark"]) [class*="nav"] [style*="color"] {
-       color: #1a1a1a !important;
-     }
-
-     /* Override mais específico para vaadin-side-nav */
-     html:not([theme~="dark"]) vaadin-side-nav vaadin-side-nav-item[selected] * {
-       color: #1a1a1a !important;
-     }
-
-     /* Se usar Vaadin Router e classes do router */
-     html:not([theme~="dark"]) .router-link-active,
-     html:not([theme~="dark"]) .router-link-exact-active {
-       color: #1a1a1a !important;
-     }
-
-     /* Força override em qualquer elemento do sidebar que tenha cor azul */
-     html:not([theme~="dark"]) [class*="sidebar"] [style*="color"],
-     html:not([theme~="dark"]) [class*="nav"] [style*="color"] {
-       color: #1a1a1a !important;
-     }
-
-     /* Override mais específico para vaadin-side-nav */
-     html:not([theme~="dark"]) vaadin-side-nav vaadin-side-nav-item[selected] * {
-       color: #1a1a1a !important;
-     }
-
-     /* Se usar Vaadin Router e classes do router */
-     html:not([theme~="dark"]) .router-link-active,
-     html:not([theme~="dark"]) .router-link-exact-active {
-       color: #1a1a1a !important;
-     }
-
-     /* ===== COMPONENTES VAADIN COM LUMO APENAS NO TEMA CLARO ===== */
-
-     /* Text Fields apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-text-field {
-       --lumo-contrast-60pct: #2d2d2d;
-     }
-
-     html:not([theme~="dark"]) vaadin-text-field::part(label) {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-text-field::part(input-field) {
-       color: var(--lumo-body-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-text-field::part(helper-text) {
-       color: var(--lumo-tertiary-text-color);
-     }
-
-     /* Text Area apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-text-area {
-       --lumo-contrast-60pct: #2d2d2d;
-     }
-
-     html:not([theme~="dark"]) vaadin-text-area::part(label) {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-text-area::part(input-field) {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Password Field apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-password-field {
-       --lumo-contrast-60pct: #2d2d2d;
-     }
-
-     html:not([theme~="dark"]) vaadin-password-field::part(label) {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-password-field::part(input-field) {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Email Field apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-email-field {
-       --lumo-contrast-60pct: #2d2d2d;
-     }
-
-     html:not([theme~="dark"]) vaadin-email-field::part(label) {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-email-field::part(input-field) {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Number Field apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-number-field {
-       --lumo-contrast-60pct: #2d2d2d;
-     }
-
-     html:not([theme~="dark"]) vaadin-number-field::part(label) {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-number-field::part(input-field) {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Select apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-select {
-       --lumo-contrast-60pct: #2d2d2d;
-     }
-
-     html:not([theme~="dark"]) vaadin-select::part(label) {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-select::part(input-field) {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* ComboBox apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-combo-box {
-       --lumo-contrast-60pct: #2d2d2d;
-     }
-
-     html:not([theme~="dark"]) vaadin-combo-box::part(label) {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-combo-box::part(input-field) {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Button apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-button {
-       color: var(--lumo-body-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-button[theme~="primary"] {
-       color: white;
-     }
-
-     html:not([theme~="dark"]) vaadin-button[theme~="secondary"] {
-       color: var(--lumo-body-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-button[theme~="tertiary"] {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     /* Grid apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-grid {
-       --lumo-contrast-90pct: #1a1a1a;
-       --lumo-contrast-80pct: #2d2d2d;
-     }
-
-     html:not([theme~="dark"]) vaadin-grid::part(header-cell) {
-       color: var(--lumo-header-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-grid::part(cell) {
-       color: var(--lumo-body-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-grid::part(selected-row-cell) {
-       color: var(--lumo-primary-text-color);
-     }
-
-     /* Dialog apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-dialog-overlay {
-       --lumo-contrast-90pct: #1a1a1a;
-       --lumo-contrast-80pct: #2d2d2d;
-     }
-
-     html:not([theme~="dark"]) vaadin-dialog-overlay::part(header) {
-       color: var(--lumo-header-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-dialog-overlay::part(content) {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Tabs apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-tab {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-tab[selected] {
-       color: var(--lumo-primary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-tab:hover {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Menu Bar apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-menu-bar-button {
-       color: var(--lumo-body-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-menu-bar-button:hover {
-       color: var(--lumo-primary-text-color);
-     }
-
-     /* Details apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-details::part(summary) {
-       color: var(--lumo-header-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-details::part(content) {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Notification apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-notification-card {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Form Layout apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-form-layout vaadin-form-item::part(label) {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     /* Checkbox apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-checkbox::part(label) {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* Radio Button apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-radio-button::part(label) {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* ===== UTILITY CLASSES APENAS NO TEMA CLARO ===== */
-
-     /* Text utilities usando as variáveis do Lumo apenas no tema claro */
-     html:not([theme~="dark"]) .text-l {
-       color: var(--lumo-header-text-color) !important;
-     }
-
-     html:not([theme~="dark"]) .text-m {
-       color: var(--lumo-body-text-color) !important;
-     }
-
-     html:not([theme~="dark"]) .text-s {
-       color: var(--lumo-secondary-text-color) !important;
-     }
-
-     html:not([theme~="dark"]) .text-xs {
-       color: var(--lumo-tertiary-text-color) !important;
-     }
-
-     /* ===== SPACING INTEGRATION APENAS NO TEMA CLARO ===== */
-
-     /* Mantém o spacing do Lumo mas com as cores corretas apenas no tema claro */
-     html:not([theme~="dark"]) .lumo-space-m {
-       color: var(--lumo-body-text-color);
-     }
-
-     html:not([theme~="dark"]) .lumo-space-l {
-       color: var(--lumo-header-text-color);
-     }
-
-     /* ===== BADGE INTEGRATION APENAS NO TEMA CLARO ===== */
-
-     /* Badge com cores consistentes apenas no tema claro */
-     html:not([theme~="dark"]) vaadin-badge {
-       color: white;
-       background-color: var(--lumo-contrast-80pct);
-     }
-
-     html:not([theme~="dark"]) vaadin-badge[theme~="primary"] {
-       background-color: var(--lumo-primary-text-color);
-     }
-
-     html:not([theme~="dark"]) vaadin-badge[theme~="secondary"] {
-       background-color: var(--lumo-secondary-text-color);
-     }
-
-     /* ===== ESTADOS ESPECÍFICOS APENAS NO TEMA CLARO ===== */
-
-     /* Disabled apenas no tema claro */
-     html:not([theme~="dark"]) :disabled {
-       color: var(--lumo-disabled-text-color) !important;
-     }
-
-     html:not([theme~="dark"]) [disabled] {
-       color: var(--lumo-disabled-text-color) !important;
-     }
-
-     /* Focus apenas no tema claro */
-     html:not([theme~="dark"]) :focus {
-       color: var(--lumo-primary-text-color);
-     }
-
-     /* Hover apenas no tema claro */
-     html:not([theme~="dark"]) :hover {
-       color: var(--lumo-body-text-color);
-     }
-
-     /* ===== INTEGRATION COM COMPONENTES PERSONALIZADOS APENAS NO TEMA CLARO ===== */
-
-     /* Para componentes que usam as classes do Lumo apenas no tema claro */
-     html:not([theme~="dark"]) .lumo-header {
-       color: var(--lumo-header-text-color);
-     }
-
-     html:not([theme~="dark"]) .lumo-body {
-       color: var(--lumo-body-text-color);
-     }
-
-     html:not([theme~="dark"]) .lumo-secondary {
-       color: var(--lumo-secondary-text-color);
-     }
-
-     html:not([theme~="dark"]) .lumo-tertiary {
-       color: var(--lumo-tertiary-text-color);
-     }
-
-     html:not([theme~="dark"]) .lumo-disabled {
-       color: var(--lumo-disabled-text-color);
-     }
-
-     /* ===== GARANTIA DE QUE O TEMA ESCURO NÃO SEJA AFETADO ===== */
-
-     /* O tema escuro mantém suas cores originais do Lumo */
-
-     html[theme~="dark"] {
+    /* Typography - Cores dos textos apenas no tema claro */
+    --lumo-header-text-color: #1a1a1a;
+    --lumo-body-text-color: #2d2d2d;
+    --lumo-secondary-text-color: #374151;
+    --lumo-tertiary-text-color: #4b5563;
+    --lumo-disabled-text-color: #9ca3af;
+
+    /* Color - Variáveis de contraste apenas no tema claro */
+    --lumo-contrast-90pct: #1a1a1a;
+    --lumo-contrast-80pct: #2d2d2d;
+    --lumo-contrast-70pct: #374151;
+    --lumo-contrast-60pct: #4b5563;
+    --lumo-contrast-50pct: #6b7280;
+    --lumo-contrast-40pct: #9ca3af;
+    --lumo-contrast-30pct: #d1d5db;
+    --lumo-contrast-20pct: #e5e7eb;
+    --lumo-contrast-10pct: #f3f4f6;
+    --lumo-contrast-5pct: #f9fafb;
+
+    /* Cores específicas para estados apenas no tema claro */
+    --lumo-primary-text-color: #1a1a1a;
+    --lumo-primary-color-50pct: rgba(26, 26, 26, 0.5);
+    --lumo-primary-color-10pct: rgba(26, 26, 26, 0.1);
+}
+
+/* ===== TYPOGRAPHY OVERRIDES APENAS NO TEMA CLARO ===== */
+
+/* Headers usando as variáveis do Lumo typography apenas no tema claro */
+html:not([theme~="dark"]) h1 {
+    color: var(--lumo-header-text-color) !important;
+}
+
+html:not([theme~="dark"]) h2,
+html:not([theme~="dark"]) h3,
+html:not([theme~="dark"]) h4,
+html:not([theme~="dark"]) h5,
+html:not([theme~="dark"]) h6 {
+    color: var(--lumo-header-text-color) !important;
+}
+
+/* Body text apenas no tema claro */
+html:not([theme~="dark"]) p,
+html:not([theme~="dark"]) div,
+html:not([theme~="dark"]) span {
+    color: var(--lumo-body-text-color);
+}
+
+/* Secondary text apenas no tema claro */
+html:not([theme~="dark"]) small,
+html:not([theme~="dark"]) .lumo-secondary {
+    color: var(--lumo-secondary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-side-nav-item[selected]::part(link),
+html:not([theme~="dark"]) vaadin-side-nav-item[selected]::part(content),
+html:not([theme~="dark"]) vaadin-side-nav-item[selected] {
+    color: #1a1a1a !important;
+    --lumo-primary-color: #1a1a1a !important;
+    --lumo-primary-text-color: #1a1a1a !important;
+    --lumo-primary-color-50pct: rgba(26, 26, 26, 0.5) !important;
+}
+
+/* Força a cor preta no hover */
+html:not([theme~="dark"]) vaadin-side-nav-item:hover::part(link),
+html:not([theme~="dark"]) vaadin-side-nav-item:hover::part(content),
+html:not([theme~="dark"]) vaadin-side-nav-item:hover {
+    color: #1a1a1a !important;
+}
+
+/* Se for vaadin-tabs no sidebar */
+html:not([theme~="dark"]) vaadin-tab[selected] {
+    color: #1a1a1a !important;
+    --lumo-primary-color: #1a1a1a !important;
+    --lumo-primary-text-color: #1a1a1a !important;
+}
+
+/* Se for vaadin-list-box */
+html:not([theme~="dark"]) vaadin-list-box vaadin-item[selected] {
+    color: #1a1a1a !important;
+    --lumo-primary-color: #1a1a1a !important;
+}
+
+/* Para elementos com classe customizada */
+html:not([theme~="dark"]) .sidebar-nav a.router-link-active,
+html:not([theme~="dark"]) .sidebar-nav a.active,
+html:not([theme~="dark"]) .sidebar-nav li.active a,
+html:not([theme~="dark"]) .sidebar-nav .selected,
+html:not([theme~="dark"]) .sidebar-nav .selected a {
+    color: #1a1a1a !important;
+}
+
+/* Força override em qualquer elemento do sidebar que tenha cor azul */
+html:not([theme~="dark"]) [class*="sidebar"] [style*="color"],
+html:not([theme~="dark"]) [class*="nav"] [style*="color"] {
+    color: #1a1a1a !important;
+}
+
+/* Override mais específico para vaadin-side-nav */
+html:not([theme~="dark"]) vaadin-side-nav vaadin-side-nav-item[selected] * {
+    color: #1a1a1a !important;
+}
+
+/* Se usar Vaadin Router e classes do router */
+html:not([theme~="dark"]) .router-link-active,
+html:not([theme~="dark"]) .router-link-exact-active {
+    color: #1a1a1a !important;
+}
+
+/* Força override em qualquer elemento do sidebar que tenha cor azul */
+html:not([theme~="dark"]) [class*="sidebar"] [style*="color"],
+html:not([theme~="dark"]) [class*="nav"] [style*="color"] {
+    color: #1a1a1a !important;
+}
+
+/* Override mais específico para vaadin-side-nav */
+html:not([theme~="dark"]) vaadin-side-nav vaadin-side-nav-item[selected] * {
+    color: #1a1a1a !important;
+}
+
+/* Se usar Vaadin Router e classes do router */
+html:not([theme~="dark"]) .router-link-active,
+html:not([theme~="dark"]) .router-link-exact-active {
+    color: #1a1a1a !important;
+}
+
+/* ===== COMPONENTES VAADIN COM LUMO APENAS NO TEMA CLARO ===== */
+
+/* Text Fields apenas no tema claro */
+html:not([theme~="dark"]) vaadin-text-field {
+    --lumo-contrast-60pct: #2d2d2d;
+}
+
+html:not([theme~="dark"]) vaadin-text-field::part(label) {
+    color: var(--lumo-secondary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-text-field::part(input-field) {
+    color: var(--lumo-body-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-text-field::part(helper-text) {
+    color: var(--lumo-tertiary-text-color);
+}
+
+/* Text Area apenas no tema claro */
+html:not([theme~="dark"]) vaadin-text-area {
+    --lumo-contrast-60pct: #2d2d2d;
+}
+
+html:not([theme~="dark"]) vaadin-text-area::part(label) {
+    color: var(--lumo-secondary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-text-area::part(input-field) {
+    color: var(--lumo-body-text-color);
+}
+
+/* Password Field apenas no tema claro */
+html:not([theme~="dark"]) vaadin-password-field {
+    --lumo-contrast-60pct: #2d2d2d;
+}
+
+html:not([theme~="dark"]) vaadin-password-field::part(label) {
+    color: var(--lumo-secondary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-password-field::part(input-field) {
+    color: var(--lumo-body-text-color);
+}
+
+/* Email Field apenas no tema claro */
+html:not([theme~="dark"]) vaadin-email-field {
+    --lumo-contrast-60pct: #2d2d2d;
+}
+
+html:not([theme~="dark"]) vaadin-email-field::part(label) {
+    color: var(--lumo-secondary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-email-field::part(input-field) {
+    color: var(--lumo-body-text-color);
+}
+
+/* Number Field apenas no tema claro */
+html:not([theme~="dark"]) vaadin-number-field {
+    --lumo-contrast-60pct: #2d2d2d;
+}
+
+html:not([theme~="dark"]) vaadin-number-field::part(label) {
+    color: var(--lumo-secondary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-number-field::part(input-field) {
+    color: var(--lumo-body-text-color);
+}
+
+/* Select apenas no tema claro */
+html:not([theme~="dark"]) vaadin-select {
+    --lumo-contrast-60pct: #2d2d2d;
+}
+
+html:not([theme~="dark"]) vaadin-select::part(label) {
+    color: var(--lumo-secondary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-select::part(input-field) {
+    color: var(--lumo-body-text-color);
+}
+
+/* ComboBox apenas no tema claro */
+html:not([theme~="dark"]) vaadin-combo-box {
+    --lumo-contrast-60pct: #2d2d2d;
+}
+
+html:not([theme~="dark"]) vaadin-combo-box::part(label) {
+    color: var(--lumo-secondary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-combo-box::part(input-field) {
+    color: var(--lumo-body-text-color);
+}
+
+/* Button apenas no tema claro */
+html:not([theme~="dark"]) vaadin-button {
+    color: var(--lumo-body-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-button[theme~="primary"] {
+    color: white;
+}
+
+html:not([theme~="dark"]) vaadin-button[theme~="secondary"] {
+    color: var(--lumo-body-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-button[theme~="tertiary"] {
+    color: var(--lumo-secondary-text-color);
+}
+
+/* Grid apenas no tema claro */
+html:not([theme~="dark"]) vaadin-grid {
+    --lumo-contrast-90pct: #1a1a1a;
+    --lumo-contrast-80pct: #2d2d2d;
+}
+
+html:not([theme~="dark"]) vaadin-grid::part(header-cell) {
+    color: var(--lumo-header-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-grid::part(cell) {
+    color: var(--lumo-body-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-grid::part(selected-row-cell) {
+    color: var(--lumo-primary-text-color);
+}
+
+/* Dialog apenas no tema claro */
+html:not([theme~="dark"]) vaadin-dialog-overlay {
+    --lumo-contrast-90pct: #1a1a1a;
+    --lumo-contrast-80pct: #2d2d2d;
+}
+
+html:not([theme~="dark"]) vaadin-dialog-overlay::part(header) {
+    color: var(--lumo-header-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-dialog-overlay::part(content) {
+    color: var(--lumo-body-text-color);
+}
+
+/* Tabs apenas no tema claro */
+html:not([theme~="dark"]) vaadin-tab {
+    color: var(--lumo-secondary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-tab[selected] {
+    color: var(--lumo-primary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-tab:hover {
+    color: var(--lumo-body-text-color);
+}
+
+/* Menu Bar apenas no tema claro */
+html:not([theme~="dark"]) vaadin-menu-bar-button {
+    color: var(--lumo-body-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-menu-bar-button:hover {
+    color: var(--lumo-primary-text-color);
+}
+
+/* Details apenas no tema claro */
+html:not([theme~="dark"]) vaadin-details::part(summary) {
+    color: var(--lumo-header-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-details::part(content) {
+    color: var(--lumo-body-text-color);
+}
+
+/* Notification apenas no tema claro */
+html:not([theme~="dark"]) vaadin-notification-card {
+    color: var(--lumo-body-text-color);
+}
+
+/* Form Layout apenas no tema claro */
+html:not([theme~="dark"]) vaadin-form-layout vaadin-form-item::part(label) {
+    color: var(--lumo-secondary-text-color);
+}
+
+/* Checkbox apenas no tema claro */
+html:not([theme~="dark"]) vaadin-checkbox::part(label) {
+    color: var(--lumo-body-text-color);
+}
+
+/* Radio Button apenas no tema claro */
+html:not([theme~="dark"]) vaadin-radio-button::part(label) {
+    color: var(--lumo-body-text-color);
+}
+
+/* ===== UTILITY CLASSES APENAS NO TEMA CLARO ===== */
+
+/* Text utilities usando as variáveis do Lumo apenas no tema claro */
+html:not([theme~="dark"]) .text-l {
+    color: var(--lumo-header-text-color) !important;
+}
+
+html:not([theme~="dark"]) .text-m {
+    color: var(--lumo-body-text-color) !important;
+}
+
+html:not([theme~="dark"]) .text-s {
+    color: var(--lumo-secondary-text-color) !important;
+}
+
+html:not([theme~="dark"]) .text-xs {
+    color: var(--lumo-tertiary-text-color) !important;
+}
+
+/* ===== SPACING INTEGRATION APENAS NO TEMA CLARO ===== */
+
+/* Mantém o spacing do Lumo mas com as cores corretas apenas no tema claro */
+html:not([theme~="dark"]) .lumo-space-m {
+    color: var(--lumo-body-text-color);
+}
+
+html:not([theme~="dark"]) .lumo-space-l {
+    color: var(--lumo-header-text-color);
+}
+
+/* ===== BADGE INTEGRATION APENAS NO TEMA CLARO ===== */
+
+/* Badge com cores consistentes apenas no tema claro */
+html:not([theme~="dark"]) vaadin-badge {
+    color: white;
+    background-color: var(--lumo-contrast-80pct);
+}
+
+html:not([theme~="dark"]) vaadin-badge[theme~="primary"] {
+    background-color: var(--lumo-primary-text-color);
+}
+
+html:not([theme~="dark"]) vaadin-badge[theme~="secondary"] {
+    background-color: var(--lumo-secondary-text-color);
+}
+
+/* ===== ESTADOS ESPECÍFICOS APENAS NO TEMA CLARO ===== */
+
+/* Disabled apenas no tema claro */
+html:not([theme~="dark"]) :disabled {
+    color: var(--lumo-disabled-text-color) !important;
+}
+
+html:not([theme~="dark"]) [disabled] {
+    color: var(--lumo-disabled-text-color) !important;
+}
+
+/* Focus apenas no tema claro */
+html:not([theme~="dark"]) :focus {
+    color: var(--lumo-primary-text-color);
+}
+
+/* Hover apenas no tema claro */
+html:not([theme~="dark"]) :hover {
+    color: var(--lumo-body-text-color);
+}
+
+/* ===== INTEGRATION COM COMPONENTES PERSONALIZADOS APENAS NO TEMA CLARO ===== */
+
+/* Para componentes que usam as classes do Lumo apenas no tema claro */
+html:not([theme~="dark"]) .lumo-header {
+    color: var(--lumo-header-text-color);
+}
+
+html:not([theme~="dark"]) .lumo-body {
+    color: var(--lumo-body-text-color);
+}
+
+html:not([theme~="dark"]) .lumo-secondary {
+    color: var(--lumo-secondary-text-color);
+}
+
+html:not([theme~="dark"]) .lumo-tertiary {
+    color: var(--lumo-tertiary-text-color);
+}
+
+html:not([theme~="dark"]) .lumo-disabled {
+    color: var(--lumo-disabled-text-color);
+}
+
+/* ===== GARANTIA DE QUE O TEMA ESCURO NÃO SEJA AFETADO ===== */
+
+/* O tema escuro mantém suas cores originais do Lumo */
+
+html[theme~="dark"] {
     /* Cores base */
     --lumo-base-color: hsl(220, 15%, 8%);
     --lumo-tint-5pct: rgba(255, 255, 255, 0.05);
@@ -528,5 +528,16 @@ html:not([theme~="dark"]) {
     --lumo-clickable-surface: hsl(220, 15%, 14%);
 
     /* Campos de entrada */
-    color-scheme: dark;
+}
+
+:host([theme~="dark"]) {
+    --lumo-base-color: hsl(214, 15%, 15%);
+    --lumo-body-text-color: white;
+    --lumo-primary-color: #58a6ff;
+}
+
+:host {
+    --lumo-base-color: white;
+    --lumo-body-text-color: black;
+    --lumo-primary-color: #007bff;
 }
