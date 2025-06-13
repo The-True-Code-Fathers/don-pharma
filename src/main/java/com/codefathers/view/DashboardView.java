@@ -198,9 +198,6 @@ public class DashboardView extends VerticalLayout {
      * @param builder The ApexChartsBuilder instance.
      */
     private void configureChartForLumoTheme(ApexChartsBuilder builder, boolean isDarkMode) {
-//        boolean currentIsDarkMode = false;
-//        if (UI.getCurrent().getElement().hasAttribute("theme"))
-//            currentIsDarkMode = UI.getCurrent().getElement().getAttribute("theme").equals(Lumo.DARK);
 
         // Set ApexCharts theme mode based on the current Vaadin UI's theme.
         // This makes ApexCharts internally adjust text, grid lines, and backgrounds for dark/light mode.
@@ -217,49 +214,6 @@ public class DashboardView extends VerticalLayout {
      * @return An ApexCharts component displaying sales trend.
      */
 
-//    private Component createSalesSummaryChart() {
-//        ApexChartsBuilder chartBuilder = ApexChartsBuilder.get();
-//        String backgroundColor = isDarkTheme ? "#121212" : "#FFFFFF";
-//        String lineColor = isDarkTheme ? "#000000" : "#FFFFFF";
-//
-//        chartBuilder.withChart(
-//                ChartBuilder.get()
-//                        .withType(Type.LINE)
-//                        .withHeight("350px")
-//                        .withBackground(backgroundColor)
-//                        .build()
-//        );
-//
-//        chartBuilder.withColors(lineColor);
-//
-//        chartBuilder.withTitle(
-//                TitleSubtitleBuilder.get()
-//                        .withText("Vendas dos Últimos 30 Dias")
-//                        .build()
-//        );
-//
-//        // Dummy data for sales over time (e.g., every 5 days)
-//        chartBuilder.withSeries(
-//                new Series<>("Sales", 25000.0, 28000.0, 32000.0, 29000.0, 35000.0, 38000.0, 45000.0)
-//        );
-//
-//        chartBuilder.withXaxis(
-//                XAxisBuilder.get()
-//                        .withCategories("Day 1", "Day 5", "Day 10", "Day 15", "Day 20", "Day 25", "Day 30")
-//                        .build()
-//        );
-//
-//        chartBuilder.withYaxis(
-//                YAxisBuilder.get()
-//                        .withTitle(TitleBuilder.get().withText("Amount (R$)").build())
-//                        .build()
-//        );
-//
-//        configureChartForLumoTheme(chartBuilder, isDarkTheme); // Apply theme configuration
-//        com.github.appreciated.apexcharts.ApexCharts apexChart = chartBuilder.build();
-//        return wrapChartInContainer(apexChart);
-//    }
-
     private Component createSalesSummaryChart() {
 
         boolean isDarkTheme = UI.getCurrent().getElement().getAttribute("theme") != null &&
@@ -267,18 +221,14 @@ public class DashboardView extends VerticalLayout {
 
         ApexChartsBuilder chartBuilder = ApexChartsBuilder.get();
 
-            String backgroundColor = isDarkTheme ? "#121212" : "#FFFFFF";
-            String lineColor = isDarkTheme ? "#FFFFFF" : "#000000";
 
             chartBuilder.withChart(
                     ChartBuilder.get()
                             .withType(Type.LINE)
                             .withHeight("350px")
-//                            .withBackground(backgroundColor)
                             .build()
             );
 
-//            chartBuilder.withColors(lineColor);
 
             chartBuilder.withTitle(
                     TitleSubtitleBuilder.get()
