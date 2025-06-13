@@ -63,7 +63,7 @@ public class ProductsView extends VerticalLayout {
     private Button updateSaveButton = new Button("Update");
     private Button updateClearButton = new Button("Clear");
     private Button updateCloseButton = new Button("Close");
-    private Button setInactiveButton = new Button("Set Inactive");
+    private Button setInactiveButton = new Button("Inactivate Product");
 
     private Button dialogButtonCreateProduct = new Button("Create Product");
 
@@ -230,7 +230,7 @@ public class ProductsView extends VerticalLayout {
 
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-        grid.setPageSize(10);
+        grid.setPageSize(20);
         grid.setWidth("80%");
     }
 

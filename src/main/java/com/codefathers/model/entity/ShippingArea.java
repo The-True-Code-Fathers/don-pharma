@@ -26,4 +26,7 @@ public class ShippingArea {
 
     @Column(nullable = false)
     private String[] states;
+
+    @Column(nullable = false)
+    private String cep;
 }
