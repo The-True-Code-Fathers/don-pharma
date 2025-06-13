@@ -114,7 +114,7 @@ public class EmployeeView extends VerticalLayout {
         updateRole.setItems(EmployeeRole.values());
         updateRole.setItemLabelGenerator(EmployeeRole::getLabel);
 
-        createBirthDate.setPlaceholder("YYYY-MM-DD");
+        createBirthDate.setPlaceholder("DD-MM-YYYY");
     }
 
     private void saveNewEmployee() {
@@ -156,7 +156,7 @@ public class EmployeeView extends VerticalLayout {
                     .build();
 
             employeeService.updateEmployee(dto, currentEmployee.getId());
-            Notification.show("Product updated successfully!");
+            Notification.show("Employee updated successfully!");
 
             dataView.refreshAll();
             clearUpdateForm();
