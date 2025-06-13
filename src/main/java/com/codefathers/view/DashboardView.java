@@ -4,6 +4,8 @@ import com.codefathers.factory.ServiceFactory;
 import com.codefathers.model.entity.SystemUser;
 import com.codefathers.service.AuthService;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI; // Import UI
+import com.vaadin.flow.component.button.Button; // Import Button
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
@@ -15,13 +17,33 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.lumo.Lumo; // Import Lumo
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
+// ApexCharts Imports
+import com.github.appreciated.apexcharts.ApexChartsBuilder;
+import com.github.appreciated.apexcharts.config.builder.ChartBuilder;
+import com.github.appreciated.apexcharts.config.builder.PlotOptionsBuilder;
+import com.github.appreciated.apexcharts.config.builder.XAxisBuilder;
+import com.github.appreciated.apexcharts.config.builder.YAxisBuilder;
+import com.github.appreciated.apexcharts.config.builder.TitleSubtitleBuilder;
+import com.github.appreciated.apexcharts.config.builder.LegendBuilder;
+import com.github.appreciated.apexcharts.config.chart.Type;
+import com.github.appreciated.apexcharts.config.plotoptions.builder.BarBuilder;
+import com.github.appreciated.apexcharts.config.legend.Position;
+import com.github.appreciated.apexcharts.helper.Series;
+import com.github.appreciated.apexcharts.config.yaxis.builder.TitleBuilder;
+
+// ApexCharts Theming Imports
+import com.github.appreciated.apexcharts.config.builder.ThemeBuilder;
+import com.github.appreciated.apexcharts.config.theme.Mode;
+// import com.github.appreciated.apexcharts.config.theme.Palette; // Removed unused import for Palette
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 
 @Route("")
 @PageTitle("Dashboard | Sistema de Gestão")
@@ -32,6 +54,10 @@ public class DashboardView extends VerticalLayout {
     public DashboardView() {
         setSizeFull();
         addClassName("dashboard-view");
+
+        // The initial theme is set by MainLayout.
+        // We ensure that the 'theme' attribute is not locally set here,
+        // it's controlled by the global 'html' element.
 
         // Header
         add(createHeader());
@@ -55,16 +81,23 @@ public class DashboardView extends VerticalLayout {
         }
         title.addClassNames(LumoUtility.Margin.Bottom.NONE, LumoUtility.Margin.Top.MEDIUM);
 
-        VerticalLayout header = new VerticalLayout(title);
-        header.setPadding(false);
-        header.setSpacing(false);
+        HorizontalLayout headerContent = new HorizontalLayout(title);
+        headerContent.setWidthFull();
+        headerContent.setJustifyContentMode(JustifyContentMode.START); // Align title to start
+        headerContent.setAlignItems(Alignment.CENTER);
 
-        return header;
+        VerticalLayout headerLayout = new VerticalLayout(headerContent);
+        headerLayout.setPadding(false);
+        headerLayout.setSpacing(false);
+        headerLayout.setAlignItems(Alignment.START);
+
+        return headerLayout;
     }
 
     private Component createKpiSection() {
         // FlexLayout allows items to wrap to the next line on smaller screens
         FlexLayout kpiLayout = new FlexLayout();
+        kpiLayout.addClassName("kpi-layout"); // Add class to differentiate from other FlexLayouts
         kpiLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP); // Allow cards to wrap
         kpiLayout.setJustifyContentMode(JustifyContentMode.AROUND); // Center cards
         kpiLayout.setAlignItems(FlexComponent.Alignment.END); // Align items to the start of the cross axis
@@ -128,163 +161,226 @@ public class DashboardView extends VerticalLayout {
 
     private Component createChartsSection() {
         FlexLayout chartsLayout = new FlexLayout();
-        chartsLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
-        chartsLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        chartsLayout.setAlignItems(FlexComponent.Alignment.START);
-        // chartsLayout.setGap("1rem"); // Removed setGap as it might not be available
 
-        chartsLayout.add(createSalesSummary(), createOrderStatusSummary());
-        chartsLayout.add(createTopProductsSummary(), createEmployeePerformanceSummary());
+        chartsLayout.add(
+                createSalesSummaryChart(),
+                createOrderStatusChart(),
+                createTopProductsChart(),
+                createEmployeePerformanceChart()
+        );
 
-        chartsLayout.addClassNames(LumoUtility.Margin.Bottom.MEDIUM);
         return chartsLayout;
     }
 
     /**
-     * Creates a text-based summary of sales data, replacing a commercial chart.
-     * @return A component displaying sales summary.
+     * Helper to configure ApexCharts for Lumo theme integration, especially dark mode.
+     * This will set the chart's internal theme mode and try to use Lumo CSS variables for colors.
+     * @param builder The ApexChartsBuilder instance.
      */
-    private Component createSalesSummary() {
-        VerticalLayout container = new VerticalLayout();
-        container.setPadding(true);
-        container.addClassNames(
-                LumoUtility.Background.CONTRAST_5,
-                LumoUtility.BorderRadius.LARGE,
-                LumoUtility.Border.ALL,
-                LumoUtility.BorderColor.CONTRAST_10,
-                LumoUtility.Margin.End.MEDIUM, // Added right margin for spacing
-                LumoUtility.Margin.Bottom.MEDIUM // Added bottom margin for wrapping
+    private void configureChartForLumoTheme(ApexChartsBuilder builder) {
+        boolean currentIsDarkMode = false;
+        if (UI.getCurrent().getElement().hasAttribute("theme"))
+            currentIsDarkMode = UI.getCurrent().getElement().getAttribute("theme").equals(Lumo.DARK);
+
+        // Set ApexCharts theme mode based on the current Vaadin UI's theme.
+        // This makes ApexCharts internally adjust text, grid lines, and backgrounds for dark/light mode.
+        builder.withTheme(
+                ThemeBuilder.get()
+                        .withMode(currentIsDarkMode ? Mode.DARK : Mode.LIGHT)
+                        .build()
         );
-        container.setMinWidth("300px");
-        container.setMaxWidth("500px");
-        container.setFlexGrow(1);
+    }
 
-        H3 title = new H3("Vendas dos Últimos 30 Dias");
-        title.addClassNames(LumoUtility.Margin.Top.NONE, LumoUtility.Margin.Bottom.SMALL);
 
-        Span totalSales = new Span("Total: R$ 45.000,00");
-        totalSales.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.FontWeight.BOLD);
+    /**
+     * Creates an ApexCharts Line Chart for sales summary.
+     * @return An ApexCharts component displaying sales trend.
+     */
+    private Component createSalesSummaryChart() {
+        ApexChartsBuilder chartBuilder = ApexChartsBuilder.get();
+        chartBuilder.withChart(
+                ChartBuilder.get()
+                        .withType(Type.LINE)
+                        .withHeight("300px")
+                        .build()
+        );
 
-        Span trend = new Span("Trend: +18% from previous period");
-        trend.addClassNames(LumoUtility.TextColor.SUCCESS, LumoUtility.FontSize.SMALL);
+        chartBuilder.withTitle(
+                TitleSubtitleBuilder.get()
+                        .withText("Vendas dos Últimos 30 Dias")
+                        .build()
+        );
 
-        Span dataPoints = new Span("Data points: 25k, 28k, 32k, 29k, 35k, 38k, 45k (values every 5 days)");
-        dataPoints.addClassNames(LumoUtility.TextColor.SECONDARY, LumoUtility.FontSize.XSMALL);
+        // Dummy data for sales over time (e.g., every 5 days)
+        chartBuilder.withSeries(
+                new Series<>("Sales", 25000.0, 28000.0, 32000.0, 29000.0, 35000.0, 38000.0, 45000.0)
+        );
 
-        container.add(title, totalSales, trend, dataPoints);
-        return container;
+        chartBuilder.withXaxis(
+                XAxisBuilder.get()
+                        .withCategories("Day 1", "Day 5", "Day 10", "Day 15", "Day 20", "Day 25", "Day 30")
+                        .build()
+        );
+
+        chartBuilder.withYaxis(
+                YAxisBuilder.get()
+                        .withTitle(TitleBuilder.get().withText("Amount (R$)").build())
+                        .build()
+        );
+
+        configureChartForLumoTheme(chartBuilder); // Apply theme configuration
+        com.github.appreciated.apexcharts.ApexCharts apexChart = chartBuilder.build();
+        return wrapChartInContainer(apexChart);
     }
 
     /**
-     * Creates a text-based summary of order status data, replacing a commercial chart.
-     * @return A component displaying order status summary.
+     * Creates an ApexCharts Donut Chart for order status.
+     * @return An ApexCharts component displaying order status distribution.
      */
-    private Component createOrderStatusSummary() {
-        VerticalLayout container = new VerticalLayout();
-        container.setPadding(true);
-        container.addClassNames(
-                LumoUtility.Background.CONTRAST_5,
-                LumoUtility.BorderRadius.LARGE,
-                LumoUtility.Border.ALL,
-                LumoUtility.BorderColor.CONTRAST_10,
-                LumoUtility.Margin.End.MEDIUM, // Added right margin for spacing
-                LumoUtility.Margin.Bottom.MEDIUM // Added bottom margin for wrapping
+    private Component createOrderStatusChart() {
+        ApexChartsBuilder chartBuilder = ApexChartsBuilder.get();
+        chartBuilder.withChart(
+                ChartBuilder.get()
+                        .withType(Type.DONUT)
+                        .withHeight("400px")
+                        .build()
         );
-        container.setMinWidth("300px");
-        container.setMaxWidth("500px");
-        container.setFlexGrow(1);
 
-        H3 title = new H3("Status dos Pedidos");
-        title.addClassNames(LumoUtility.Margin.Top.NONE, LumoUtility.Margin.Bottom.SMALL);
+        chartBuilder.withTitle(
+                TitleSubtitleBuilder.get()
+                        .withText("Status dos Pedidos")
+                        .build()
+        );
 
-        VerticalLayout statusList = new VerticalLayout();
-        statusList.setSpacing(false);
-        statusList.setPadding(false);
+        // Dummy data for order statuses
+        chartBuilder.withLabels("Pendente", "Processando", "Enviado", "Entregue", "Cancelado");
+        chartBuilder.withSeries(45.0, 32.0, 28.0, 95.0, 8.0);
 
-        statusList.add(new Span("• Pendente: 45"));
-        statusList.add(new Span("• Processando: 32"));
-        statusList.add(new Span("• Enviado: 28"));
-        statusList.add(new Span("• Entregue: 95"));
-        statusList.add(new Span("• Cancelado: 8"));
-        statusList.addClassNames(LumoUtility.FontSize.SMALL);
+        chartBuilder.withLegend(
+                LegendBuilder.get()
+                        .withPosition(Position.BOTTOM) // Place legend below the chart
+                        .build()
+        );
 
-        container.add(title, statusList);
-        return container;
+        configureChartForLumoTheme(chartBuilder); // Apply theme configuration
+        com.github.appreciated.apexcharts.ApexCharts apexChart = chartBuilder.build();
+        return wrapChartInContainer(apexChart);
     }
 
     /**
-     * Creates a text-based summary of top products data, replacing a commercial chart.
-     * @return A component displaying top products summary.
+     * Creates an ApexCharts Bar Chart for top products sold.
+     * @return An ApexCharts component displaying top 5 products.
      */
-    private Component createTopProductsSummary() {
-        VerticalLayout container = new VerticalLayout();
-        container.setPadding(true);
-        container.addClassNames(
-                LumoUtility.Background.CONTRAST_5,
-                LumoUtility.BorderRadius.LARGE,
-                LumoUtility.Border.ALL,
-                LumoUtility.BorderColor.CONTRAST_10,
-                LumoUtility.Margin.End.MEDIUM, // Added right margin for spacing
-                LumoUtility.Margin.Bottom.MEDIUM // Added bottom margin for wrapping
+    private Component createTopProductsChart() {
+        ApexChartsBuilder chartBuilder = ApexChartsBuilder.get();
+        chartBuilder.withChart(
+                ChartBuilder.get()
+                        .withType(Type.BAR)
+                        .withHeight("300px")
+                        .build()
         );
-        container.setMinWidth("300px");
-        container.setMaxWidth("500px");
-        container.setFlexGrow(1);
 
-        H3 title = new H3("Top 5 Produtos Mais Vendidos");
-        title.addClassNames(LumoUtility.Margin.Top.NONE, LumoUtility.Margin.Bottom.SMALL);
+        chartBuilder.withPlotOptions(
+                PlotOptionsBuilder.get()
+                        .withBar(
+                                BarBuilder.get()
+                                        .withHorizontal(true) // Horizontal bars for product names
+                                        .build()
+                        )
+                        .build()
+        );
 
-        VerticalLayout productList = new VerticalLayout();
-        productList.setSpacing(false);
-        productList.setPadding(false);
+        chartBuilder.withTitle(
+                TitleSubtitleBuilder.get()
+                        .withText("Top 5 Produtos Mais Vendidos")
+                        .build()
+        );
 
-        productList.add(new Span("1. Produto A: 127 units"));
-        productList.add(new Span("2. Produto B: 98 units"));
-        productList.add(new Span("3. Produto C: 87 units"));
-        productList.add(new Span("4. Produto D: 76 units"));
-        productList.add(new Span("5. Produto E: 65 units"));
-        productList.addClassNames(LumoUtility.FontSize.SMALL);
+        // Dummy data for top products
+        chartBuilder.withSeries(
+                new Series<>("Units Sold", 127.0, 98.0, 87.0, 76.0, 65.0)
+        );
 
-        container.add(title, productList);
-        return container;
+        chartBuilder.withXaxis(
+                XAxisBuilder.get()
+                        .withCategories("Produto A", "Produto B", "Produto C", "Produto D", "Produto E")
+                        .build()
+        );
+
+        configureChartForLumoTheme(chartBuilder); // Apply theme configuration
+        com.github.appreciated.apexcharts.ApexCharts apexChart = chartBuilder.build();
+        return wrapChartInContainer(apexChart);
     }
 
     /**
-     * Creates a text-based summary of employee performance data, replacing a commercial chart.
-     * @return A component displaying employee performance summary.
+     * Creates an ApexCharts Bar Chart for employee performance.
+     * @return An ApexCharts component displaying employee sales performance.
      */
-    private Component createEmployeePerformanceSummary() {
+    private Component createEmployeePerformanceChart() {
+        ApexChartsBuilder chartBuilder = ApexChartsBuilder.get();
+        chartBuilder.withChart(
+                ChartBuilder.get()
+                        .withType(Type.BAR)
+                        // .withHeight("300px") // Removed fixed height
+                        .build()
+        );
+
+        chartBuilder.withPlotOptions(
+                PlotOptionsBuilder.get()
+                        .withBar(
+                                BarBuilder.get()
+                                        .withHorizontal(true) // Horizontal bars for employee names
+                                        .build()
+                        )
+                        .build()
+        );
+
+        chartBuilder.withTitle(
+                TitleSubtitleBuilder.get()
+                        .withText("Performance dos Vendedores")
+                        .build()
+        );
+
+        // Dummy data for employee performance
+        chartBuilder.withSeries(
+                new Series<>("Sales (R$)", 45000.0, 38000.0, 35000.0, 32000.0, 28000.0)
+        );
+
+        chartBuilder.withXaxis(
+                XAxisBuilder.get()
+                        .withCategories("João Silva", "Maria Santos", "Pedro Oliveira", "Ana Costa", "Carlos Lima")
+                        .build()
+        );
+
+        chartBuilder.withYaxis(
+                YAxisBuilder.get()
+                        .withTitle(TitleBuilder.get().withText("Sales").build())
+                        .build()
+        );
+
+        configureChartForLumoTheme(chartBuilder); // Apply theme configuration
+        com.github.appreciated.apexcharts.ApexCharts apexChart = chartBuilder.build();
+        return wrapChartInContainer(apexChart);
+    }
+
+    /**
+     * Helper method to wrap an ApexCharts component in a styled container for consistent layout.
+     */
+    private VerticalLayout wrapChartInContainer(com.github.appreciated.apexcharts.ApexCharts chart) {
         VerticalLayout container = new VerticalLayout();
-        container.setPadding(true);
         container.addClassNames(
                 LumoUtility.Background.CONTRAST_5,
                 LumoUtility.BorderRadius.LARGE,
                 LumoUtility.Border.ALL,
                 LumoUtility.BorderColor.CONTRAST_10,
-                LumoUtility.Margin.End.MEDIUM, // Added right margin for spacing
-                LumoUtility.Margin.Bottom.MEDIUM // Added bottom margin for wrapping
+                LumoUtility.Margin.End.MEDIUM,
+                LumoUtility.Margin.Bottom.MEDIUM
         );
-        container.setMinWidth("300px");
-        container.setMaxWidth("500px");
-        container.setFlexGrow(1);
 
-        H3 title = new H3("Performance dos Vendedores");
-        title.addClassNames(LumoUtility.Margin.Top.NONE, LumoUtility.Margin.Bottom.SMALL);
-
-        VerticalLayout employeeList = new VerticalLayout();
-        employeeList.setSpacing(false);
-        employeeList.setPadding(false);
-
-        employeeList.add(new Span("• João Silva: R$ 45.000"));
-        employeeList.add(new Span("• Maria Santos: R$ 38.000"));
-        employeeList.add(new Span("• Pedro Oliveira: R$ 35.000"));
-        employeeList.add(new Span("• Ana Costa: R$ 32.000"));
-        employeeList.add(new Span("• Carlos Lima: R$ 28.000"));
-        employeeList.addClassNames(LumoUtility.FontSize.SMALL);
-
-        container.add(title, employeeList);
+        container.add(chart);
         return container;
     }
+
 
     /**
      * Creates a section containing tables, replacing the commercial 'Board' with a FlexLayout.
@@ -459,7 +555,6 @@ public class DashboardView extends VerticalLayout {
         data.put("status", status);
         return data;
     }
-
 
     private String getThemeColor(String theme) {
         return switch (theme) {
