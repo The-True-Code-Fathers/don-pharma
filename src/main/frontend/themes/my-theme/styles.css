@@ -16,35 +16,517 @@ vaadin-text-field.bordered::part(input-field) {
   background-color: var(--lumo-base-color);
 }
 
-html {
-}
 
-[theme~="dark"] {
-  --lumo-base-color: hsl(214, 0%, 0%);
-  --lumo-shade-5pct: rgba(250, 250, 250, 0.05);
-  --lumo-shade-10pct: rgba(250, 250, 250, 0.1);
-  --lumo-shade-20pct: rgba(250, 250, 250, 0.2);
-  --lumo-shade-30pct: rgba(250, 250, 250, 0.3);
-  --lumo-shade-40pct: rgba(250, 250, 250, 0.4);
-  --lumo-shade-50pct: rgba(250, 250, 250, 0.5);
-  --lumo-shade-60pct: rgba(250, 250, 250, 0.6);
-  --lumo-shade-70pct: rgba(250, 250, 250, 0.7);
-  --lumo-shade-80pct: rgba(250, 250, 250, 0.8);
-  --lumo-shade-90pct: rgba(250, 250, 250, 0.9);
-  --lumo-shade: hsl(214, 0%, 98%);
-  --lumo-tint-5pct: rgba(245, 249, 255, 0.05);
-  --lumo-tint-10pct: rgba(245, 249, 255, 0.1);
-  --lumo-tint-20pct: rgba(245, 249, 255, 0.2);
-  --lumo-tint-30pct: rgba(245, 249, 255, 0.3);
-  --lumo-tint-40pct: rgba(245, 249, 255, 0.4);
-  --lumo-tint-50pct: rgba(245, 249, 255, 0.5);
-  --lumo-tint-60pct: rgba(245, 249, 255, 0.6);
-  --lumo-tint-70pct: rgba(245, 249, 255, 0.7);
-  --lumo-tint-80pct: rgba(245, 249, 255, 0.8);
-  --lumo-tint-90pct: rgba(245, 249, 255, 0.9);
-  --lumo-tint: hsl(214, 100%, 98%);
-  --lumo-primary-text-color: rgb(0, 140, 255);
-  --lumo-primary-color-50pct: rgba(0, 140, 255, 0.5);
-  --lumo-primary-color-10pct: rgba(0, 140, 255, 0.1);
-  --lumo-primary-color: hsl(207, 100%, 50%);
+html:not([theme~="dark"]) {
+       /* Typography - Cores dos textos apenas no tema claro */
+       --lumo-header-text-color: #1a1a1a;
+       --lumo-body-text-color: #2d2d2d;
+       --lumo-secondary-text-color: #374151;
+       --lumo-tertiary-text-color: #4b5563;
+       --lumo-disabled-text-color: #9ca3af;
+
+       /* Color - Variáveis de contraste apenas no tema claro */
+       --lumo-contrast-90pct: #1a1a1a;
+       --lumo-contrast-80pct: #2d2d2d;
+       --lumo-contrast-70pct: #374151;
+       --lumo-contrast-60pct: #4b5563;
+       --lumo-contrast-50pct: #6b7280;
+       --lumo-contrast-40pct: #9ca3af;
+       --lumo-contrast-30pct: #d1d5db;
+       --lumo-contrast-20pct: #e5e7eb;
+       --lumo-contrast-10pct: #f3f4f6;
+       --lumo-contrast-5pct: #f9fafb;
+
+       /* Cores específicas para estados apenas no tema claro */
+       --lumo-primary-text-color: #1a1a1a;
+       --lumo-primary-color-50pct: rgba(26, 26, 26, 0.5);
+       --lumo-primary-color-10pct: rgba(26, 26, 26, 0.1);
+     }
+
+     /* ===== TYPOGRAPHY OVERRIDES APENAS NO TEMA CLARO ===== */
+
+     /* Headers usando as variáveis do Lumo typography apenas no tema claro */
+     html:not([theme~="dark"]) h1 {
+       color: var(--lumo-header-text-color) !important;
+     }
+
+     html:not([theme~="dark"]) h2,
+     html:not([theme~="dark"]) h3,
+     html:not([theme~="dark"]) h4,
+     html:not([theme~="dark"]) h5,
+     html:not([theme~="dark"]) h6 {
+       color: var(--lumo-header-text-color) !important;
+     }
+
+     /* Body text apenas no tema claro */
+     html:not([theme~="dark"]) p,
+     html:not([theme~="dark"]) div,
+     html:not([theme~="dark"]) span {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Secondary text apenas no tema claro */
+     html:not([theme~="dark"]) small,
+     html:not([theme~="dark"]) .lumo-secondary {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-side-nav-item[selected]::part(link),
+     html:not([theme~="dark"]) vaadin-side-nav-item[selected]::part(content),
+     html:not([theme~="dark"]) vaadin-side-nav-item[selected] {
+       color: #1a1a1a !important;
+       --lumo-primary-color: #1a1a1a !important;
+       --lumo-primary-text-color: #1a1a1a !important;
+       --lumo-primary-color-50pct: rgba(26, 26, 26, 0.5) !important;
+     }
+
+     /* Força a cor preta no hover */
+     html:not([theme~="dark"]) vaadin-side-nav-item:hover::part(link),
+     html:not([theme~="dark"]) vaadin-side-nav-item:hover::part(content),
+     html:not([theme~="dark"]) vaadin-side-nav-item:hover {
+       color: #1a1a1a !important;
+     }
+
+     /* Se for vaadin-tabs no sidebar */
+     html:not([theme~="dark"]) vaadin-tab[selected] {
+       color: #1a1a1a !important;
+       --lumo-primary-color: #1a1a1a !important;
+       --lumo-primary-text-color: #1a1a1a !important;
+     }
+
+     /* Se for vaadin-list-box */
+     html:not([theme~="dark"]) vaadin-list-box vaadin-item[selected] {
+       color: #1a1a1a !important;
+       --lumo-primary-color: #1a1a1a !important;
+     }
+
+     /* Para elementos com classe customizada */
+     html:not([theme~="dark"]) .sidebar-nav a.router-link-active,
+     html:not([theme~="dark"]) .sidebar-nav a.active,
+     html:not([theme~="dark"]) .sidebar-nav li.active a,
+     html:not([theme~="dark"]) .sidebar-nav .selected,
+     html:not([theme~="dark"]) .sidebar-nav .selected a {
+       color: #1a1a1a !important;
+     }
+
+     /* Força override em qualquer elemento do sidebar que tenha cor azul */
+     html:not([theme~="dark"]) [class*="sidebar"] [style*="color"],
+     html:not([theme~="dark"]) [class*="nav"] [style*="color"] {
+       color: #1a1a1a !important;
+     }
+
+     /* Override mais específico para vaadin-side-nav */
+     html:not([theme~="dark"]) vaadin-side-nav vaadin-side-nav-item[selected] * {
+       color: #1a1a1a !important;
+     }
+
+     /* Se usar Vaadin Router e classes do router */
+     html:not([theme~="dark"]) .router-link-active,
+     html:not([theme~="dark"]) .router-link-exact-active {
+       color: #1a1a1a !important;
+     }
+
+     /* Força override em qualquer elemento do sidebar que tenha cor azul */
+     html:not([theme~="dark"]) [class*="sidebar"] [style*="color"],
+     html:not([theme~="dark"]) [class*="nav"] [style*="color"] {
+       color: #1a1a1a !important;
+     }
+
+     /* Override mais específico para vaadin-side-nav */
+     html:not([theme~="dark"]) vaadin-side-nav vaadin-side-nav-item[selected] * {
+       color: #1a1a1a !important;
+     }
+
+     /* Se usar Vaadin Router e classes do router */
+     html:not([theme~="dark"]) .router-link-active,
+     html:not([theme~="dark"]) .router-link-exact-active {
+       color: #1a1a1a !important;
+     }
+
+     /* ===== COMPONENTES VAADIN COM LUMO APENAS NO TEMA CLARO ===== */
+
+     /* Text Fields apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-text-field {
+       --lumo-contrast-60pct: #2d2d2d;
+     }
+
+     html:not([theme~="dark"]) vaadin-text-field::part(label) {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-text-field::part(input-field) {
+       color: var(--lumo-body-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-text-field::part(helper-text) {
+       color: var(--lumo-tertiary-text-color);
+     }
+
+     /* Text Area apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-text-area {
+       --lumo-contrast-60pct: #2d2d2d;
+     }
+
+     html:not([theme~="dark"]) vaadin-text-area::part(label) {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-text-area::part(input-field) {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Password Field apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-password-field {
+       --lumo-contrast-60pct: #2d2d2d;
+     }
+
+     html:not([theme~="dark"]) vaadin-password-field::part(label) {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-password-field::part(input-field) {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Email Field apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-email-field {
+       --lumo-contrast-60pct: #2d2d2d;
+     }
+
+     html:not([theme~="dark"]) vaadin-email-field::part(label) {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-email-field::part(input-field) {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Number Field apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-number-field {
+       --lumo-contrast-60pct: #2d2d2d;
+     }
+
+     html:not([theme~="dark"]) vaadin-number-field::part(label) {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-number-field::part(input-field) {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Select apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-select {
+       --lumo-contrast-60pct: #2d2d2d;
+     }
+
+     html:not([theme~="dark"]) vaadin-select::part(label) {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-select::part(input-field) {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* ComboBox apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-combo-box {
+       --lumo-contrast-60pct: #2d2d2d;
+     }
+
+     html:not([theme~="dark"]) vaadin-combo-box::part(label) {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-combo-box::part(input-field) {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Button apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-button {
+       color: var(--lumo-body-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-button[theme~="primary"] {
+       color: white;
+     }
+
+     html:not([theme~="dark"]) vaadin-button[theme~="secondary"] {
+       color: var(--lumo-body-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-button[theme~="tertiary"] {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     /* Grid apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-grid {
+       --lumo-contrast-90pct: #1a1a1a;
+       --lumo-contrast-80pct: #2d2d2d;
+     }
+
+     html:not([theme~="dark"]) vaadin-grid::part(header-cell) {
+       color: var(--lumo-header-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-grid::part(cell) {
+       color: var(--lumo-body-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-grid::part(selected-row-cell) {
+       color: var(--lumo-primary-text-color);
+     }
+
+     /* Dialog apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-dialog-overlay {
+       --lumo-contrast-90pct: #1a1a1a;
+       --lumo-contrast-80pct: #2d2d2d;
+     }
+
+     html:not([theme~="dark"]) vaadin-dialog-overlay::part(header) {
+       color: var(--lumo-header-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-dialog-overlay::part(content) {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Tabs apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-tab {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-tab[selected] {
+       color: var(--lumo-primary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-tab:hover {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Menu Bar apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-menu-bar-button {
+       color: var(--lumo-body-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-menu-bar-button:hover {
+       color: var(--lumo-primary-text-color);
+     }
+
+     /* Details apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-details::part(summary) {
+       color: var(--lumo-header-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-details::part(content) {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Notification apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-notification-card {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Form Layout apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-form-layout vaadin-form-item::part(label) {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     /* Checkbox apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-checkbox::part(label) {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* Radio Button apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-radio-button::part(label) {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* ===== UTILITY CLASSES APENAS NO TEMA CLARO ===== */
+
+     /* Text utilities usando as variáveis do Lumo apenas no tema claro */
+     html:not([theme~="dark"]) .text-l {
+       color: var(--lumo-header-text-color) !important;
+     }
+
+     html:not([theme~="dark"]) .text-m {
+       color: var(--lumo-body-text-color) !important;
+     }
+
+     html:not([theme~="dark"]) .text-s {
+       color: var(--lumo-secondary-text-color) !important;
+     }
+
+     html:not([theme~="dark"]) .text-xs {
+       color: var(--lumo-tertiary-text-color) !important;
+     }
+
+     /* ===== SPACING INTEGRATION APENAS NO TEMA CLARO ===== */
+
+     /* Mantém o spacing do Lumo mas com as cores corretas apenas no tema claro */
+     html:not([theme~="dark"]) .lumo-space-m {
+       color: var(--lumo-body-text-color);
+     }
+
+     html:not([theme~="dark"]) .lumo-space-l {
+       color: var(--lumo-header-text-color);
+     }
+
+     /* ===== BADGE INTEGRATION APENAS NO TEMA CLARO ===== */
+
+     /* Badge com cores consistentes apenas no tema claro */
+     html:not([theme~="dark"]) vaadin-badge {
+       color: white;
+       background-color: var(--lumo-contrast-80pct);
+     }
+
+     html:not([theme~="dark"]) vaadin-badge[theme~="primary"] {
+       background-color: var(--lumo-primary-text-color);
+     }
+
+     html:not([theme~="dark"]) vaadin-badge[theme~="secondary"] {
+       background-color: var(--lumo-secondary-text-color);
+     }
+
+     /* ===== ESTADOS ESPECÍFICOS APENAS NO TEMA CLARO ===== */
+
+     /* Disabled apenas no tema claro */
+     html:not([theme~="dark"]) :disabled {
+       color: var(--lumo-disabled-text-color) !important;
+     }
+
+     html:not([theme~="dark"]) [disabled] {
+       color: var(--lumo-disabled-text-color) !important;
+     }
+
+     /* Focus apenas no tema claro */
+     html:not([theme~="dark"]) :focus {
+       color: var(--lumo-primary-text-color);
+     }
+
+     /* Hover apenas no tema claro */
+     html:not([theme~="dark"]) :hover {
+       color: var(--lumo-body-text-color);
+     }
+
+     /* ===== INTEGRATION COM COMPONENTES PERSONALIZADOS APENAS NO TEMA CLARO ===== */
+
+     /* Para componentes que usam as classes do Lumo apenas no tema claro */
+     html:not([theme~="dark"]) .lumo-header {
+       color: var(--lumo-header-text-color);
+     }
+
+     html:not([theme~="dark"]) .lumo-body {
+       color: var(--lumo-body-text-color);
+     }
+
+     html:not([theme~="dark"]) .lumo-secondary {
+       color: var(--lumo-secondary-text-color);
+     }
+
+     html:not([theme~="dark"]) .lumo-tertiary {
+       color: var(--lumo-tertiary-text-color);
+     }
+
+     html:not([theme~="dark"]) .lumo-disabled {
+       color: var(--lumo-disabled-text-color);
+     }
+
+     /* ===== GARANTIA DE QUE O TEMA ESCURO NÃO SEJA AFETADO ===== */
+
+     /* O tema escuro mantém suas cores originais do Lumo */
+
+     html[theme~="dark"] {
+    /* Cores base */
+    --lumo-base-color: hsl(220, 15%, 8%);
+    --lumo-tint-5pct: rgba(255, 255, 255, 0.05);
+    --lumo-tint-10pct: rgba(255, 255, 255, 0.1);
+    --lumo-tint-20pct: rgba(255, 255, 255, 0.2);
+    --lumo-tint-30pct: rgba(255, 255, 255, 0.3);
+    --lumo-tint-40pct: rgba(255, 255, 255, 0.4);
+    --lumo-tint-50pct: rgba(255, 255, 255, 0.5);
+    --lumo-tint-60pct: rgba(255, 255, 255, 0.6);
+    --lumo-tint-70pct: rgba(255, 255, 255, 0.7);
+    --lumo-tint-80pct: rgba(255, 255, 255, 0.8);
+    --lumo-tint-90pct: rgba(255, 255, 255, 0.9);
+    --lumo-tint: hsl(0, 0%, 100%);
+
+    /* Sombras */
+    --lumo-shade-5pct: rgba(20, 25, 35, 0.05);
+    --lumo-shade-10pct: rgba(20, 25, 35, 0.1);
+    --lumo-shade-20pct: rgba(20, 25, 35, 0.2);
+    --lumo-shade-30pct: rgba(20, 25, 35, 0.3);
+    --lumo-shade-40pct: rgba(20, 25, 35, 0.4);
+    --lumo-shade-50pct: rgba(20, 25, 35, 0.5);
+    --lumo-shade-60pct: rgba(20, 25, 35, 0.6);
+    --lumo-shade-70pct: rgba(20, 25, 35, 0.7);
+    --lumo-shade-80pct: rgba(20, 25, 35, 0.8);
+    --lumo-shade-90pct: rgba(20, 25, 35, 0.9);
+    --lumo-shade: hsl(220, 15%, 12%);
+
+    /* Cores de contraste */
+    --lumo-contrast-5pct: var(--lumo-tint-5pct);
+    --lumo-contrast-10pct: var(--lumo-tint-10pct);
+    --lumo-contrast-20pct: var(--lumo-tint-20pct);
+    --lumo-contrast-30pct: var(--lumo-tint-30pct);
+    --lumo-contrast-40pct: var(--lumo-tint-40pct);
+    --lumo-contrast-50pct: var(--lumo-tint-50pct);
+    --lumo-contrast-60pct: var(--lumo-tint-60pct);
+    --lumo-contrast-70pct: var(--lumo-tint-70pct);
+    --lumo-contrast-80pct: var(--lumo-tint-80pct);
+    --lumo-contrast-90pct: var(--lumo-tint-90pct);
+    --lumo-contrast: var(--lumo-tint);
+
+    /* Cores de texto */
+    --lumo-header-text-color: var(--lumo-contrast);
+    --lumo-body-text-color: var(--lumo-contrast-90pct);
+    --lumo-secondary-text-color: var(--lumo-contrast-70pct);
+    --lumo-tertiary-text-color: var(--lumo-contrast-50pct);
+    --lumo-disabled-text-color: var(--lumo-contrast-30pct);
+
+    /* Cores primárias (branco puro para contraste) */
+    --lumo-primary-color: hsl(0, 0%, 100%);
+    --lumo-primary-color-50pct: hsla(0, 0%, 100%, 0.5);
+    --lumo-primary-color-10pct: hsla(0, 0%, 100%, 0.1);
+    --lumo-primary-text-color: hsl(0, 0%, 90%);
+    --lumo-primary-contrast-color: hsl(220, 15%, 8%);
+
+    /* Cores de erro */
+    --lumo-error-color: hsl(3, 85%, 63%);
+    --lumo-error-color-50pct: hsla(3, 85%, 63%, 0.5);
+    --lumo-error-color-10pct: hsla(3, 85%, 63%, 0.1);
+    --lumo-error-text-color: hsl(3, 85%, 75%);
+    --lumo-error-contrast-color: hsl(0, 0%, 100%);
+
+    /* Cores de sucesso */
+    --lumo-success-color: hsl(145, 65%, 42%);
+    --lumo-success-color-50pct: hsla(145, 65%, 42%, 0.5);
+    --lumo-success-color-10pct: hsla(145, 65%, 42%, 0.1);
+    --lumo-success-text-color: hsl(145, 65%, 60%);
+    --lumo-success-contrast-color: hsl(0, 0%, 100%);
+
+    /* Cores de aviso */
+    --lumo-warning-color: hsl(43, 85%, 58%);
+    --lumo-warning-color-50pct: hsla(43, 85%, 58%, 0.5);
+    --lumo-warning-color-10pct: hsla(43, 85%, 58%, 0.1);
+    --lumo-warning-text-color: hsl(43, 85%, 70%);
+    --lumo-warning-contrast-color: hsl(220, 15%, 15%);
+
+    /* Bordas e divisores */
+    --lumo-divider-color: var(--lumo-contrast-10pct);
+    --lumo-border-radius-s: 4px;
+    --lumo-border-radius-m: 6px;
+    --lumo-border-radius-l: 8px;
+
+    /* Box shadows */
+    --lumo-box-shadow-xs: 0 1px 4px -1px var(--lumo-shade-50pct);
+    --lumo-box-shadow-s: 0 2px 4px -1px var(--lumo-shade-20pct), 0 3px 12px -1px var(--lumo-shade-30pct);
+    --lumo-box-shadow-m: 0 2px 6px -1px var(--lumo-shade-20pct), 0 8px 24px -4px var(--lumo-shade-40pct);
+    --lumo-box-shadow-l: 0 3px 18px -2px var(--lumo-shade-20pct), 0 12px 48px -6px var(--lumo-shade-40pct);
+    --lumo-box-shadow-xl: 0 4px 32px -4px var(--lumo-shade-20pct), 0 16px 64px -12px var(--lumo-shade-40pct);
+
+    /* Superfícies elevadas */
+    --lumo-elevated-surface: hsl(220, 15%, 12%);
+    --lumo-clickable-surface: hsl(220, 15%, 14%);
+
+    /* Campos de entrada */
+    color-scheme: dark;
 }
