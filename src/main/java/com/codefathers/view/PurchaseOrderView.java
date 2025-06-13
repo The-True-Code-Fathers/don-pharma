@@ -36,7 +36,6 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
-import org.hibernate.sql.ast.tree.expression.Literal;
 
 @Route("purchaseOrder")
 public class PurchaseOrderView extends VerticalLayout {
@@ -50,21 +49,15 @@ public class PurchaseOrderView extends VerticalLayout {
 
     private final Grid<PurchaseOrder> grid = new Grid<>(PurchaseOrder.class, false);
     private final Grid<CreatePurchaseOrderItemDTO> itemGrid = new Grid<>(CreatePurchaseOrderItemDTO.class, false);
-    private final List<CreatePurchaseOrderItemDTO> itemList = new ArrayList<>();
 
     private final ComboBox<Product> productComboBox = new ComboBox<>("Product");
     private final NumberField quantityField = new NumberField("Quantity");
     private final NumberField priceField = new NumberField("Price");
     private final ComboBox<Employee> purchaserComboBox = new ComboBox<>("Purchaser");
     private final Dialog editDialog = new Dialog();
-    private final ComboBox<Product> editProductComboBox = new ComboBox<>("Product");
-    private final NumberField editQuantityField = new NumberField("Quantity");
-    private final ComboBox<PurchaseOrderStatus> statusComboBox = new ComboBox<>("Status");
-    private PurchaseOrder currentOrderEditing = null;
     private final Dialog orderDialog = new Dialog();
 
     private final List<CreatePurchaseOrderItemDTO> items = new ArrayList<>();
-
     private String currentSearchTerm = "";
 
     public PurchaseOrderView() {
@@ -143,31 +136,15 @@ public class PurchaseOrderView extends VerticalLayout {
         purchaserComboBox.setPlaceholder("Select purchaser");
 
         addItemButton.addClickListener(e -> addItem());
-        openDialogButton.addClickListener(e -> orderDialog.open()); // abre o diálogo
+        openDialogButton.addClickListener(e -> orderDialog.open());
     }
 
     private void setupEditDialog() {
-        editProductComboBox.setItems(productService.findAllProducts());
-        editProductComboBox.setItemLabelGenerator(Product::getName);
-
-        editQuantityField.setMin(1);
-        editQuantityField.setStep(1);
-
-        statusComboBox.setItems(PurchaseOrderStatus.values());
-
-        Button updateButton = new Button("Update", e -> updateOrder());
-        VerticalLayout layout = new VerticalLayout(
-                editProductComboBox,
-                editQuantityField,
-                statusComboBox,
-                updateButton);
-
         editDialog.setHeaderTitle("Edit Purchase Order");
-        editDialog.add(layout);
     }
 
     private void openEditDialog(PurchaseOrder order) {
-        editDialog.removeAll(); // Limpa conteúdo antigo;
+        editDialog.removeAll();
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
@@ -199,6 +176,7 @@ public class PurchaseOrderView extends VerticalLayout {
 
         Button updateButton = new Button("Update", e -> {
             try {
+                // Atualiza os itens do pedido
                 for (int i = 0; i < itemForms.size(); i++) {
                     PurchaseOrderItemForm form = itemForms.get(i);
                     PurchaseOrderItem item = order.getPurchaseItems().get(i);
@@ -208,22 +186,28 @@ public class PurchaseOrderView extends VerticalLayout {
                     item.setPrice(BigDecimal.valueOf(form.priceField.getValue()));
                 }
 
+                // Atualiza o pedido (recalcula totais)
                 purchaseOrderService.udpatePurchaseOrder(order);
 
+                // Processa mudança de status
                 PurchaseOrderStatus selectedStatus = statusComboBox.getValue();
-                PurchaseOrderStatus originalStatus = order.getPurchaseOrderStatus();
-
-                if (selectedStatus == PurchaseOrderStatus.CANCELLED) {
-                    purchaseOrderService.cancelPurchaseOrder(order);
-                    Notification notification = Notification.show("Order cancelled.");
-                    notification.setPosition(Notification.Position.MIDDLE);
-                } else if (selectedStatus == PurchaseOrderStatus.INVOICED) {
-                    purchaseOrderService.finishPurchaseOrder(order);
-                    Notification notification = Notification.show("Order finished.");
-                    notification.setPosition(Notification.Position.MIDDLE);
+                if (selectedStatus != order.getPurchaseOrderStatus()) {
+                    if (selectedStatus == PurchaseOrderStatus.CANCELLED) {
+                        purchaseOrderService.cancelPurchaseOrder(order);
+                        Notification.show("Order cancelled successfully.");
+                    } else if (selectedStatus == PurchaseOrderStatus.INVOICED) {
+                        purchaseOrderService.finishPurchaseOrder(order);
+                        Notification.show("Order finished successfully.");
+                    } else {
+                        // Para outros status, apenas atualiza
+                        order.setPurchaseOrderStatus(selectedStatus);
+                        purchaseOrderService.update(order);
+                        Notification.show("Order updated successfully.");
+                    }
+                } else {
+                    Notification.show("Order updated successfully.");
                 }
 
-                order.setPurchaseOrderStatus(originalStatus);
                 refreshGrid();
                 editDialog.close();
             } catch (Exception ex) {
@@ -232,7 +216,6 @@ public class PurchaseOrderView extends VerticalLayout {
         });
 
         layout.add(statusComboBox, updateButton);
-        editDialog.setHeaderTitle("Edit Purchase Order");
         editDialog.add(layout);
         editDialog.open();
     }
@@ -258,31 +241,6 @@ public class PurchaseOrderView extends VerticalLayout {
         }
     }
 
-    private void updateOrder() {
-        if (currentOrderEditing == null) {
-            Notification.show("No order selected.");
-            return;
-        }
-
-        PurchaseOrderStatus newStatus = statusComboBox.getValue();
-
-        if (newStatus == null) {
-            Notification.show("Status must be selected.");
-            return;
-        }
-
-        try {
-            currentOrderEditing.setPurchaseOrderStatus(newStatus);
-            purchaseOrderService.udpatePurchaseOrder(currentOrderEditing);
-
-            Notification.show("Order status updated successfully.");
-            refreshGrid();
-            editDialog.close();
-        } catch (Exception e) {
-            Notification.show("Error updating order: " + e.getMessage());
-        }
-    }
-
     private void setupOrderDialog() {
         FormLayout dialogFormLayout = new FormLayout();
         dialogFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
@@ -290,34 +248,26 @@ public class PurchaseOrderView extends VerticalLayout {
 
         Button confirmOrderButton = new Button("Confirm Order", e -> {
             createOrder();
-            orderDialog.close();
         });
 
-        Button closeButton = new Button("Close order");
-        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ICON);
+        Button closeButton = new Button("Close");
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         closeButton.addClickListener(e -> {
-            productComboBox.clear();
-            quantityField.setValue(1.0);
-            priceField.setValue(0.0);
-            purchaserComboBox.clear();
-            items.clear();
-            itemGrid.setItems(items);
+            clearOrderForm();
             orderDialog.close();
         });
-        closeButton.getElement().setAttribute("aria-label", "Close");
 
         HorizontalLayout buttonLayout = new HorizontalLayout(confirmOrderButton, closeButton);
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         buttonLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         buttonLayout.setSpacing(true);
 
-        VerticalLayout dialogContent = new VerticalLayout(dialogFormLayout, buttonLayout);
+        VerticalLayout dialogContent = new VerticalLayout(dialogFormLayout, itemGrid, buttonLayout);
         dialogContent.setPadding(true);
         dialogContent.setSpacing(true);
 
         orderDialog.setHeaderTitle("Create Purchase Order");
         orderDialog.add(dialogContent);
-        orderDialog.add(itemGrid);
     }
 
     private void addItem() {
@@ -349,6 +299,7 @@ public class PurchaseOrderView extends VerticalLayout {
 
         Notification.show("Item added successfully.");
 
+        // Limpa os campos do item
         productComboBox.clear();
         quantityField.setValue(1.0);
         priceField.setValue(0.0);
@@ -375,18 +326,22 @@ public class PurchaseOrderView extends VerticalLayout {
         try {
             purchaseOrderService.createPurchaseOrder(dto);
             Notification.show("Purchase order created successfully.");
-            items.clear();
-
-            productComboBox.clear();
-            quantityField.setValue(1.0);
-            priceField.setValue(0.0);
-            purchaserComboBox.clear();
-            itemGrid.setItems(items);
-
+            
+            clearOrderForm();
+            orderDialog.close();
             refreshGrid();
         } catch (Exception ex) {
             Notification.show("Error creating purchase order: " + ex.getMessage());
         }
+    }
+
+    private void clearOrderForm() {
+        items.clear();
+        productComboBox.clear();
+        quantityField.setValue(1.0);
+        priceField.setValue(0.0);
+        purchaserComboBox.clear();
+        itemGrid.setItems(items);
     }
 
     private void refreshGrid() {
@@ -411,7 +366,6 @@ public class PurchaseOrderView extends VerticalLayout {
         itemGrid.addColumn(item -> item.getProduct().getName()).setHeader("Product").setAutoWidth(true);
         itemGrid.addColumn(CreatePurchaseOrderItemDTO::getQuantity).setHeader("Quantity").setAutoWidth(true);
         itemGrid.addColumn(item -> item.getPrice().toString()).setHeader("Price").setAutoWidth(true);
-
         itemGrid.setHeight("200px");
     }
 
@@ -476,11 +430,9 @@ public class PurchaseOrderView extends VerticalLayout {
             openEditDialog(order);
         });
 
-        if (order.getPurchaseOrderStatus() == PurchaseOrderStatus.CANCELLED) {
-            editButton.setEnabled(false);
-        }
-
-        if (order.getPurchaseOrderStatus() == PurchaseOrderStatus.INVOICED) {
+        // Desabilita edição para pedidos cancelados ou finalizados
+        if (order.getPurchaseOrderStatus() == PurchaseOrderStatus.CANCELLED ||
+            order.getPurchaseOrderStatus() == PurchaseOrderStatus.INVOICED) {
             editButton.setEnabled(false);
         }
 
