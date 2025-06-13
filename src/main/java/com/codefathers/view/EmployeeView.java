@@ -29,6 +29,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Route("employee")
@@ -51,7 +52,7 @@ public class EmployeeView extends VerticalLayout {
     private Button createClearButton = new Button("Clear");
     private Button createCloseButton = new Button("Close");
 
-    private Button updateEmployeeButton = new Button("Update");
+
     private Button updateSaveButton = new Button("Save");
     private Button updateClearButton = new Button("Clear");
     private Button updateCloseButton = new Button("Close");
@@ -69,6 +70,7 @@ public class EmployeeView extends VerticalLayout {
 
     private com.vaadin.flow.component.checkbox.Checkbox showInactiveCheckbox =
             new com.vaadin.flow.component.checkbox.Checkbox("Show inactive employees");
+
 
     public EmployeeView() {
         var employeeRepository = new EmployeeRepositoryImpl();
@@ -98,14 +100,21 @@ public class EmployeeView extends VerticalLayout {
         setupLazyDataProvider();
     }
 
+
     private void configureFormFields() {
         createGender.setItems(EmployeeGender.values());
-        createGender.setItemLabelGenerator(EmployeeGender::name);
+        createGender.setItemLabelGenerator(EmployeeGender::getLabel);
+
+        updateGender.setItems(EmployeeGender.values());
+        updateGender.setItemLabelGenerator(EmployeeGender::getLabel);
 
         createRole.setItems(EmployeeRole.values());
-        createRole.setItemLabelGenerator(EmployeeRole::name);
+        createRole.setItemLabelGenerator(EmployeeRole::getLabel);
 
-        createBirthDate.setPlaceholder("YYYY-MM-DD");
+        updateRole.setItems(EmployeeRole.values());
+        updateRole.setItemLabelGenerator(EmployeeRole::getLabel);
+
+        createBirthDate.setPlaceholder("DD-MM-YYYY");
     }
 
     private void saveNewEmployee() {
@@ -147,7 +156,7 @@ public class EmployeeView extends VerticalLayout {
                     .build();
 
             employeeService.updateEmployee(dto, currentEmployee.getId());
-            Notification.show("Product updated successfully!");
+            Notification.show("Employee updated successfully!");
 
             dataView.refreshAll();
             clearUpdateForm();
@@ -206,8 +215,8 @@ public class EmployeeView extends VerticalLayout {
     private void setupGrid() {
         grid.addColumn(Employee::getFullName).setHeader("Full Name").setAutoWidth(true);
         grid.addColumn(Employee::getBirthDate).setHeader("Birth Date").setAutoWidth(true);
-        grid.addColumn(Employee::getGender).setHeader("Gender").setAutoWidth(true);
-        grid.addColumn(Employee::getRole).setHeader("Role").setAutoWidth(true);
+        grid.addColumn(employee -> employee.getGender().getLabel()).setHeader("Gender").setAutoWidth(true);
+        grid.addColumn(employee -> employee.getRole().getLabel()).setHeader("Role").setAutoWidth(true);
 
         statusColumn = grid.addColumn(product -> product.isActive() ? "Active" : "Inactive")
                 .setHeader("Status")
