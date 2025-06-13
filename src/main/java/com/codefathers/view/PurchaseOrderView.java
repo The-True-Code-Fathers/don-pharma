@@ -294,7 +294,25 @@ public class PurchaseOrderView extends VerticalLayout {
             orderDialog.close();
         });
 
-        VerticalLayout dialogContent = new VerticalLayout(dialogFormLayout, confirmOrderButton);
+        Button closeButton = new Button("Close order");
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ICON);
+        closeButton.addClickListener(e -> {
+            productComboBox.clear();
+            quantityField.setValue(1.0);
+            priceField.setValue(0.0);
+            purchaserComboBox.clear();
+            items.clear();
+            itemGrid.setItems(items);
+            orderDialog.close();
+        });
+        closeButton.getElement().setAttribute("aria-label", "Close");
+
+        HorizontalLayout buttonLayout = new HorizontalLayout(confirmOrderButton, closeButton);
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        buttonLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        buttonLayout.setSpacing(true);
+
+        VerticalLayout dialogContent = new VerticalLayout(dialogFormLayout, buttonLayout);
         dialogContent.setPadding(true);
         dialogContent.setSpacing(true);
 

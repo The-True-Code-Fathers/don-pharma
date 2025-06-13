@@ -140,7 +140,8 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         VerticalLayout dialogContent = new VerticalLayout();
         dialogContent.setPadding(false);
         dialogContent.setSpacing(true);
-        dialogContent.setWidth("200px");
+        dialogContent.setWidth("250px");
+        dialogContent.setAlignItems(FlexComponent.Alignment.CENTER);
 
         Div themeSection = new Div();
         themeSection.getStyle().set("padding", "8px 0");
@@ -180,7 +181,12 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
             userDialog.close();
             handleLogout();
         });
-        logoutButton.getStyle().set("width", "100%");
+
+        logoutButton.setWidth("150px");  // largura fixa
+        HorizontalLayout buttonWrapper = new HorizontalLayout(logoutButton);
+        buttonWrapper.setWidthFull();
+        buttonWrapper.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+
         logoutButton.getStyle().set("background", "transparent");
         logoutButton.getStyle().set("border", "1px solid var(--lumo-error-color)");
         logoutButton.getStyle().set("color", "var(--lumo-error-color)");
@@ -196,7 +202,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
             logoutButton.getStyle().set("color", "var(--lumo-error-color)");
         });
 
-        dialogContent.add(themeSection, separator, logoutButton);
+        dialogContent.add(themeSection, separator, buttonWrapper);
         userDialog.add(dialogContent);
         userDialog.open();
     }
