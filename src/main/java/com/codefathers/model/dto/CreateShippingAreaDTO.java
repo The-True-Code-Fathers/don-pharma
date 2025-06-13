@@ -20,4 +20,7 @@ public class CreateShippingAreaDTO {
 
     @NotNull
     private String[] states;
+
+    @NotNull
+    private String cep;
 }

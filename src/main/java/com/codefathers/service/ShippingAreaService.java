@@ -30,6 +30,7 @@ public class ShippingAreaService {
                 .shippingProvider(createShippingAreaDTO.getShippingProvider())
                 .description(createShippingAreaDTO.getDescription())
                 .states(createShippingAreaDTO.getStates())
+                .cep(createShippingAreaDTO.getCep())
                 .build();
 
         try{

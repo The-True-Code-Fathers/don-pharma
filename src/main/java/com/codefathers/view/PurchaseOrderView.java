@@ -104,16 +104,6 @@ public class PurchaseOrderView extends VerticalLayout {
         grid.addColumn(po -> po.getPurchaseTotalPriceAmount()).setHeader("Total Price Amount").setSortable(true);
         grid.addColumn(po -> po.getCreatedAt().toString()).setHeader("Created At").setSortable(true);
         grid.addColumn(po -> po.getPurchaseOrderStatus().toString()).setHeader("Status").setSortable(true);
-        grid.addComponentColumn(order -> {
-            Button editButton = new Button("Edit", new Icon(VaadinIcon.EDIT));
-            editButton.addClickListener(e -> openEditDialog(order));
-            if (order.getPurchaseOrderStatus() == PurchaseOrderStatus.CANCELLED) {
-                editButton.setEnabled(false);
-            }
-            return editButton;
-
-        }).setHeader("Actions");
-
         grid.setHeight("400px");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
 
@@ -304,7 +294,25 @@ public class PurchaseOrderView extends VerticalLayout {
             orderDialog.close();
         });
 
-        VerticalLayout dialogContent = new VerticalLayout(dialogFormLayout, confirmOrderButton);
+        Button closeButton = new Button("Close order");
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ICON);
+        closeButton.addClickListener(e -> {
+            productComboBox.clear();
+            quantityField.setValue(1.0);
+            priceField.setValue(0.0);
+            purchaserComboBox.clear();
+            items.clear();
+            itemGrid.setItems(items);
+            orderDialog.close();
+        });
+        closeButton.getElement().setAttribute("aria-label", "Close");
+
+        HorizontalLayout buttonLayout = new HorizontalLayout(confirmOrderButton, closeButton);
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        buttonLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        buttonLayout.setSpacing(true);
+
+        VerticalLayout dialogContent = new VerticalLayout(dialogFormLayout, buttonLayout);
         dialogContent.setPadding(true);
         dialogContent.setSpacing(true);
 
@@ -463,12 +471,19 @@ public class PurchaseOrderView extends VerticalLayout {
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         buttonLayout.setWidthFull();
 
-        Button editButton = new Button("Edit Order", new Icon(VaadinIcon.EDIT));
-        editButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        Button editButton = new Button("Edit", new Icon(VaadinIcon.EDIT));
         editButton.addClickListener(e -> {
             detailsDialog.close();
             openEditDialog(order);
         });
+
+        if (order.getPurchaseOrderStatus() == PurchaseOrderStatus.CANCELLED) {
+            editButton.setEnabled(false);
+        }
+
+        if (order.getPurchaseOrderStatus() == PurchaseOrderStatus.INVOICED) {
+            editButton.setEnabled(false);
+        }
 
         Button closeButton = new Button("Close");
         closeButton.addClickListener(e -> detailsDialog.close());
@@ -482,7 +497,6 @@ public class PurchaseOrderView extends VerticalLayout {
                 itemsGrid,
                 buttonLayout
         );
-
         detailsDialog.add(mainLayout);
         detailsDialog.open();
     }

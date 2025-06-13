@@ -12,11 +12,12 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
-public class CreateEmployeeDTO {
+
+public class UpdateEmployeeDTO {
 
     @NotBlank(message = "O nome completo é obrigatório.")
     private String fullName;
@@ -32,5 +33,5 @@ public class CreateEmployeeDTO {
     private EmployeeRole role;
 
     @NotNull
-    private boolean active = true;
+    private boolean active;
 }
