@@ -13,7 +13,6 @@
         <maven.compiler.source>23</maven.compiler.source>
         <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <vaadin.theme>my-theme</vaadin.theme>
         <vaadin.version>24.7.6</vaadin.version>
         <jetty.version>12.0.15</jetty.version>
     </properties>

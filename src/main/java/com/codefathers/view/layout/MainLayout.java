@@ -3,8 +3,6 @@ package com.codefathers.view.layout;
 import com.codefathers.view.*;
 import com.codefathers.view.PurchaseOrderView;
 import com.codefathers.view.StorageView;
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -25,8 +23,6 @@ import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Layout;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @Layout
@@ -35,6 +31,13 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
     private boolean darkModeEnabled = false;
 
     public MainLayout() {
+        UI.getCurrent().getPage().executeJs(
+                "setTimeout(() => localStorage.getItem('dark-mode-enabled'), 100);"
+        ).then(String.class, darkMode -> {
+            boolean enabled = "true".equals(darkMode);
+            setDarkMode(enabled);
+        });
+
         DrawerToggle toggle = new DrawerToggle();
 
         H1 title = new H1("⚕\uFE0F Don Pharma");
@@ -128,7 +131,19 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        UI.getCurrent().getPage().executeJs(
+                "localStorage.removeItem('dark-mode-enabled');"
+        );
 
+        UI.getCurrent().getPage().executeJs(
+                "const localSetting = localStorage.getItem('dark-mode-enabled');" +
+                        "const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;" +
+                        "const useDark = localSetting === null ? prefersDark : localSetting === 'true';" +
+                        "document.documentElement.setAttribute('theme', useDark ? 'dark' : 'light');" +
+                        "return useDark;"
+        ).then(Boolean.class, enabled -> {
+            setDarkMode(enabled);
+        });
     }
 
     private void openUserDialog() {
