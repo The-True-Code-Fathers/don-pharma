@@ -36,7 +36,7 @@ public class ProductsView extends VerticalLayout {
     private ProductService productService;
 
     // Form fields - CREATE NEW INSTANCES FOR EACH DIALOG
-    private TextField createSku = new TextField("SKU");
+    private TextField createSku = new TextField("SKU", "A123");
     private TextField createName = new TextField("Name");
     private TextArea createDescription = new TextArea("Description", "Optional");
     private BigDecimalField createBuyPrice = new BigDecimalField("Buy Price");
