@@ -33,14 +33,8 @@ public class PaymentService {
             throw new IllegalArgumentException("Negative value");
         }
 
-        BigDecimal totalDiscounts = createPaymentDTO.getAmountInTaxes()
-                .add(createPaymentDTO.getMealVoucherAmount())
-                .add(createPaymentDTO.getFoodVoucherAmount())
-                .add(createPaymentDTO.getHealthInsuranceAmount())
-                .add(createPaymentDTO.getDentalInsuranceAmount());
-
-        if (createPaymentDTO.getGrossIncome().compareTo(totalDiscounts) < 0) {
-            throw new IllegalArgumentException("Gross income needs to be higher than total discounts");
+        if (createPaymentDTO.getGrossIncome().compareTo(createPaymentDTO.getAmountInTaxes()) < 0) {
+            throw new IllegalArgumentException("Gross income needs to be higher than amount in taxxes");
         }
 
         Payment payment = Payment.builder()
