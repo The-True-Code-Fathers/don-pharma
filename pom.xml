@@ -125,7 +125,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.5</version>
+            <version>42.7.7</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api -->
@@ -200,6 +200,13 @@
             <groupId>com.google.ortools</groupId>
             <artifactId>ortools-java</artifactId>
             <version>9.12.4544</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.github.appreciated/apexcharts -->
+        <dependency>
+            <groupId>com.github.appreciated</groupId>
+            <artifactId>apexcharts</artifactId>
+            <version>24.0.1</version>
         </dependency>
 
     </dependencies>
