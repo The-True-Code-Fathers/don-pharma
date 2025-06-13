@@ -8,10 +8,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.codefathers.model.dto.CreateEmployeeDTO;
+import com.codefathers.model.dto.UpdateEmployeeDTO;
 import com.codefathers.model.entity.Employee;
+import com.codefathers.model.entity.Product;
 import com.codefathers.repository.interfaces.EmployeeRepository;
 
+import jakarta.persistence.Id;
 import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 
 public class EmployeeService {
@@ -32,8 +37,31 @@ public class EmployeeService {
                 .fullName(createEmployeeDTO.getFullName())
                 .role(createEmployeeDTO.getRole())
                 .birthDate(createEmployeeDTO.getBirthDate())
+                .active(true)
                 .build();
         employeeRepository.save(employee);
+    }
+
+    public void updateEmployee(UpdateEmployeeDTO updateEmployeeDTO, @Valid UUID uuid) {
+        validateDTOFunctions(updateEmployeeDTO);
+        validateAge(updateEmployeeDTO.getBirthDate());
+
+        Employee emp = employeeRepository.findById(uuid);
+
+        if (emp == null) {
+            throw new RuntimeException("Produto com SKU '" + uuid + "' não encontrado.");
+        }
+            emp.setGender(updateEmployeeDTO.getGender());
+            emp.setFullName(updateEmployeeDTO.getFullName());
+            emp.setRole(updateEmployeeDTO.getRole());
+            emp.setActive(updateEmployeeDTO.isActive());
+
+        try {
+            employeeRepository.update(emp);
+            employeeRepository.save(emp);
+        } catch (ConstraintViolationException e) {
+            System.out.println(e.getMessage());
+        };
     }
 
     public void deleteEmployeeByID(UUID uuid) {
@@ -70,6 +98,18 @@ public class EmployeeService {
             throw new IllegalArgumentException("Erros de validação: " + errors);
         }
     }
+
+    private void validateDTOFunctions(UpdateEmployeeDTO updateEmployeeDTO) {
+        Set<ConstraintViolation<UpdateEmployeeDTO>> violations = validator.validate(updateEmployeeDTO);
+        if (!violations.isEmpty()) {
+            String errors = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", "));
+            throw new IllegalArgumentException("Erros de validação: " + errors);
+        }
+    }
+
+
 
     private void validateAge(LocalDate birthDate) {
         int age = Period.between(birthDate, LocalDate.now()).getYears();

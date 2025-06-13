@@ -48,8 +48,6 @@ public class ProductService {
 
     public void updateProduct(@Valid String productSku, UpdateProductDTO updateProductDTO) {
 
-        //var violations = validator.validate(updateProductDTO);
-
         Product product = productRepository.findBySKU(productSku).get();
 
 
