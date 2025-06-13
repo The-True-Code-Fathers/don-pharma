@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class CreateShippingOrderDTO {
     @NotNull(message = "O ID do provedor de entrega não pode ser nulo")
-    private UUID shippingProviderId;  // Alterado para UUID
+    private UUID shippingProviderId;
 
     @NotBlank(message = "O estado de destino é obrigatório")
     @Size(min = 2, max = 2, message = "O estado deve ser o código com 2 letras (ex: SP)")
@@ -60,4 +60,8 @@ public class CreateShippingOrderDTO {
         }
         return repository.findById(shippingProviderId).get();
     }
+
+    @NotNull(message = "Campo obrigatório")
+    private boolean active;
+
 }

@@ -155,4 +155,8 @@ public class PurchaseOrderService {
         return purchaseOrderRepository.findAllPurchaseOrderItemByPurchaseOrderId(purchaseOrderId);
     }
 
+    public void update(PurchaseOrder purchaseOrder) {
+        purchaseOrderRepository.save(purchaseOrder);
+    }
+
 }

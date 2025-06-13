@@ -1,5 +1,6 @@
 package com.codefathers.model.entity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -29,4 +30,11 @@ public class ShippingArea {
 
     @Column(nullable = false)
     private String cep;
+
+    @Column(name = "active", nullable = false)
+    private boolean active;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    
 }

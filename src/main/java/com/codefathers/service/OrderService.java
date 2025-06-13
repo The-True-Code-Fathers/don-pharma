@@ -150,4 +150,8 @@ public class OrderService {
         return BigDecimal.ZERO;
     }
 
+    public void update(Order order) {
+        orderRepository.update(order);
+    }
+
 }

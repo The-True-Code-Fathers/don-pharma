@@ -1,6 +1,7 @@
 package com.codefathers.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,6 +52,8 @@ public class PaymentService {
                 .healthInsuranceAmount(createPaymentDTO.getHealthInsuranceAmount())
                 .dentalInsuranceAmount(createPaymentDTO.getDentalInsuranceAmount())
                 .profitSharingAmount(createPaymentDTO.getProfitSharingAmount())
+                .createdAt(LocalDateTime.now())
+                .active(true)
                 .build();
 
         paymentRepository.save(payment);
@@ -94,6 +97,10 @@ public class PaymentService {
 
     public Optional<Payment> findById(UUID id) {
         return paymentRepository.findById(id);
+    }
+
+    public void update(Payment payment) {
+        paymentRepository.update(payment);
     }
 
 }
