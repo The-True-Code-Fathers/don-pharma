@@ -47,12 +47,29 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         themeToggleButton = new Button(VaadinIcon.SUN_O.create());
         themeToggleButton.addClickListener(event -> {
             setDarkMode(!darkModeEnabled);
-            UI.getCurrent().getPage().executeJs("localStorage.setItem('dark-mode-enabled', $0);", darkModeEnabled);
+            UI.getCurrent().getPage().executeJs(
+                    "return localStorage.getItem('dark-mode-enabled');"
+            ).then(String.class, result -> {
+                if (result != null) {
+                    boolean darkModeEnabled = Boolean.parseBoolean(result);
+                    setDarkMode(darkModeEnabled);
+                } else {
+                    // Se não tiver nada no localStorage, use o tema do sistema
+                    UI.getCurrent().getPage().executeJs(
+                            "return window.matchMedia('(prefers-color-scheme: dark)').matches;"
+                    ).then(Boolean.class, systemPrefersDark -> {
+                        setDarkMode(systemPrefersDark);
+                    });
+                }
+            });
         });
         themeToggleButton.getStyle().set("margin-right", "0.5em");
         themeToggleButton.getStyle().set("background", "transparent");
 
+
+
         setDarkMode(darkModeEnabled);
+
 
         Avatar avatarBasic = new Avatar();
         avatarBasic.getStyle().set("margin-right", "1em");
@@ -133,9 +150,9 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        UI.getCurrent().getPage().executeJs(
-                "localStorage.removeItem('dark-mode-enabled');"
-        );
+//        UI.getCurrent().getPage().executeJs(
+//                "localStorage.removeItem('dark-mode-enabled');"
+//        );
 
         UI.getCurrent().getPage().executeJs(
                 "const localSetting = localStorage.getItem('dark-mode-enabled');" +
