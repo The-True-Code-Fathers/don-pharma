@@ -1,5 +1,6 @@
 package com.codefathers.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,6 +51,8 @@ public class ShippingOrderService {
                 .deliveryDate(dto.getDeliveryDate())
                 .shipmentDate(dto.getShipmentDate())
                 .shippingCost(dto.getShippingCost())
+                .createdAt(LocalDateTime.now())
+                .active(true)
                 .build();
 
         shippingOrderRepository.save(order);
@@ -109,4 +112,9 @@ public class ShippingOrderService {
 
         shippingOrderRepository.update(existingOrder);
     }
+
+    public void update(ShippingOrderService shippingOrderService) {
+        shippingOrderService.update(shippingOrderService);
+    }
+
 }

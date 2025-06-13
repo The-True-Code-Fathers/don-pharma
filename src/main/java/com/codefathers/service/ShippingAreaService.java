@@ -7,6 +7,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +31,8 @@ public class ShippingAreaService {
                 .shippingProvider(createShippingAreaDTO.getShippingProvider())
                 .description(createShippingAreaDTO.getDescription())
                 .states(createShippingAreaDTO.getStates())
+                .createdAt(LocalDateTime.now())
+                .active(true)
                 .build();
 
         try{

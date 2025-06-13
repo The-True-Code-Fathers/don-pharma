@@ -1,5 +1,6 @@
 package com.codefathers.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -33,6 +34,7 @@ public class PurchaseOrderItemService {
                 .product(createPurchaseOrderItemDTO.getProduct())
                 .quantity(createPurchaseOrderItemDTO.getQuantity())
                 .price(createPurchaseOrderItemDTO.getPrice())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         purchaseOrderItemRepository.save(item);

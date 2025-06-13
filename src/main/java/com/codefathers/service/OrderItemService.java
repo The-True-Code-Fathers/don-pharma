@@ -1,5 +1,6 @@
 package com.codefathers.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +25,7 @@ public class OrderItemService {
                 .product(createOrderItemDTO.getProduct())
                 .quantity(createOrderItemDTO.getQuantity())
                 .price(createOrderItemDTO.getPrice())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         orderItemRepository.save(item);

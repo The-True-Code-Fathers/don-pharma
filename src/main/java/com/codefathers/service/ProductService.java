@@ -1,5 +1,6 @@
 package com.codefathers.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.codefathers.model.dto.CreateProductDTO;
@@ -37,6 +38,7 @@ public class ProductService {
                     .description(createProductDTO.getDescription())
                     .active(true)
                     .measurementUnit(createProductDTO.getMeasurementUnit())
+                    .createdAt(LocalDateTime.now())
                     .build();
         try {
             productRepository.save(product);

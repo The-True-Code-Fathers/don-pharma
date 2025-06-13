@@ -62,6 +62,7 @@ public class OrderService {
                 .totalAmount(BigDecimal.ZERO)
                 .orderStatus(OrderStatus.OPEN)
                 .createdAt(LocalDateTime.now())
+                .active(true)
                 .build();
 
         List<OrderItem> orderItems = createOrderDTO.getItem().stream().map(dto -> {
@@ -148,6 +149,10 @@ public class OrderService {
 
     public BigDecimal getTotalRevenue() {
         return BigDecimal.ZERO;
+    }
+
+    public void update(Order order) {
+        orderRepository.update(order);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.codefathers.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,8 @@ public class EmployeeService {
                 .fullName(createEmployeeDTO.getFullName())
                 .role(createEmployeeDTO.getRole())
                 .birthDate(createEmployeeDTO.getBirthDate())
+                .createdAt(LocalDateTime.now())
+                .active(true)
                 .build();
         employeeRepository.save(employee);
     }
@@ -77,6 +80,10 @@ public class EmployeeService {
             throw new IllegalArgumentException(
                     "O funcionário deve ter no mínimo 16 (dezesseis) anos para ser registrado");
         }
+    }
+
+    public void update(Employee employee) {
+        employeeRepository.update(employee);
     }
 
 }

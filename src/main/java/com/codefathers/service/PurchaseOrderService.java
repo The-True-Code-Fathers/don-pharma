@@ -58,6 +58,7 @@ public class PurchaseOrderService {
                 .purchaseTotalProductAmount(0)
                 .purchaseOrderStatus(PurchaseOrderStatus.OPEN)
                 .createdAt(LocalDateTime.now())
+                .active(true)
                 .build();
 
         List<PurchaseOrderItem> purchaseOrderItems = createPurchaseOrderDTO.getItem().stream().map(dto -> {
@@ -153,6 +154,10 @@ public class PurchaseOrderService {
 
     public List<PurchaseOrderItem> findAllPurchaseOrderItemByPurchaseOrderId(UUID purchaseOrderId) {
         return purchaseOrderRepository.findAllPurchaseOrderItemByPurchaseOrderId(purchaseOrderId);
+    }
+
+    public void update(PurchaseOrder purchaseOrder) {
+        purchaseOrderRepository.save(purchaseOrder);
     }
 
 }
