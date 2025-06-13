@@ -10,15 +10,41 @@ import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
+import com.codefathers.util.HibernateUtil;
+import org.hibernate.Session;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class ShippingProviderService {
     private final ShippingProviderRepository shippingProviderRepository;
-
 
     public ShippingProviderService(ShippingProviderRepository shippingProviderRepository) {
         this.shippingProviderRepository = shippingProviderRepository;
     }
 
+    // Método novo adicionado
+    public List<ShippingProvider> listProvidersByState(String estado) {
+        if (estado == null || estado.trim().isEmpty()) {
+            return listAllShippingProviders();
+        }
+
+        String estadoUpper = estado.toUpperCase();
+        return shippingProviderRepository.listAll().stream()
+                .filter(provider -> providerAtendeEstado(provider, estadoUpper))
+                .collect(Collectors.toList());
+    }
+
+    // Método auxiliar novo
+    private boolean providerAtendeEstado(ShippingProvider provider, String estado) {
+        return provider.getShippingAreas().stream()
+                .anyMatch(area -> Arrays.asList(area.getStates()).contains(estado));
+    }
+
+    // Métodos existentes (mantidos sem alteração)
     public void registerShippingProvider(CreateShippingProviderDTO dto) {
         validateShippingProviderDTO(dto);
 
@@ -32,7 +58,6 @@ public class ShippingProviderService {
                 .active(true)
                 .build();
 
-        // Processa as áreas de entrega
         List<ShippingArea> areas = processShippingAreas(dto.getShippingAreas(), shippingProvider);
         shippingProvider.setShippingAreas(areas);
 
@@ -43,8 +68,6 @@ public class ShippingProviderService {
         if (shippingId == null) {
             throw new IllegalArgumentException("ID da transportadora não pode ser nulo");
         }
-
-
         return shippingProviderRepository.findById(shippingId).get();
     }
 
@@ -68,25 +91,21 @@ public class ShippingProviderService {
             throw new IllegalArgumentException("ID da transportadora é obrigatório para atualização");
         }
 
-        // Busca a transportadora existente
         ShippingProvider existing = shippingProviderRepository.findById(dto.getId()).get();
         if (existing == null) {
             throw new IllegalArgumentException("Transportadora não encontrada");
         }
 
-        // Atualiza os campos
         existing.setName(dto.getName());
         existing.setCnpj(dto.getCnpj());
         existing.setBasePrice(dto.getBasePrice());
         existing.setDailyCapacity(dto.getDailyCapacity());
 
-        // Processa as áreas de entrega
         List<ShippingArea> areas = processShippingAreas(dto.getShippingAreas(), existing);
         existing.setShippingAreas(areas);
 
         shippingProviderRepository.update(existing);
     }
-
 
     private void validateShippingProviderDTO(CreateShippingProviderDTO dto) {
         if (dto == null) {
@@ -117,7 +136,7 @@ public class ShippingProviderService {
 
         return areas.stream()
                 .map(area -> ShippingArea.builder()
-                        .id(area.getId() != null ? area.getId() : UUID.randomUUID()) // garante UUID
+                        .id(area.getId() != null ? area.getId() : UUID.randomUUID())
                         .description(area.getDescription())
                         .states(area.getStates())
                         .shippingProvider(provider)
