@@ -6,10 +6,9 @@ import com.codefathers.service.AuthService;
 import com.github.appreciated.apexcharts.ApexCharts;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI; // Import UI
-import com.vaadin.flow.component.button.Button; // Import Button
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
@@ -42,19 +41,19 @@ import com.github.appreciated.apexcharts.config.theme.Mode;
 // import com.github.appreciated.apexcharts.config.theme.Palette; // Removed unused import for Palette
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Route("")
 @PageTitle("Dashboard | Sistema de Gestão")
-public class DashboardView extends VerticalLayout {
+public class DashboardView extends FlexLayout {
 
     private AuthService authService = ServiceFactory.getAuthService();
 
     public DashboardView() {
         setSizeFull();
+        setFlexDirection(FlexDirection.COLUMN);
         addClassName("dashboard-view");
 
         // The initial theme is set by MainLayout.
@@ -68,12 +67,16 @@ public class DashboardView extends VerticalLayout {
         add(createKpiSection());
 
         // Charts Section
-        add(createChartsSection());
+        FlexLayout chartContainer = new FlexLayout();
+        chartContainer.setSizeFull();
+        chartContainer.setAlignItems(Alignment.CENTER);
+        chartContainer.setFlexDirection(FlexDirection.COLUMN);
+        chartContainer.add(createMainChartsSection(), createWrapChartsSection());
 
-        add(createWrapChartsSection());
+        add(chartContainer);
 
         // Tables Section
-        add(createTablesSection());
+        // add(createTablesSection());
     }
 
     private Component createHeader() {
@@ -91,25 +94,43 @@ public class DashboardView extends VerticalLayout {
         headerContent.setAlignItems(Alignment.CENTER);
 
         VerticalLayout headerLayout = new VerticalLayout(headerContent);
-        headerLayout.setPadding(false);
-        headerLayout.setSpacing(false);
-        headerLayout.setAlignItems(Alignment.START);
+        headerLayout.setPadding(true);
+        headerLayout.setSpacing(true);
+        headerLayout.setAlignItems(Alignment.CENTER);
 
         return headerLayout;
     }
 
     private Component createKpiSection() {
-        // FlexLayout allows items to wrap to the next line on smaller screens
-        FlexLayout kpiLayout = new FlexLayout();
+        var subtitle = new Span("Business Key Performance Indicators");
+        subtitle.addClassNames(LumoUtility.TextColor.SECONDARY);
+
+        var startDate = new DatePicker("Start date");
+        var endDate = new DatePicker("End date");
+        startDate
+                .addValueChangeListener(e -> endDate.setMin(e.getValue()));
+        endDate.addValueChangeListener(
+                e -> startDate.setMax(e.getValue()));
+
+        var datePickerLayout = new FlexLayout(startDate, endDate);
+        datePickerLayout.getStyle().set("gap", "1em");
+
+        var subtitleLayout = new FlexLayout(subtitle, datePickerLayout);
+        subtitleLayout.setWidthFull();
+        subtitleLayout.setFlexWrap(FlexWrap.WRAP);
+        subtitleLayout.getStyle().set("margin-left", "0.5em");
+        subtitleLayout.getStyle().set("margin-right", "0.5em");
+        subtitleLayout.setFlexDirection(FlexDirection.ROW);
+        subtitleLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        subtitleLayout.setAlignItems(Alignment.CENTER);
+
+        var kpiLayout = new FlexLayout();
         kpiLayout.addClassName("kpi-layout"); // Add class to differentiate from other FlexLayouts
         kpiLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP); // Allow cards to wrap
-        kpiLayout.setJustifyContentMode(JustifyContentMode.AROUND); // Center cards
+        kpiLayout.setJustifyContentMode(JustifyContentMode.CENTER); // Center cards
         kpiLayout.setAlignItems(FlexComponent.Alignment.END); // Align items to the start of the cross axis
-        kpiLayout.setMinWidth("80%");
-        //kpiLayout.setGap("1rem"); // Add spacing between cards
-
-        Span subtitle = new Span("Business Key Performance Indicators");
-        subtitle.addClassNames(LumoUtility.TextColor.SECONDARY);
+        kpiLayout.setWidthFull();
+        kpiLayout.getStyle().set("gap", "1rem");
 
         kpiLayout.add(
                 createKpiCard("Vendas Hoje", "R$ 45.230,00", "+12%", "⬆️", "success"),
@@ -119,11 +140,10 @@ public class DashboardView extends VerticalLayout {
         );
         kpiLayout.addClassNames(LumoUtility.Margin.Top.MEDIUM, LumoUtility.Margin.Bottom.MEDIUM);
 
-        VerticalLayout layout = new VerticalLayout(subtitle, kpiLayout);
-        layout.setSpacing(true);
-        // Align all items within this VerticalLayout to the start (left)
-        layout.setAlignItems(FlexComponent.Alignment.START);
-        return layout;
+        var finalLayout = new VerticalLayout(subtitleLayout, kpiLayout);
+        finalLayout.setSpacing(true);
+        finalLayout.setAlignItems(FlexComponent.Alignment.START);
+        return finalLayout;
     }
 
     private Component createKpiCard(String title, String value, String change, String iconString, String theme) {
@@ -163,22 +183,24 @@ public class DashboardView extends VerticalLayout {
         return layout;
     }
 
-    private Component createChartsSection() {
-        HorizontalLayout horizontalChartsLayout = new HorizontalLayout();
+    private Component createMainChartsSection() {
+        FlexLayout layout = new FlexLayout();
 
-
-        horizontalChartsLayout.add(
+        layout.add(
                 createSalesSummaryChart()
         );
 
-        horizontalChartsLayout.setWidth("80%");
-        horizontalChartsLayout.setHeight("50%"); // ou um tamanho controlado pelo layout pai
+        layout.setWidth("80%");
+        layout.setHeight("50%"); // ou um tamanho controlado pelo layout pai
+        layout.setAlignSelf(Alignment.CENTER);
 
-        return horizontalChartsLayout;
+        return layout;
     }
 
     private Component createWrapChartsSection() {
-        HorizontalLayout horizontalWrapChartsLayout = new HorizontalLayout();
+        FlexLayout horizontalWrapChartsLayout = new FlexLayout();
+
+        horizontalWrapChartsLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
 
         horizontalWrapChartsLayout.add(
                 createTopProductsChart(),
@@ -221,42 +243,38 @@ public class DashboardView extends VerticalLayout {
 
         ApexChartsBuilder chartBuilder = ApexChartsBuilder.get();
 
+        chartBuilder.withChart(
+                ChartBuilder.get()
+                        .withType(Type.LINE)
+                        .withHeight("350px")
+                        .build()
+        );
 
-            chartBuilder.withChart(
-                    ChartBuilder.get()
-                            .withType(Type.LINE)
-                            .withHeight("350px")
-                            .build()
-            );
+        chartBuilder.withTitle(
+                TitleSubtitleBuilder.get()
+                        .withText("Vendas dos Últimos 30 Dias")
+                        .build()
+        );
 
+        chartBuilder.withSeries(
+                new Series<>("Sales", 25000.0, 28000.0, 32000.0, 29000.0, 35000.0, 38000.0, 45000.0)
+        );
 
-            chartBuilder.withTitle(
-                    TitleSubtitleBuilder.get()
-                            .withText("Vendas dos Últimos 30 Dias")
-                            .build()
-            );
+        chartBuilder.withXaxis(
+                XAxisBuilder.get()
+                        .withCategories("Day 1", "Day 5", "Day 10", "Day 15", "Day 20", "Day 25", "Day 30")
+                        .build()
+        );
 
-            chartBuilder.withSeries(
-                    new Series<>("Sales", 25000.0, 28000.0, 32000.0, 29000.0, 35000.0, 38000.0, 45000.0)
-            );
+        chartBuilder.withYaxis(
+                YAxisBuilder.get()
+                        .withTitle(TitleBuilder.get().withText("Amount (R$)").build())
+                        .build()
+        );
 
-            chartBuilder.withXaxis(
-                    XAxisBuilder.get()
-                            .withCategories("Day 1", "Day 5", "Day 10", "Day 15", "Day 20", "Day 25", "Day 30")
-                            .build()
-            );
+        configureChartForLumoTheme(chartBuilder, isDarkTheme);
 
-            chartBuilder.withYaxis(
-                    YAxisBuilder.get()
-                            .withTitle(TitleBuilder.get().withText("Amount (R$)").build())
-                            .build()
-            );
-
-            configureChartForLumoTheme(chartBuilder, isDarkTheme);
-
-            ApexCharts apexChart = chartBuilder.build();
-
-            // Atualiza o container com o gráfico
+        ApexCharts apexChart = chartBuilder.build();
 
         return wrapChartInContainer(apexChart);
     }
@@ -410,8 +428,8 @@ public class DashboardView extends VerticalLayout {
         VerticalLayout container = new VerticalLayout();
         container.addClassNames(
                 LumoUtility.Background.CONTRAST_5,
-                LumoUtility.BorderRadius.LARGE,
-                LumoUtility.Border.ALL,
+                // LumoUtility.BorderRadius.LARGE,
+                // LumoUtility.Border.ALL,
                 LumoUtility.BorderColor.CONTRAST_10,
                 LumoUtility.Margin.End.MEDIUM,
                 LumoUtility.Margin.Bottom.MEDIUM
