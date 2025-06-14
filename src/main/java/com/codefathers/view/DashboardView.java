@@ -116,10 +116,8 @@ public class DashboardView extends FlexLayout {
         datePickerLayout.getStyle().set("gap", "1em");
 
         var subtitleLayout = new FlexLayout(subtitle, datePickerLayout);
-        subtitleLayout.setWidthFull();
+        subtitleLayout.setWidth("95%");
         subtitleLayout.setFlexWrap(FlexWrap.WRAP);
-        subtitleLayout.getStyle().set("margin-left", "0.5em");
-        subtitleLayout.getStyle().set("margin-right", "0.5em");
         subtitleLayout.setFlexDirection(FlexDirection.ROW);
         subtitleLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
         subtitleLayout.setAlignItems(Alignment.CENTER);
