@@ -2,17 +2,20 @@ package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.OrderItem;
-import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.util.HibernateUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Transaction;
 import org.hibernate.Session;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public void save(Order order) {
@@ -24,7 +27,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         } catch (Exception e) {
             if (transaction != null)
                 transaction.rollback();
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -38,7 +41,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         } catch (Exception e) {
             if (transaction != null)
                 transaction.rollback();
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -52,7 +55,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         } catch (Exception e) {
             if (transaction != null)
                 transaction.rollback();
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -72,7 +75,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("select o from orders o", Order.class).list();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return List.of();
         }
     }
@@ -81,16 +84,30 @@ public class OrderRepositoryImpl implements OrderRepository {
     public List<OrderItem> findAllOrderItemsByOrderId(UUID orderId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
-                    "select oi from order_item oi " +
-                            "join fetch oi.orders o " +
-                            "join fetch oi.product p " +
-                            "where o.id = :ordersId",
-                    OrderItem.class)
+                            "select oi from order_item oi " +
+                                    "join fetch oi.orders o " +
+                                    "join fetch oi.product p " +
+                                    "where o.id = :ordersId",
+                            OrderItem.class)
                     .setParameter("ordersId", orderId)
                     .getResultList();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return List.of();
+        }
+    }
+
+    public List<Order> findOrdersByTimePeriod(LocalDate start, LocalDate end) {
+        String hql = "from orders o where o.createdAt between :startDate and :endDate";
+        try (var session = HibernateUtil.getSessionFactory().openSession()) {
+            var query = session.createQuery(hql, Order.class);
+            query.setParameter("startDate", start.atStartOfDay());
+            // + 1 for inclusive interval + 1 for start of next day (end of previous one)
+            query.setParameter("endDate", end.plusDays(1 + 1).atStartOfDay());
+            return query.getResultList();
+        } catch (Exception e) {
+            log.error("Error finding orders between {} and {}", start, end, e);
+            return Collections.emptyList();
         }
     }
 
@@ -99,7 +116,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("select count(*) from orders", Long.class).uniqueResult();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return 0L;
         }
     }
@@ -111,7 +128,7 @@ public class OrderRepositoryImpl implements OrderRepository {
                     .uniqueResult();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return BigDecimal.ZERO;
         }
     }

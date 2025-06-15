@@ -16,13 +16,16 @@ import com.codefathers.repository.interfaces.StorageRepository;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -141,6 +144,10 @@ public class OrderService {
 
     public List<Order> findAll() {
         return orderRepository.listAll();
+    }
+
+    public List<Order> findOrdersByPeriod(LocalDate start, LocalDate end) {
+        return orderRepository.findOrdersByTimePeriod(start, end);
     }
 
     public Long count() {
