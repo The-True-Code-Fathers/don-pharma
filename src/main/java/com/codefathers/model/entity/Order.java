@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.codefathers.model.enums.OrderStatus;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +31,7 @@ public class Order {
     private String description;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @JsonManagedReference
     private List<OrderItem> items;
 
     @Column(name = "products_price", precision = 19, scale = 4, nullable = false)
