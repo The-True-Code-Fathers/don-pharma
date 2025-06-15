@@ -12,6 +12,7 @@ import com.codefathers.repository.implementations.EmployeeRepositoryImpl;
 import com.codefathers.repository.implementations.PaymentRepositoryImpl;
 import com.codefathers.service.EmployeeService;
 import com.codefathers.service.PaymentService;
+import com.codefathers.util.TaxCalculatorUtil;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -153,7 +154,19 @@ public class PaymentView extends VerticalLayout {
         employeeComboBox
                 .setItemLabelGenerator(employee -> employee.getFullName() + " (" + employee.getRole().toString() + ")");
         employeeComboBox.setPlaceholder("Select an employee");
-
+        employeeComboBox.addValueChangeListener(e -> {
+            Employee selectedEmployee = e.getValue();
+            if (selectedEmployee != null) {
+                populateDefaultValues(selectedEmployee);
+                // Recalcular taxes quando gross income mudar
+                if (grossIncomeField.getValue() != null) {
+                    updateTaxesForCreation(selectedEmployee, grossIncomeField.getValue());
+                }
+            } else {
+                clearFields();
+            }
+            updateIncomeDisplays();
+        });
         // Setup number fields with R$ prefix
         setupNumberFieldWithCurrency(grossIncomeField, 0.01);
         setupNumberFieldWithCurrency(amountInTaxesField, 0.00);
@@ -162,6 +175,8 @@ public class PaymentView extends VerticalLayout {
         setupNumberFieldWithCurrency(healthInsuranceField, 0.00);
         setupNumberFieldWithCurrency(dentalInsuranceField, 0.00);
         setupNumberFieldWithCurrency(profitSharingField, 0.00);
+
+        amountInTaxesField.setReadOnly(true);
 
         // Setup income display fields
         setupIncomeDisplayField(netIncomeDisplay);
@@ -211,6 +226,13 @@ public class PaymentView extends VerticalLayout {
         dialogContent.setPadding(true);
         dialogContent.setSpacing(true);
 
+        grossIncomeField.addValueChangeListener(e -> {
+            if (employeeComboBox.getValue() != null && e.getValue() != null) {
+                updateTaxesForCreation(employeeComboBox.getValue(), e.getValue());
+            }
+            updateIncomeDisplays();
+        });
+
         paymentDialog.setHeaderTitle("Create Payment");
         paymentDialog.add(dialogContent);
         paymentDialog.setWidth("600px");
@@ -231,47 +253,33 @@ public class PaymentView extends VerticalLayout {
         setupNumberFieldWithCurrency(editDentalInsuranceField, 0.00);
         setupNumberFieldWithCurrency(editProfitSharingField, 0.00);
 
+        // CORREÇÃO 1: Bloquear o campo Amount in Taxes para edição
         editAmountInTaxesField.setReadOnly(true);
 
         setupIncomeDisplayField(editNetIncomeDisplay);
         setupIncomeDisplayField(editTotalIncomeDisplay);
 
-        // Update income displays for edit dialog
-        Runnable updateEditIncomes = () -> {
-            BigDecimal grossIncome = BigDecimal
-                    .valueOf(editGrossIncomeField.getValue() != null ? editGrossIncomeField.getValue() : 0);
-            BigDecimal amountInTaxes = BigDecimal
-                    .valueOf(editAmountInTaxesField.getValue() != null ? editAmountInTaxesField.getValue() : 0);
-            BigDecimal mealVoucher = BigDecimal
-                    .valueOf(editMealVoucherField.getValue() != null ? editMealVoucherField.getValue() : 0);
-            BigDecimal foodVoucher = BigDecimal
-                    .valueOf(editFoodVoucherField.getValue() != null ? editFoodVoucherField.getValue() : 0);
-            BigDecimal healthInsurance = BigDecimal
-                    .valueOf(editHealthInsuranceField.getValue() != null ? editHealthInsuranceField.getValue() : 0);
-            BigDecimal dentalInsurance = BigDecimal
-                    .valueOf(editDentalInsuranceField.getValue() != null ? editDentalInsuranceField.getValue() : 0);
-            BigDecimal profitSharing = BigDecimal
-                    .valueOf(editProfitSharingField.getValue() != null ? editProfitSharingField.getValue() : 0);
+        editEmployeeComboBox.addValueChangeListener(e -> {
+            if (e.getValue() != null && editGrossIncomeField.getValue() != null) {
+                updateTaxesBasedOnEmployee(e.getValue(), editGrossIncomeField.getValue());
+            }
+            updateEditIncomeDisplays();
+        });
 
-            // Net Income = Gross Income - Taxes
-            BigDecimal netIncome = grossIncome.subtract(amountInTaxes);
+        editGrossIncomeField.addValueChangeListener(e -> {
+            if (editEmployeeComboBox.getValue() != null && e.getValue() != null) {
+                updateTaxesBasedOnEmployee(editEmployeeComboBox.getValue(), e.getValue());
+            }
+            updateEditIncomeDisplays();
+        });
 
-            // Total Income = Gross Income + Benefits - Taxes
-            BigDecimal totalBenefits = mealVoucher.add(foodVoucher)
-                    .add(healthInsurance).add(dentalInsurance).add(profitSharing);
-            BigDecimal totalIncome = grossIncome.add(totalBenefits).subtract(amountInTaxes);
-
-            editNetIncomeDisplay.setValue("R$ " + netIncome.toString());
-            editTotalIncomeDisplay.setValue("R$ " + totalIncome.toString());
-        };
-
-        editGrossIncomeField.addValueChangeListener(e -> updateEditIncomes.run());
-        editAmountInTaxesField.addValueChangeListener(e -> updateEditIncomes.run());
-        editMealVoucherField.addValueChangeListener(e -> updateEditIncomes.run());
-        editFoodVoucherField.addValueChangeListener(e -> updateEditIncomes.run());
-        editHealthInsuranceField.addValueChangeListener(e -> updateEditIncomes.run());
-        editDentalInsuranceField.addValueChangeListener(e -> updateEditIncomes.run());
-        editProfitSharingField.addValueChangeListener(e -> updateEditIncomes.run());
+        // Remover o listener do editAmountInTaxesField já que agora é read-only
+        editMealVoucherField.addValueChangeListener(e -> updateEditIncomeDisplays());
+        editFoodVoucherField.addValueChangeListener(e -> updateEditIncomeDisplays());
+        editHealthInsuranceField.addValueChangeListener(e -> updateEditIncomeDisplays());
+        editDentalInsuranceField.addValueChangeListener(e -> updateEditIncomeDisplays());
+        editProfitSharingField.addValueChangeListener(e -> updateEditIncomeDisplays());
+        editAmountInTaxesField.addValueChangeListener(e -> updateEditIncomeDisplays());
 
         FormLayout editFormLayout = new FormLayout();
         editFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
@@ -332,6 +340,44 @@ public class PaymentView extends VerticalLayout {
         editDialog.setWidth("600px");
     }
 
+    private void updateEditIncomeDisplays() {
+        if (editGrossIncomeField.getValue() == null)
+            return;
+
+        BigDecimal grossIncome = BigDecimal.valueOf(editGrossIncomeField.getValue());
+        BigDecimal amountInTaxes = BigDecimal.valueOf(
+                editAmountInTaxesField.getValue() != null ? editAmountInTaxesField.getValue() : 0);
+        BigDecimal mealVoucher = BigDecimal.valueOf(
+                editMealVoucherField.getValue() != null ? editMealVoucherField.getValue() : 0);
+        BigDecimal foodVoucher = BigDecimal.valueOf(
+                editFoodVoucherField.getValue() != null ? editFoodVoucherField.getValue() : 0);
+        BigDecimal healthInsurance = BigDecimal.valueOf(
+                editHealthInsuranceField.getValue() != null ? editHealthInsuranceField.getValue() : 0);
+        BigDecimal dentalInsurance = BigDecimal.valueOf(
+                editDentalInsuranceField.getValue() != null ? editDentalInsuranceField.getValue() : 0);
+        BigDecimal profitSharing = BigDecimal.valueOf(
+                editProfitSharingField.getValue() != null ? editProfitSharingField.getValue() : 0);
+
+        // Net Income = Gross Income - Taxes
+        BigDecimal netIncome = grossIncome.subtract(amountInTaxes);
+
+        // Total Income = Gross Income + Benefits - Taxes
+        BigDecimal totalBenefits = mealVoucher.add(foodVoucher)
+                .add(healthInsurance).add(dentalInsurance).add(profitSharing);
+        BigDecimal totalIncome = grossIncome.add(totalBenefits).subtract(amountInTaxes);
+
+        editNetIncomeDisplay.setValue("R$ " + netIncome.toString());
+        editTotalIncomeDisplay.setValue("R$ " + totalIncome.toString());
+    }
+
+    private void updateTaxesBasedOnEmployee(Employee employee, Double grossIncome) {
+        if (employee != null && grossIncome != null && grossIncome > 0) {
+            BigDecimal grossIncomeDecimal = BigDecimal.valueOf(grossIncome);
+            BigDecimal calculatedTax = TaxCalculatorUtil.calculateIR(grossIncomeDecimal);
+            editAmountInTaxesField.setValue(calculatedTax.doubleValue());
+        }
+    }
+
     private void setupIncomeDisplayField(TextField field) {
         field.setReadOnly(true);
         field.getStyle()
@@ -348,6 +394,15 @@ public class PaymentView extends VerticalLayout {
         Span prefix = new Span("R$");
         prefix.getElement().getThemeList().add("badge");
         field.setPrefixComponent(prefix);
+    }
+
+    // Substitua o método updateTaxesForCreation por este:
+    private void updateTaxesForCreation(Employee employee, Double grossIncome) {
+        if (employee != null && grossIncome != null && grossIncome > 0) {
+            BigDecimal grossIncomeDecimal = BigDecimal.valueOf(grossIncome);
+            BigDecimal calculatedTax = TaxCalculatorUtil.calculateIR(grossIncomeDecimal);
+            amountInTaxesField.setValue(calculatedTax.doubleValue());
+        }
     }
 
     private void populateDefaultValues(Employee employee) {
@@ -494,18 +549,17 @@ public class PaymentView extends VerticalLayout {
         }
     }
 
-    // Helper method to enable/disable edit fields
+    // CORREÇÃO 4: Atualizar o método setEditFieldsEnabled para não desabilitar o
+    // campo de taxes
     private void setEditFieldsEnabled(boolean enabled) {
         editEmployeeComboBox.setEnabled(enabled);
         editGrossIncomeField.setEnabled(enabled);
-        editAmountInTaxesField.setEnabled(enabled);
+        // editAmountInTaxesField sempre fica read-only, não precisa ser controlado aqui
         editMealVoucherField.setEnabled(enabled);
         editFoodVoucherField.setEnabled(enabled);
         editHealthInsuranceField.setEnabled(enabled);
         editDentalInsuranceField.setEnabled(enabled);
         editProfitSharingField.setEnabled(enabled);
-        // editNetIncomeDisplay and editTotalIncomeDisplay are read-only, so no need to
-        // enable/disable them
     }
 
     private void showPaymentDetails(Payment payment) {
