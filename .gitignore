@@ -48,3 +48,6 @@ node_modules
 
 ### Generated bundles ###
 src/main/bundles
+
+### Log files ###
+logs/
