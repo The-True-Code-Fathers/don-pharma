@@ -457,141 +457,206 @@ public class OrderView extends VerticalLayout {
         dialog.setHeight("200px");
     }
 
-    private void openCreateOrderDialog() {
-        Dialog createDialog = new Dialog();
-        createDialog.setHeaderTitle("Criar Novo Pedido");
-        createDialog.setWidth("800px");
-        createDialog.setHeight("800px");
-        createDialog.setResizable(true);
+private void openCreateOrderDialog() {
+    Dialog createDialog = new Dialog();
+    createDialog.setHeaderTitle("Criar Novo Pedido");
+    createDialog.setWidth("900px"); // Aumentado para acomodar melhor o grid
+    createDialog.setHeight("800px");
+    createDialog.setResizable(true);
 
-        ComboBox<Employee> sellerComboBox = new ComboBox<>("Vendedor");
-        ComboBox<ShippingProvider> shippingComboBox = new ComboBox<>("Transportadora");
-        TextField descriptionField = new TextField("Descrição");
+    ComboBox<Employee> sellerComboBox = new ComboBox<>("Vendedor");
+    ComboBox<ShippingProvider> shippingComboBox = new ComboBox<>("Transportadora");
+    TextField descriptionField = new TextField("Descrição");
 
-        Grid<OrderItemRow> itemsGrid = new Grid<>();
-        List<OrderItemRow> orderItems = new ArrayList<>();
+    Grid<OrderItemRow> itemsGrid = new Grid<>();
+    List<OrderItemRow> orderItems = new ArrayList<>();
 
-        ComboBox<Product> productComboBox = new ComboBox<>("Produto");
-        IntegerField quantityField = new IntegerField("Quantidade");
-        NumberField priceField = new NumberField("Preço");
-        Button addItemButton = new Button("Adicionar Item");
+    ComboBox<Product> productComboBox = new ComboBox<>("Produto");
+    IntegerField quantityField = new IntegerField("Quantidade");
+    
+    // Campo de preço melhorado com prefixo R$ e sem step buttons
+    NumberField priceField = new NumberField("Preço");
+    priceField.setPrefixComponent(new Span("R$"));
+    priceField.setStepButtonsVisible(false); // Remove os botões de incremento/decremento
+    
+    Button addItemButton = new Button("Adicionar Item");
 
-        setupSellerComboBox(sellerComboBox);
-        setupShippingComboBox(shippingComboBox);
-        setupProductComboBox(productComboBox);
-        setupItemsGrid(itemsGrid, orderItems);
+    setupSellerComboBox(sellerComboBox);
+    setupShippingComboBox(shippingComboBox);
+    setupProductComboBox(productComboBox);
 
-        descriptionField.setWidthFull();
-        descriptionField.setMaxLength(2048);
+    descriptionField.setWidthFull();
+    descriptionField.setMaxLength(2048);
 
+    quantityField.setValue(1);
+    quantityField.setMin(1);
+    quantityField.setStepButtonsVisible(true);
+
+    priceField.setValue(1.0);
+    priceField.setMin(0.01);
+    priceField.setStep(0.01);
+
+
+    setupItemsGridImproved(itemsGrid, orderItems); // Passa o callback
+
+    addItemButton.addClickListener(e -> {
+        Product selectedProduct = productComboBox.getValue();
+        Integer quantity = quantityField.getValue();
+        Double priceDouble = priceField.getValue();
+        if (priceDouble == null || priceDouble <= 0) {
+            Notification.show("Informe um preço válido", 3000, Notification.Position.MIDDLE);
+            return;
+        }
+        BigDecimal price = BigDecimal.valueOf(priceDouble);
+
+        if (selectedProduct == null) {
+            Notification.show("Selecione um produto", 3000, Notification.Position.MIDDLE);
+            return;
+        }
+
+        if (quantity == null || quantity < 1) {
+            Notification.show("Informe uma quantidade válida", 3000, Notification.Position.MIDDLE);
+            return;
+        }
+
+        boolean exists = orderItems.stream()
+                .anyMatch(item -> item.getProduct().getSku().equals(selectedProduct.getSku()));
+
+        if (exists) {
+            Notification.show("Produto já adicionado ao pedido", 3000, Notification.Position.MIDDLE);
+            return;
+        }
+
+        OrderItemRow newItem = new OrderItemRow(selectedProduct, quantity, price);
+        orderItems.add(newItem);
+        itemsGrid.getDataProvider().refreshAll();
+
+        productComboBox.clear();
         quantityField.setValue(1);
-        quantityField.setMin(1);
-        quantityField.setStepButtonsVisible(true);
-
         priceField.setValue(1.0);
-        priceField.setMin(1);
-        priceField.setStepButtonsVisible(true);
 
-        addItemButton.addClickListener(e -> {
-            Product selectedProduct = productComboBox.getValue();
-            Integer quantity = quantityField.getValue();
-            Double priceDouble = priceField.getValue();
-            if (priceDouble == null || priceDouble <= 0) {
-                Notification.show("Informe um preço válido", 3000, Notification.Position.MIDDLE);
-                return;
-            }
-            BigDecimal price = BigDecimal.valueOf(priceDouble);
+        Notification.show("Item adicionado!", 2000, Notification.Position.MIDDLE);
+    });
 
-            if (selectedProduct == null) {
-                Notification.show("Selecione um produto", 3000, Notification.Position.MIDDLE);
+    Button saveButton = new Button("Criar Pedido", e -> {
+        try {
+            if (sellerComboBox.getValue() == null) {
+                Notification.show("Selecione um vendedor", 3000, Notification.Position.MIDDLE);
                 return;
             }
 
-            if (quantity == null || quantity < 1) {
-                Notification.show("Informe uma quantidade válida", 3000, Notification.Position.MIDDLE);
+            if (shippingComboBox.getValue() == null) {
+                Notification.show("Selecione uma transportadora", 3000, Notification.Position.MIDDLE);
                 return;
             }
 
-            boolean exists = orderItems.stream()
-                    .anyMatch(item -> item.getProduct().getSku().equals(selectedProduct.getSku()));
-
-            if (exists) {
-                Notification.show("Produto já adicionado ao pedido", 3000, Notification.Position.MIDDLE);
+            if (orderItems.isEmpty()) {
+                Notification.show("Adicione pelo menos um item ao pedido", 3000, Notification.Position.MIDDLE);
                 return;
             }
 
-            OrderItemRow newItem = new OrderItemRow(selectedProduct, quantity, price);
-            orderItems.add(newItem);
-            itemsGrid.getDataProvider().refreshAll();
+            CreateOrderDTO createOrderDTO = buildCreateOrderDTO(
+                    sellerComboBox.getValue(),
+                    shippingComboBox.getValue(),
+                    descriptionField.getValue(),
+                    orderItems);
 
-            productComboBox.clear();
-            quantityField.setValue(1);
+            orderService.createOrder(createOrderDTO);
 
-            Notification.show("Item adicionado!", 2000, Notification.Position.MIDDLE);
+            Notification.show("Pedido criado com sucesso!", 3000, Notification.Position.MIDDLE);
+            dataView.refreshAll();
+            grid.getDataProvider().refreshAll();
+            createDialog.close();
+
+        } catch (Exception ex) {
+            System.out.println("Erro ao criar pedido: " + ex.getMessage());
+            ex.printStackTrace();
+            Notification.show("Erro ao criar pedido: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+        }
+    });
+
+    Button cancelButton = new Button("Cancelar", e -> createDialog.close());
+
+    HorizontalLayout addItemLayout = new HorizontalLayout(productComboBox, quantityField, priceField,
+            addItemButton);
+    addItemLayout.setAlignItems(Alignment.END);
+    addItemLayout.setWidthFull();
+    productComboBox.setWidth("300px");
+    quantityField.setWidth("100px");
+    priceField.setWidth("120px"); // Aumentado um pouco para acomodar o prefixo R$
+
+    VerticalLayout mainLayout = new VerticalLayout();
+    mainLayout.add(
+            sellerComboBox,
+            shippingComboBox,
+            descriptionField,
+            new com.vaadin.flow.component.html.H4("Itens do Pedido"),
+            addItemLayout,
+            itemsGrid,
+            new HorizontalLayout(saveButton, cancelButton));
+    mainLayout.setSpacing(true);
+    mainLayout.setPadding(true);
+
+    createDialog.add(mainLayout);
+    createDialog.open();
+}
+
+// Método melhorado para o grid de itens
+private void setupItemsGridImproved(Grid<OrderItemRow> grid, List<OrderItemRow> items) {
+    grid.setItems(items);
+    grid.setHeight("250px");
+    grid.setWidthFull();
+
+    // Produto - largura fixa controlada para não ocupar muito espaço
+    grid.addColumn(item -> {
+        String productName = item.getProduct().getName();
+        // Trunca o nome do produto se for muito longo
+        return productName.length() > 25 ? productName.substring(0, 22) + "..." : productName;
+    })
+        .setHeader("Produto")
+        .setWidth("200px")
+        .setFlexGrow(0);
+
+    // SKU - largura otimizada
+    grid.addColumn(item -> item.getProduct().getSku())
+        .setHeader("SKU")
+        .setWidth("150px")
+        .setFlexGrow(0);
+
+    // Quantidade - largura otimizada
+    grid.addColumn(OrderItemRow::getQuantity)
+        .setHeader("Qtd")
+        .setWidth("70px")
+        .setFlexGrow(0);
+
+    // Preço unitário - largura adequada para valores monetários
+    grid.addColumn(item -> "R$ " + String.format("%.2f", item.getPrice()))
+        .setHeader("Preço Unit.")
+        .setWidth("120px")
+        .setFlexGrow(0);
+
+    // Total - largura adequada para valores monetários (SEMPRE VISÍVEL)
+    grid.addColumn(item -> "R$ " + String.format("%.2f", item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
+        .setHeader("Total")
+        .setWidth("130px")
+        .setFlexGrow(0);
+
+    // Ações - largura mínima para o botão
+    grid.addComponentColumn(item -> {
+        Button removeButton = new Button(new Icon(VaadinIcon.TRASH));
+        removeButton.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
+        removeButton.addClickListener(e -> {
+            items.remove(item);
+            grid.getDataProvider().refreshAll();
+            Notification.show("Item removido", 2000, Notification.Position.MIDDLE);
         });
+        return removeButton;
+    })
+    .setHeader("Ações")
+    .setWidth("80px")
+    .setFlexGrow(0);
+}
 
-        Button saveButton = new Button("Criar Pedido", e -> {
-            try {
-                if (sellerComboBox.getValue() == null) {
-                    Notification.show("Selecione um vendedor", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
-                if (shippingComboBox.getValue() == null) {
-                    Notification.show("Selecione uma transportadora", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
-                if (orderItems.isEmpty()) {
-                    Notification.show("Adicione pelo menos um item ao pedido", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
-                CreateOrderDTO createOrderDTO = buildCreateOrderDTO(
-                        sellerComboBox.getValue(),
-                        shippingComboBox.getValue(),
-                        descriptionField.getValue(),
-                        orderItems);
-
-                orderService.createOrder(createOrderDTO);
-
-                Notification.show("Pedido criado com sucesso!", 3000, Notification.Position.MIDDLE);
-                dataView.refreshAll();
-                grid.getDataProvider().refreshAll();
-                createDialog.close();
-
-            } catch (Exception ex) {
-                System.out.println("Erro ao criar pedido: " + ex.getMessage());
-                ex.printStackTrace();
-                Notification.show("Erro ao criar pedido: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
-            }
-        });
-
-        Button cancelButton = new Button("Cancelar", e -> createDialog.close());
-
-        HorizontalLayout addItemLayout = new HorizontalLayout(productComboBox, quantityField, priceField,
-                addItemButton);
-        addItemLayout.setAlignItems(Alignment.END);
-        addItemLayout.setWidthFull();
-        productComboBox.setWidth("300px");
-        quantityField.setWidth("100px");
-        priceField.setWidth("100px");
-
-        VerticalLayout mainLayout = new VerticalLayout();
-        mainLayout.add(
-                sellerComboBox,
-                shippingComboBox,
-                descriptionField,
-                new com.vaadin.flow.component.html.H4("Itens do Pedido"),
-                addItemLayout,
-                itemsGrid,
-                new HorizontalLayout(saveButton, cancelButton));
-        mainLayout.setSpacing(true);
-        mainLayout.setPadding(true);
-
-        createDialog.add(mainLayout);
-        createDialog.open();
-    }
 
     private void setupSellerComboBox(ComboBox<Employee> sellerComboBox) {
         sellerComboBox.setItemLabelGenerator(Employee::getFullName);
