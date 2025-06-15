@@ -20,7 +20,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -101,9 +100,12 @@ public class PaymentView extends VerticalLayout {
         grid.addColumn(payment -> payment.getId().toString()).setHeader("ID").setSortable(true);
         grid.addColumn(payment -> payment.getEmployee().getFullName()).setHeader("Employee").setSortable(true);
         grid.addColumn(payment -> payment.getEmployee().getRole().toString()).setHeader("Role").setSortable(true);
-        grid.addColumn(payment -> "R$ " + payment.getGrossIncome().toString()).setHeader("Gross Income").setSortable(true);
-        grid.addColumn(payment -> "R$ " + calculateNetIncome(payment).toString()).setHeader("Net Income").setSortable(true);
-        grid.addColumn(payment -> "R$ " + calculateTotalIncome(payment).toString()).setHeader("Total Income").setSortable(true);
+        grid.addColumn(payment -> "R$ " + payment.getGrossIncome().toString()).setHeader("Gross Income")
+                .setSortable(true);
+        grid.addColumn(payment -> "R$ " + calculateNetIncome(payment).toString()).setHeader("Net Income")
+                .setSortable(true);
+        grid.addColumn(payment -> "R$ " + calculateTotalIncome(payment).toString()).setHeader("Total Income")
+                .setSortable(true);
         grid.addColumn(payment -> payment.getCreatedAt().toString()).setHeader("Created At").setSortable(true);
         grid.addColumn(payment -> payment.isActive() ? "Active" : "Inactive").setHeader("Status").setSortable(true);
 
@@ -124,14 +126,14 @@ public class PaymentView extends VerticalLayout {
     // Método para calcular Total Income (Salário + Benefícios - Impostos)
     private BigDecimal calculateTotalIncome(Payment payment) {
         BigDecimal totalBenefits = payment.getMealVoucherAmount()
-            .add(payment.getFoodVoucherAmount())
-            .add(payment.getHealthInsuranceAmount())
-            .add(payment.getDentalInsuranceAmount())
-            .add(payment.getProfitSharingAmount());
-        
+                .add(payment.getFoodVoucherAmount())
+                .add(payment.getHealthInsuranceAmount())
+                .add(payment.getDentalInsuranceAmount())
+                .add(payment.getProfitSharingAmount());
+
         return payment.getGrossIncome()
-            .add(totalBenefits)
-            .subtract(payment.getAmountInTaxes());
+                .add(totalBenefits)
+                .subtract(payment.getAmountInTaxes());
     }
 
     private void setupSearchField() {
@@ -148,8 +150,8 @@ public class PaymentView extends VerticalLayout {
 
     private void setupPaymentDialog() {
         employeeComboBox.setItems(employeeService.employeeList());
-        employeeComboBox.setItemLabelGenerator(employee -> 
-            employee.getFullName() + " (" + employee.getRole().toString() + ")");
+        employeeComboBox
+                .setItemLabelGenerator(employee -> employee.getFullName() + " (" + employee.getRole().toString() + ")");
         employeeComboBox.setPlaceholder("Select an employee");
 
         // Setup number fields with R$ prefix
@@ -188,12 +190,11 @@ public class PaymentView extends VerticalLayout {
         FormLayout formLayout = new FormLayout();
         formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
         formLayout.add(
-            employeeComboBox, grossIncomeField,
-            amountInTaxesField, mealVoucherField,
-            foodVoucherField, healthInsuranceField,
-            dentalInsuranceField, profitSharingField,
-            netIncomeDisplay, totalIncomeDisplay
-        );
+                employeeComboBox, grossIncomeField,
+                amountInTaxesField, mealVoucherField,
+                foodVoucherField, healthInsuranceField,
+                dentalInsuranceField, profitSharingField,
+                netIncomeDisplay, totalIncomeDisplay);
 
         Button createButton = new Button("Create Payment", e -> createPayment());
         createButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -219,8 +220,8 @@ public class PaymentView extends VerticalLayout {
 
     private void setupEditDialog() {
         editEmployeeComboBox.setItems(employeeService.employeeList());
-        editEmployeeComboBox.setItemLabelGenerator(employee -> 
-            employee.getFullName() + " (" + employee.getRole().toString() + ")");
+        editEmployeeComboBox
+                .setItemLabelGenerator(employee -> employee.getFullName() + " (" + employee.getRole().toString() + ")");
 
         setupNumberFieldWithCurrency(editGrossIncomeField, 0.01);
         setupNumberFieldWithCurrency(editAmountInTaxesField, 0.00);
@@ -230,25 +231,34 @@ public class PaymentView extends VerticalLayout {
         setupNumberFieldWithCurrency(editDentalInsuranceField, 0.00);
         setupNumberFieldWithCurrency(editProfitSharingField, 0.00);
 
+        editAmountInTaxesField.setReadOnly(true);
+
         setupIncomeDisplayField(editNetIncomeDisplay);
         setupIncomeDisplayField(editTotalIncomeDisplay);
 
         // Update income displays for edit dialog
         Runnable updateEditIncomes = () -> {
-            BigDecimal grossIncome = BigDecimal.valueOf(editGrossIncomeField.getValue() != null ? editGrossIncomeField.getValue() : 0);
-            BigDecimal amountInTaxes = BigDecimal.valueOf(editAmountInTaxesField.getValue() != null ? editAmountInTaxesField.getValue() : 0);
-            BigDecimal mealVoucher = BigDecimal.valueOf(editMealVoucherField.getValue() != null ? editMealVoucherField.getValue() : 0);
-            BigDecimal foodVoucher = BigDecimal.valueOf(editFoodVoucherField.getValue() != null ? editFoodVoucherField.getValue() : 0);
-            BigDecimal healthInsurance = BigDecimal.valueOf(editHealthInsuranceField.getValue() != null ? editHealthInsuranceField.getValue() : 0);
-            BigDecimal dentalInsurance = BigDecimal.valueOf(editDentalInsuranceField.getValue() != null ? editDentalInsuranceField.getValue() : 0);
-            BigDecimal profitSharing = BigDecimal.valueOf(editProfitSharingField.getValue() != null ? editProfitSharingField.getValue() : 0);
+            BigDecimal grossIncome = BigDecimal
+                    .valueOf(editGrossIncomeField.getValue() != null ? editGrossIncomeField.getValue() : 0);
+            BigDecimal amountInTaxes = BigDecimal
+                    .valueOf(editAmountInTaxesField.getValue() != null ? editAmountInTaxesField.getValue() : 0);
+            BigDecimal mealVoucher = BigDecimal
+                    .valueOf(editMealVoucherField.getValue() != null ? editMealVoucherField.getValue() : 0);
+            BigDecimal foodVoucher = BigDecimal
+                    .valueOf(editFoodVoucherField.getValue() != null ? editFoodVoucherField.getValue() : 0);
+            BigDecimal healthInsurance = BigDecimal
+                    .valueOf(editHealthInsuranceField.getValue() != null ? editHealthInsuranceField.getValue() : 0);
+            BigDecimal dentalInsurance = BigDecimal
+                    .valueOf(editDentalInsuranceField.getValue() != null ? editDentalInsuranceField.getValue() : 0);
+            BigDecimal profitSharing = BigDecimal
+                    .valueOf(editProfitSharingField.getValue() != null ? editProfitSharingField.getValue() : 0);
 
             // Net Income = Gross Income - Taxes
             BigDecimal netIncome = grossIncome.subtract(amountInTaxes);
-            
+
             // Total Income = Gross Income + Benefits - Taxes
             BigDecimal totalBenefits = mealVoucher.add(foodVoucher)
-                .add(healthInsurance).add(dentalInsurance).add(profitSharing);
+                    .add(healthInsurance).add(dentalInsurance).add(profitSharing);
             BigDecimal totalIncome = grossIncome.add(totalBenefits).subtract(amountInTaxes);
 
             editNetIncomeDisplay.setValue("R$ " + netIncome.toString());
@@ -266,12 +276,11 @@ public class PaymentView extends VerticalLayout {
         FormLayout editFormLayout = new FormLayout();
         editFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
         editFormLayout.add(
-            editEmployeeComboBox, editGrossIncomeField,
-            editAmountInTaxesField, editMealVoucherField,
-            editFoodVoucherField, editHealthInsuranceField,
-            editDentalInsuranceField, editProfitSharingField,
-            editNetIncomeDisplay, editTotalIncomeDisplay
-        );
+                editEmployeeComboBox, editGrossIncomeField,
+                editAmountInTaxesField, editMealVoucherField,
+                editFoodVoucherField, editHealthInsuranceField,
+                editDentalInsuranceField, editProfitSharingField,
+                editNetIncomeDisplay, editTotalIncomeDisplay);
 
         Button updateButton = new Button("Update Payment", e -> {
             if (currentPaymentEditing != null) {
@@ -281,8 +290,10 @@ public class PaymentView extends VerticalLayout {
                     currentPaymentEditing.setAmountInTaxes(BigDecimal.valueOf(editAmountInTaxesField.getValue()));
                     currentPaymentEditing.setMealVoucherAmount(BigDecimal.valueOf(editMealVoucherField.getValue()));
                     currentPaymentEditing.setFoodVoucherAmount(BigDecimal.valueOf(editFoodVoucherField.getValue()));
-                    currentPaymentEditing.setHealthInsuranceAmount(BigDecimal.valueOf(editHealthInsuranceField.getValue()));
-                    currentPaymentEditing.setDentalInsuranceAmount(BigDecimal.valueOf(editDentalInsuranceField.getValue()));
+                    currentPaymentEditing
+                            .setHealthInsuranceAmount(BigDecimal.valueOf(editHealthInsuranceField.getValue()));
+                    currentPaymentEditing
+                            .setDentalInsuranceAmount(BigDecimal.valueOf(editDentalInsuranceField.getValue()));
                     currentPaymentEditing.setProfitSharingAmount(BigDecimal.valueOf(editProfitSharingField.getValue()));
 
                     paymentService.update(currentPaymentEditing);
@@ -324,15 +335,15 @@ public class PaymentView extends VerticalLayout {
     private void setupIncomeDisplayField(TextField field) {
         field.setReadOnly(true);
         field.getStyle()
-            .set("--lumo-contrast-60pct", "var(--lumo-primary-color)")
-            .set("font-weight", "bold");
+                .set("--lumo-contrast-60pct", "var(--lumo-primary-color)")
+                .set("font-weight", "bold");
     }
 
     private void setupNumberFieldWithCurrency(NumberField field, double min) {
         field.setMin(min);
         field.setStep(0.01);
         field.setValue(0.0);
-        
+
         // Adiciona o prefixo R$
         Span prefix = new Span("R$");
         prefix.getElement().getThemeList().add("badge");
@@ -341,7 +352,7 @@ public class PaymentView extends VerticalLayout {
 
     private void populateDefaultValues(Employee employee) {
         Map<EmployeeBenefits, BigDecimal> benefits = employee.getRole().getBENEFITS();
-        
+
         grossIncomeField.setValue(benefits.get(EmployeeBenefits.GROSS_INCOME).doubleValue());
         amountInTaxesField.setValue(benefits.get(EmployeeBenefits.AMOUNT_IN_TAXES).doubleValue());
         mealVoucherField.setValue(benefits.get(EmployeeBenefits.MEAL_VOUCHER).doubleValue());
@@ -365,22 +376,29 @@ public class PaymentView extends VerticalLayout {
     }
 
     private void updateIncomeDisplays() {
-        if (grossIncomeField.getValue() == null) return;
+        if (grossIncomeField.getValue() == null)
+            return;
 
         BigDecimal grossIncome = BigDecimal.valueOf(grossIncomeField.getValue());
-        BigDecimal amountInTaxes = BigDecimal.valueOf(amountInTaxesField.getValue() != null ? amountInTaxesField.getValue() : 0);
-        BigDecimal mealVoucher = BigDecimal.valueOf(mealVoucherField.getValue() != null ? mealVoucherField.getValue() : 0);
-        BigDecimal foodVoucher = BigDecimal.valueOf(foodVoucherField.getValue() != null ? foodVoucherField.getValue() : 0);
-        BigDecimal healthInsurance = BigDecimal.valueOf(healthInsuranceField.getValue() != null ? healthInsuranceField.getValue() : 0);
-        BigDecimal dentalInsurance = BigDecimal.valueOf(dentalInsuranceField.getValue() != null ? dentalInsuranceField.getValue() : 0);
-        BigDecimal profitSharing = BigDecimal.valueOf(profitSharingField.getValue() != null ? profitSharingField.getValue() : 0);
+        BigDecimal amountInTaxes = BigDecimal
+                .valueOf(amountInTaxesField.getValue() != null ? amountInTaxesField.getValue() : 0);
+        BigDecimal mealVoucher = BigDecimal
+                .valueOf(mealVoucherField.getValue() != null ? mealVoucherField.getValue() : 0);
+        BigDecimal foodVoucher = BigDecimal
+                .valueOf(foodVoucherField.getValue() != null ? foodVoucherField.getValue() : 0);
+        BigDecimal healthInsurance = BigDecimal
+                .valueOf(healthInsuranceField.getValue() != null ? healthInsuranceField.getValue() : 0);
+        BigDecimal dentalInsurance = BigDecimal
+                .valueOf(dentalInsuranceField.getValue() != null ? dentalInsuranceField.getValue() : 0);
+        BigDecimal profitSharing = BigDecimal
+                .valueOf(profitSharingField.getValue() != null ? profitSharingField.getValue() : 0);
 
         // Net Income = Gross Income - Taxes
         BigDecimal netIncome = grossIncome.subtract(amountInTaxes);
-        
+
         // Total Income = Gross Income + Benefits - Taxes
         BigDecimal totalBenefits = mealVoucher.add(foodVoucher)
-            .add(healthInsurance).add(dentalInsurance).add(profitSharing);
+                .add(healthInsurance).add(dentalInsurance).add(profitSharing);
         BigDecimal totalIncome = grossIncome.add(totalBenefits).subtract(amountInTaxes);
 
         netIncomeDisplay.setValue("R$ " + netIncome.toString());
@@ -401,15 +419,15 @@ public class PaymentView extends VerticalLayout {
         }
 
         CreatePaymentDTO dto = CreatePaymentDTO.builder()
-            .employee(employee)
-            .grossIncome(BigDecimal.valueOf(grossIncomeField.getValue()))
-            .amountInTaxes(BigDecimal.valueOf(amountInTaxesField.getValue()))
-            .mealVoucherAmount(BigDecimal.valueOf(mealVoucherField.getValue()))
-            .foodVoucherAmount(BigDecimal.valueOf(foodVoucherField.getValue()))
-            .healthInsuranceAmount(BigDecimal.valueOf(healthInsuranceField.getValue()))
-            .dentalInsuranceAmount(BigDecimal.valueOf(dentalInsuranceField.getValue()))
-            .profitSharingAmount(BigDecimal.valueOf(profitSharingField.getValue()))
-            .build();
+                .employee(employee)
+                .grossIncome(BigDecimal.valueOf(grossIncomeField.getValue()))
+                .amountInTaxes(BigDecimal.valueOf(amountInTaxesField.getValue()))
+                .mealVoucherAmount(BigDecimal.valueOf(mealVoucherField.getValue()))
+                .foodVoucherAmount(BigDecimal.valueOf(foodVoucherField.getValue()))
+                .healthInsuranceAmount(BigDecimal.valueOf(healthInsuranceField.getValue()))
+                .dentalInsuranceAmount(BigDecimal.valueOf(dentalInsuranceField.getValue()))
+                .profitSharingAmount(BigDecimal.valueOf(profitSharingField.getValue()))
+                .build();
 
         try {
             Payment payment = paymentService.createPayment(dto);
@@ -428,7 +446,7 @@ public class PaymentView extends VerticalLayout {
 
     private void openEditDialog(Payment payment) {
         currentPaymentEditing = payment;
-        
+
         // Populate fields with current payment data
         editEmployeeComboBox.setValue(payment.getEmployee());
         editGrossIncomeField.setValue(payment.getGrossIncome().doubleValue());
@@ -438,7 +456,7 @@ public class PaymentView extends VerticalLayout {
         editHealthInsuranceField.setValue(payment.getHealthInsuranceAmount().doubleValue());
         editDentalInsuranceField.setValue(payment.getDentalInsuranceAmount().doubleValue());
         editProfitSharingField.setValue(payment.getProfitSharingAmount().doubleValue());
-        
+
         // Update income displays
         BigDecimal netIncome = calculateNetIncome(payment);
         BigDecimal totalIncome = calculateTotalIncome(payment);
@@ -448,7 +466,7 @@ public class PaymentView extends VerticalLayout {
         // Set the initial state of the toggle button and fields
         updateToggleStatusButton(payment.isActive());
         setEditFieldsEnabled(payment.isActive());
-        
+
         editDialog.open();
     }
 
@@ -486,7 +504,8 @@ public class PaymentView extends VerticalLayout {
         editHealthInsuranceField.setEnabled(enabled);
         editDentalInsuranceField.setEnabled(enabled);
         editProfitSharingField.setEnabled(enabled);
-        // editNetIncomeDisplay and editTotalIncomeDisplay are read-only, so no need to enable/disable them
+        // editNetIncomeDisplay and editTotalIncomeDisplay are read-only, so no need to
+        // enable/disable them
     }
 
     private void showPaymentDetails(Payment payment) {
@@ -534,16 +553,16 @@ public class PaymentView extends VerticalLayout {
         statusField.setValue(payment.isActive() ? "Active" : "Inactive");
         statusField.setReadOnly(true);
 
-        paymentInfoLayout.add(idField, employeeField, roleField, grossIncomeField, 
-                             netIncomeField, totalIncomeField, createdAtField, statusField);
+        paymentInfoLayout.add(idField, employeeField, roleField, grossIncomeField,
+                netIncomeField, totalIncomeField, createdAtField, statusField);
 
         // Benefits breakdown
         VerticalLayout benefitsLayout = new VerticalLayout();
         benefitsLayout.add(new com.vaadin.flow.component.html.H4("Benefits Breakdown"));
-        
+
         FormLayout benefitsForm = new FormLayout();
         benefitsForm.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
-        
+
         TextField taxesField = new TextField("Taxes");
         taxesField.setValue("R$ " + payment.getAmountInTaxes().toString());
         taxesField.setReadOnly(true);
@@ -589,11 +608,10 @@ public class PaymentView extends VerticalLayout {
         buttonLayout.add(editButton, closeButton);
 
         mainLayout.add(
-            new com.vaadin.flow.component.html.H4("Payment Information"),
-            paymentInfoLayout,
-            benefitsLayout,
-            buttonLayout
-        );
+                new com.vaadin.flow.component.html.H4("Payment Information"),
+                paymentInfoLayout,
+                benefitsLayout,
+                buttonLayout);
 
         detailsDialog.add(mainLayout);
         detailsDialog.open();
@@ -615,8 +633,8 @@ public class PaymentView extends VerticalLayout {
         String employeeName = payment.getEmployee().getFullName().toLowerCase();
         String role = payment.getEmployee().getRole().toString().toLowerCase();
 
-        return id.contains(currentSearchTerm) || 
-               employeeName.contains(currentSearchTerm) || 
-               role.contains(currentSearchTerm);
+        return id.contains(currentSearchTerm) ||
+                employeeName.contains(currentSearchTerm) ||
+                role.contains(currentSearchTerm);
     }
 }
