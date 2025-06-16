@@ -346,13 +346,13 @@ public class DashboardView extends FlexLayout {
         DashboardService.SeriesData seriesData = dashboardService.getTopProductChartData(
                 LocalDate.of(2010, 1, 1),
                 LocalDate.of(2030, 1, 1),
-                10);
+                5);
 
         log.debug("{}", JsonUtil.toPrettyJson(seriesData));
 
         // Dummy data for top products
         chartBuilder.withSeries(
-                new Series<>("Units Sold", seriesData.data())
+                new Series<>("Units Sold", seriesData.data().toArray(new BigDecimal[0]))
         );
 
         chartBuilder.withXaxis(
