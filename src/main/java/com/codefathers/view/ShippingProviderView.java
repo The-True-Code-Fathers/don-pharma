@@ -22,8 +22,10 @@
     import com.vaadin.flow.component.textfield.IntegerField;
     import com.vaadin.flow.component.textfield.TextArea;
     import com.vaadin.flow.component.textfield.TextField;
+    import com.vaadin.flow.router.PageTitle;
     import com.vaadin.flow.router.Route;
 
+    @PageTitle("Shipping Providers")
     @Route("shipping-providers")
     public class ShippingProviderView extends VerticalLayout {
 

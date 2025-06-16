@@ -27,11 +27,13 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import java.util.Arrays;
 import java.util.List;
 
+@PageTitle("Employee | Gestão de funcionários")
 @Route("employee")
 public class EmployeeView extends VerticalLayout {
     private EmployeeService employeeService;

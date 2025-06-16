@@ -23,6 +23,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
@@ -30,6 +31,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 
 import java.util.List;
 
+@PageTitle("Products")
 @Route("products")
 public class ProductsView extends VerticalLayout {
 
