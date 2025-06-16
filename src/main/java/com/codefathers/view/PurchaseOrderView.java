@@ -1,8 +1,11 @@
 package com.codefathers.view;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import com.codefathers.model.dto.CreatePurchaseOrderDTO;
 import com.codefathers.model.dto.CreatePurchaseOrderItemDTO;
@@ -26,6 +29,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -35,8 +39,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+@PageTitle("Purchase order")
 @Route("purchaseOrder")
 public class PurchaseOrderView extends VerticalLayout {
     private final PurchaseOrderService purchaseOrderService;
@@ -46,6 +52,9 @@ public class PurchaseOrderView extends VerticalLayout {
     private final TextField searchField = new TextField();
     private final Button addItemButton = new Button("Add Item");
     private final Button openDialogButton = new Button("Create Order");
+
+    private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final Grid<PurchaseOrder> grid = new Grid<>(PurchaseOrder.class, false);
     private final Grid<CreatePurchaseOrderItemDTO> itemGrid = new Grid<>(CreatePurchaseOrderItemDTO.class, false);
@@ -94,8 +103,8 @@ public class PurchaseOrderView extends VerticalLayout {
         grid.addColumn(po -> po.getId().toString()).setHeader("ID").setSortable(true);
         grid.addColumn(po -> po.getPurchaserId().getFullName()).setHeader("Purchaser").setSortable(true);
         grid.addColumn(po -> po.getPurchaseTotalProductAmount()).setHeader("Total Amount").setSortable(true);
-        grid.addColumn(po -> po.getPurchaseTotalPriceAmount()).setHeader("Total Price Amount").setSortable(true);
-        grid.addColumn(po -> po.getCreatedAt().toString()).setHeader("Created At").setSortable(true);
+        grid.addColumn(po -> CURRENCY_FORMAT.format(po.getPurchaseTotalPriceAmount())).setHeader("Total Price Amount").setSortable(true);
+        grid.addColumn(po -> po.getCreatedAt().format(DATE_FORMAT)).setHeader("Created At").setSortable(true);
         grid.addColumn(po -> po.getPurchaseOrderStatus().toString()).setHeader("Status").setSortable(true);
         grid.setHeight("400px");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
@@ -130,6 +139,8 @@ public class PurchaseOrderView extends VerticalLayout {
         priceField.setMin(0);
         priceField.setStep(0.01);
         priceField.setValue(0.0);
+
+        priceField.setPrefixComponent(new Span("R$"));
 
         purchaserComboBox.setItems(employeeService.employeeList());
         purchaserComboBox.setItemLabelGenerator(Employee::getFullName);
@@ -221,9 +232,11 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     private static class PurchaseOrderItemForm {
+        private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(new Locale("en", "US"));
         ComboBox<Product> productField;
         NumberField quantityField;
         NumberField priceField;
+
 
         public PurchaseOrderItemForm(List<Product> products) {
             this.productField = new ComboBox<>("Product");
@@ -365,7 +378,24 @@ public class PurchaseOrderView extends VerticalLayout {
     private void setupItemGrid() {
         itemGrid.addColumn(item -> item.getProduct().getName()).setHeader("Product").setAutoWidth(true);
         itemGrid.addColumn(CreatePurchaseOrderItemDTO::getQuantity).setHeader("Quantity").setAutoWidth(true);
-        itemGrid.addColumn(item -> item.getPrice().toString()).setHeader("Price").setAutoWidth(true);
+        itemGrid.addColumn(item -> CURRENCY_FORMAT.format((item.getPrice()))).setHeader("Price").setAutoWidth(true);
+
+        itemGrid.addComponentColumn(item -> {
+            HorizontalLayout actions = new HorizontalLayout();
+            actions.setSpacing(true);
+
+            Button editButton = new Button(new Icon(VaadinIcon.EDIT));
+            editButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+            editButton.addClickListener(e -> editItem(item));
+
+            Button deleteButton = new Button(new Icon(VaadinIcon.TRASH));
+            deleteButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
+            deleteButton.addClickListener(e -> deleteItem(item));
+
+            actions.add(editButton, deleteButton);
+            return actions;
+        }).setHeader("Actions").setAutoWidth(true);
+
         itemGrid.setHeight("200px");
     }
 
@@ -450,5 +480,22 @@ public class PurchaseOrderView extends VerticalLayout {
         );
         detailsDialog.add(mainLayout);
         detailsDialog.open();
+    }
+
+    private void deleteItem(CreatePurchaseOrderItemDTO item) {
+        items.remove(item);
+        itemGrid.setItems(items);
+        Notification.show("Item removed successfully.");
+    }
+
+    private void editItem(CreatePurchaseOrderItemDTO item) {
+        productComboBox.setValue(item.getProduct());
+        quantityField.setValue((double) item.getQuantity());
+        priceField.setValue(item.getPrice().doubleValue());
+
+        items.remove(item);
+        itemGrid.setItems(items);
+
+        Notification.show("Item loaded for editing. Modify and click 'Add Item' to update.");
     }
 }

@@ -31,8 +31,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+@PageTitle("Payment")
 @Route("payment")
 public class PaymentView extends VerticalLayout {
     private final PaymentService paymentService;
@@ -51,8 +53,8 @@ public class PaymentView extends VerticalLayout {
     private final NumberField amountInTaxesField = new NumberField("Amount in Taxes");
     private final NumberField mealVoucherField = new NumberField("Meal Voucher");
     private final NumberField foodVoucherField = new NumberField("Food Voucher");
-    private final NumberField healthInsuranceField = new NumberField("Health Insurance");
-    private final NumberField dentalInsuranceField = new NumberField("Dental Insurance");
+    private final NumberField healthInsuranceField = new NumberField("Health Insurance Coverage");
+    private final NumberField dentalInsuranceField = new NumberField("Dental Insurance Coverage");
     private final NumberField profitSharingField = new NumberField("Profit Sharing");
     private final TextField netIncomeDisplay = new TextField("Net Income");
     private final TextField totalIncomeDisplay = new TextField("Total Income");
@@ -66,8 +68,8 @@ public class PaymentView extends VerticalLayout {
     private final NumberField editAmountInTaxesField = new NumberField("Amount in Taxes");
     private final NumberField editMealVoucherField = new NumberField("Meal Voucher");
     private final NumberField editFoodVoucherField = new NumberField("Food Voucher");
-    private final NumberField editHealthInsuranceField = new NumberField("Health Insurance");
-    private final NumberField editDentalInsuranceField = new NumberField("Dental Insurance");
+    private final NumberField editHealthInsuranceField = new NumberField("Health Insurance Coverage");
+    private final NumberField editDentalInsuranceField = new NumberField("Dental Insurance Coverage");
     private final NumberField editProfitSharingField = new NumberField("Profit Sharing");
     private final TextField editNetIncomeDisplay = new TextField("Net Income");
     private final TextField editTotalIncomeDisplay = new TextField("Total Income");
@@ -128,8 +130,6 @@ public class PaymentView extends VerticalLayout {
     private BigDecimal calculateTotalIncome(Payment payment) {
         BigDecimal totalBenefits = payment.getMealVoucherAmount()
                 .add(payment.getFoodVoucherAmount())
-                .add(payment.getHealthInsuranceAmount())
-                .add(payment.getDentalInsuranceAmount())
                 .add(payment.getProfitSharingAmount());
 
         return payment.getGrossIncome()
@@ -178,11 +178,9 @@ public class PaymentView extends VerticalLayout {
 
         amountInTaxesField.setReadOnly(true);
 
-        // Setup income display fields
         setupIncomeDisplayField(netIncomeDisplay);
         setupIncomeDisplayField(totalIncomeDisplay);
 
-        // Employee selection listener to populate default values
         employeeComboBox.addValueChangeListener(e -> {
             Employee selectedEmployee = e.getValue();
             if (selectedEmployee != null) {
@@ -207,8 +205,8 @@ public class PaymentView extends VerticalLayout {
         formLayout.add(
                 employeeComboBox, grossIncomeField,
                 amountInTaxesField, mealVoucherField,
-                foodVoucherField, healthInsuranceField,
-                dentalInsuranceField, profitSharingField,
+                foodVoucherField, profitSharingField,
+                dentalInsuranceField, healthInsuranceField,
                 netIncomeDisplay, totalIncomeDisplay);
 
         Button createButton = new Button("Create Payment", e -> createPayment());
@@ -253,15 +251,20 @@ public class PaymentView extends VerticalLayout {
         setupNumberFieldWithCurrency(editDentalInsuranceField, 0.00);
         setupNumberFieldWithCurrency(editProfitSharingField, 0.00);
 
-        // CORREÇÃO 1: Bloquear o campo Amount in Taxes para edição
         editAmountInTaxesField.setReadOnly(true);
-
+        editHealthInsuranceField.setReadOnly(true);
+        editDentalInsuranceField.setReadOnly(true);
         setupIncomeDisplayField(editNetIncomeDisplay);
         setupIncomeDisplayField(editTotalIncomeDisplay);
 
         editEmployeeComboBox.addValueChangeListener(e -> {
-            if (e.getValue() != null && editGrossIncomeField.getValue() != null) {
-                updateTaxesBasedOnEmployee(e.getValue(), editGrossIncomeField.getValue());
+            Employee selectedEmployee = e.getValue();
+            if (selectedEmployee != null) {
+                populateEditDefaultValues(selectedEmployee);
+
+                if (editGrossIncomeField.getValue() != null) {
+                    updateTaxesBasedOnEmployee(selectedEmployee, editGrossIncomeField.getValue());
+                }
             }
             updateEditIncomeDisplays();
         });
@@ -280,14 +283,15 @@ public class PaymentView extends VerticalLayout {
         editDentalInsuranceField.addValueChangeListener(e -> updateEditIncomeDisplays());
         editProfitSharingField.addValueChangeListener(e -> updateEditIncomeDisplays());
         editAmountInTaxesField.addValueChangeListener(e -> updateEditIncomeDisplays());
-
+        healthInsuranceField.setReadOnly(true);
+        dentalInsuranceField.setReadOnly(true);
         FormLayout editFormLayout = new FormLayout();
         editFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
         editFormLayout.add(
                 editEmployeeComboBox, editGrossIncomeField,
                 editAmountInTaxesField, editMealVoucherField,
-                editFoodVoucherField, editHealthInsuranceField,
-                editDentalInsuranceField, editProfitSharingField,
+                editFoodVoucherField, editProfitSharingField,
+                editDentalInsuranceField, editHealthInsuranceField,
                 editNetIncomeDisplay, editTotalIncomeDisplay);
 
         Button updateButton = new Button("Update Payment", e -> {
@@ -303,7 +307,8 @@ public class PaymentView extends VerticalLayout {
                     currentPaymentEditing
                             .setDentalInsuranceAmount(BigDecimal.valueOf(editDentalInsuranceField.getValue()));
                     currentPaymentEditing.setProfitSharingAmount(BigDecimal.valueOf(editProfitSharingField.getValue()));
-
+                    healthInsuranceField.setReadOnly(true);
+                    dentalInsuranceField.setReadOnly(true);
                     paymentService.update(currentPaymentEditing);
                     Notification.show("Payment updated successfully.");
                     refreshGrid();
@@ -351,10 +356,6 @@ public class PaymentView extends VerticalLayout {
                 editMealVoucherField.getValue() != null ? editMealVoucherField.getValue() : 0);
         BigDecimal foodVoucher = BigDecimal.valueOf(
                 editFoodVoucherField.getValue() != null ? editFoodVoucherField.getValue() : 0);
-        BigDecimal healthInsurance = BigDecimal.valueOf(
-                editHealthInsuranceField.getValue() != null ? editHealthInsuranceField.getValue() : 0);
-        BigDecimal dentalInsurance = BigDecimal.valueOf(
-                editDentalInsuranceField.getValue() != null ? editDentalInsuranceField.getValue() : 0);
         BigDecimal profitSharing = BigDecimal.valueOf(
                 editProfitSharingField.getValue() != null ? editProfitSharingField.getValue() : 0);
 
@@ -363,7 +364,7 @@ public class PaymentView extends VerticalLayout {
 
         // Total Income = Gross Income + Benefits - Taxes
         BigDecimal totalBenefits = mealVoucher.add(foodVoucher)
-                .add(healthInsurance).add(dentalInsurance).add(profitSharing);
+                .add(profitSharing);
         BigDecimal totalIncome = grossIncome.add(totalBenefits).subtract(amountInTaxes);
 
         editNetIncomeDisplay.setValue("R$ " + netIncome.toString());
@@ -499,6 +500,18 @@ public class PaymentView extends VerticalLayout {
         }
     }
 
+    private void populateEditDefaultValues(Employee employee) {
+        Map<EmployeeBenefits, BigDecimal> benefits = employee.getRole().getBENEFITS();
+
+        editGrossIncomeField.setValue(benefits.get(EmployeeBenefits.GROSS_INCOME).doubleValue());
+        editAmountInTaxesField.setValue(benefits.get(EmployeeBenefits.AMOUNT_IN_TAXES).doubleValue());
+        editMealVoucherField.setValue(benefits.get(EmployeeBenefits.MEAL_VOUCHER).doubleValue());
+        editFoodVoucherField.setValue(benefits.get(EmployeeBenefits.FOOD_VOUCHER).doubleValue());
+        editHealthInsuranceField.setValue(benefits.get(EmployeeBenefits.HEALTH_INSURANCE).doubleValue());
+        editDentalInsuranceField.setValue(benefits.get(EmployeeBenefits.DENTAL_INSURANCE).doubleValue());
+        editProfitSharingField.setValue(benefits.get(EmployeeBenefits.PROFIT_SHARING).doubleValue());
+    }
+
     private void openEditDialog(Payment payment) {
         currentPaymentEditing = payment;
 
@@ -555,8 +568,8 @@ public class PaymentView extends VerticalLayout {
         editEmployeeComboBox.setEnabled(enabled);
         editGrossIncomeField.setEnabled(enabled);
         // editAmountInTaxesField sempre fica read-only, não precisa ser controlado aqui
-        editMealVoucherField.setEnabled(enabled);
-        editFoodVoucherField.setEnabled(enabled);
+        // editMealVoucherField.setEnabled(enabled);
+        // editFoodVoucherField.setEnabled(enabled);
         editHealthInsuranceField.setEnabled(enabled);
         editDentalInsuranceField.setEnabled(enabled);
         editProfitSharingField.setEnabled(enabled);
@@ -641,7 +654,7 @@ public class PaymentView extends VerticalLayout {
         profitField.setValue("R$ " + payment.getProfitSharingAmount().toString());
         profitField.setReadOnly(true);
 
-        benefitsForm.add(taxesField, mealField, foodField, healthField, dentalField, profitField);
+        benefitsForm.add(taxesField, mealField, foodField, profitField, dentalField, healthField);
         benefitsLayout.add(benefitsForm);
 
         HorizontalLayout buttonLayout = new HorizontalLayout();

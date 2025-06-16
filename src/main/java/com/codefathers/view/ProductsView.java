@@ -1,52 +1,70 @@
 package com.codefathers.view;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+
 import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.dto.UpdateProductDTO;
+import com.codefathers.model.entity.OrderItem;
 import com.codefathers.model.entity.Product;
+import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.model.enums.MeasurementUnit;
+import com.codefathers.repository.implementations.OrderItemRepositoryImpl;
+import com.codefathers.repository.implementations.OrderRepositoryImpl;
 import com.codefathers.repository.implementations.ProductRepositoryImpl;
+import com.codefathers.repository.implementations.PurchaseOrderItemRepositoryImpl;
+import com.codefathers.repository.implementations.PurchaseOrderRepositoryImpl;
+import com.codefathers.service.OrderItemService;
 import com.codefathers.service.ProductService;
+import com.codefathers.service.PurchaseOrderItemService;
+import com.codefathers.service.PurchaseOrderService;
 import com.codefathers.util.ValidatorUtil;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.dataview.GridLazyDataView;
-import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.BigDecimalField;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.Route;
 
 import java.util.List;
 
+@PageTitle("Products")
 @Route("products")
 public class ProductsView extends VerticalLayout {
 
     private ProductService productService;
-
-    // Form fields - CREATE NEW INSTANCES FOR EACH DIALOG
+    private OrderItemService orderItemService;
+    private PurchaseOrderItemService purchaseOrderItemService;
+    private PurchaseOrderService purchaseOrderService;
     private TextField createSku = new TextField("SKU", "A123");
     private TextField createName = new TextField("Name");
     private TextArea createDescription = new TextArea("Description", "Optional");
-    private BigDecimalField createBuyPrice = new BigDecimalField("Buy Price");
-    private BigDecimalField createSellPrice = new BigDecimalField("Sell Price");
 
     private TextField updateSku = new TextField("SKU");
     private TextField updateName = new TextField("Name");
     private TextArea updateDescription = new TextArea("Description", "Optional");
-    private BigDecimalField updateBuyPrice = new BigDecimalField("Buy Price");
-    private BigDecimalField updateSellPrice = new BigDecimalField("Sell Price");
 
     private TextField searchField = new TextField();
     private Select<Integer> pageSizeSelect = new Select<>();
@@ -66,6 +84,7 @@ public class ProductsView extends VerticalLayout {
     private Button setInactiveButton = new Button("Inactivate Product");
 
     private Button dialogButtonCreateProduct = new Button("Create Product");
+    private Button refreshButton = new Button("Refresh", new Icon(VaadinIcon.REFRESH));
 
     private Grid<Product> grid = new Grid<>(Product.class, false);
     private GridLazyDataView<Product> dataView;
@@ -83,9 +102,14 @@ public class ProductsView extends VerticalLayout {
     private Boolean currentShowInactive = false;
 
     public ProductsView() {
-        // Instanciar repositório e service manualmente
         var productRepository = new ProductRepositoryImpl();
+        var orderItemRepository = new OrderItemRepositoryImpl();
+        var orderRepository = new OrderRepositoryImpl();
+        var purchaseOrderItemRepository = new PurchaseOrderItemRepositoryImpl();
+        var purchaseOrderRepository = new PurchaseOrderRepositoryImpl();
         this.productService = new ProductService(productRepository, ValidatorUtil.getValidator());
+        this.orderItemService = new OrderItemService(orderItemRepository, orderRepository);
+        this.purchaseOrderItemService = new PurchaseOrderItemService(purchaseOrderItemRepository, purchaseOrderRepository, ValidatorUtil.getValidator());
 
         setupSearchField();
         setupGrid();
@@ -95,7 +119,7 @@ public class ProductsView extends VerticalLayout {
         setupCreateComboBox(createUnit);
         setupUpdateComboBox(updateUnit);
 
-        HorizontalLayout leftLayout = new HorizontalLayout(dialogButtonCreateProduct, searchField);
+        HorizontalLayout leftLayout = new HorizontalLayout(dialogButtonCreateProduct, searchField, refreshButton);
         leftLayout.setAlignItems(Alignment.CENTER);
         leftLayout.setSpacing(true);
 
@@ -109,6 +133,19 @@ public class ProductsView extends VerticalLayout {
 
         add(headerLayout, grid);
         setupLazyDataProvider();
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        refreshGrid();
+    }
+
+    private void refreshGrid() {
+        if (dataView != null) {
+            dataView.refreshAll();
+        }
+        Notification.show("Grid updated", 2000, Notification.Position.BOTTOM_END);
     }
 
     private void setupSearchField() {
@@ -128,28 +165,21 @@ public class ProductsView extends VerticalLayout {
         createDialog.setHeaderTitle("Create Product");
         createDialog.setDraggable(true);
         createDialog.getElement().getStyle().set("width", "400px");
-        createDialog.getElement().getStyle().set("height", "350px");
+        createDialog.getElement().getStyle().set("height", "300px");
 
-        // Setup form fields
         createSku.setWidth("350px");
         createName.setWidth("350px");
         createUnit.setWidth("350px");
         createDescription.setWidth("350px");
-        createBuyPrice.setWidth("350px");
-        createSellPrice.setWidth("350px");
 
-
-        // Create form layout
         VerticalLayout formLayout = new VerticalLayout();
-        formLayout.add(createSku, createName, createUnit, createDescription, createBuyPrice, createSellPrice);
+        formLayout.add(createSku, createName, createUnit, createDescription);
         formLayout.setSpacing(true);
         formLayout.setPadding(true);
 
-        // Create buttons layout
         HorizontalLayout buttonsLayout = new HorizontalLayout(createSaveButton, createClearButton, createCloseButton);
         buttonsLayout.setJustifyContentMode(JustifyContentMode.EVENLY);
 
-        // Main layout
         VerticalLayout mainLayout = new VerticalLayout(formLayout, buttonsLayout);
         mainLayout.setSpacing(true);
         mainLayout.setPadding(true);
@@ -161,27 +191,21 @@ public class ProductsView extends VerticalLayout {
         updateDialog.setHeaderTitle("Update Product");
         updateDialog.setDraggable(true);
         updateDialog.getElement().getStyle().set("width", "300px");
-        updateDialog.getElement().getStyle().set("height", "250px");
+        updateDialog.getElement().getStyle().set("height", "200px");
 
-        // Setup form fields
         updateSku.setWidth("350px");
         updateName.setWidth("350px");
         updateUnit.setWidth("350px");
         updateDescription.setWidth("350px");
-        updateBuyPrice.setWidth("350px");
-        updateSellPrice.setWidth("350px");
 
-        // Create form layout
         VerticalLayout formLayout = new VerticalLayout();
-        formLayout.add(updateSku, updateName, updateUnit, updateDescription, updateBuyPrice, updateSellPrice);
+        formLayout.add(updateSku, updateName, updateUnit, updateDescription);
         formLayout.setSpacing(true);
         formLayout.setPadding(true);
 
-        // Create buttons layout
         HorizontalLayout buttonsLayout = new HorizontalLayout(updateSaveButton, updateClearButton, updateCloseButton, setInactiveButton);
         buttonsLayout.setJustifyContentMode(JustifyContentMode.EVENLY);
 
-        // Main layout
         VerticalLayout mainLayout = new VerticalLayout(formLayout, buttonsLayout);
         mainLayout.setSpacing(true);
         mainLayout.setPadding(true);
@@ -190,7 +214,6 @@ public class ProductsView extends VerticalLayout {
     }
 
     private void setupEventListeners() {
-        // Create dialog events
         dialogButtonCreateProduct.addClickListener(e -> {
             clearCreateForm();
             createDialog.open();
@@ -200,11 +223,12 @@ public class ProductsView extends VerticalLayout {
         createClearButton.addClickListener(e -> clearCreateForm());
         createCloseButton.addClickListener(e -> createDialog.close());
 
-        // Update dialog events
         updateSaveButton.addClickListener(e -> updateExistingProduct());
         updateClearButton.addClickListener(e -> clearUpdateForm());
         updateCloseButton.addClickListener(e -> updateDialog.close());
         setInactiveButton.addClickListener(e -> toggleProductActive());
+
+        refreshButton.addClickListener(e -> refreshGrid());
     }
 
     private void setupGrid() {
@@ -212,8 +236,14 @@ public class ProductsView extends VerticalLayout {
         grid.addColumn(Product::getName).setHeader("Name").setSortable(true).setAutoWidth(true);
         grid.addColumn(Product::getMeasurementUnit).setHeader("UM").setSortable(true).setAutoWidth(true);
         grid.addColumn(Product::getDescription).setHeader("Description").setAutoWidth(true);
-        grid.addColumn(Product::getBuyPrice).setHeader("Buy Price").setAutoWidth(true);
-        grid.addColumn(Product::getSellPrice).setHeader("Sell Price").setAutoWidth(true);
+        
+        grid.addColumn(this::calculateWeightedAverageBuyPrice)
+            .setHeader("Avg Buy Price")
+            .setAutoWidth(true);
+        
+        grid.addColumn(this::calculateWeightedAverageSellPrice)
+            .setHeader("Avg Sell Price")
+            .setAutoWidth(true);
 
         statusColumn = grid.addColumn(product -> product.isActive() ? "Active" : "Inactive")
                 .setHeader("Status")
@@ -237,19 +267,15 @@ public class ProductsView extends VerticalLayout {
     private void setupCreateComboBox(ComboBox<MeasurementUnit> createUnit) {
         createUnit.setAllowCustomValue(false);
         createUnit.setWidthFull();
-
         createUnit.setItems(MeasurementUnit.values());
         createUnit.setPlaceholder("Unit");
-
     }
 
     private void setupUpdateComboBox(ComboBox<MeasurementUnit> updateUnit) {
         updateUnit.setAllowCustomValue(false);
         updateUnit.setWidthFull();
-
         updateUnit.setItems(MeasurementUnit.values());
         updateUnit.setPlaceholder("Unit");
-
     }
 
     private void setupLazyDataProvider() {
@@ -297,12 +323,70 @@ public class ProductsView extends VerticalLayout {
         boolean matchesName = matchesTerm(product.getName(), searchTermLower);
         boolean matchesDescription = matchesTerm(product.getDescription(), searchTermLower);
 
-        boolean matchesBuyPrice = product.getBuyPrice() != null &&
-                product.getBuyPrice().toString().toLowerCase().contains(searchTermLower);
-        boolean matchesSellPrice = product.getSellPrice() != null &&
-                product.getSellPrice().toString().toLowerCase().contains(searchTermLower);
+        return matchesSku || matchesName || matchesDescription;
+    }
 
-        return matchesSku || matchesName || matchesDescription || matchesBuyPrice || matchesSellPrice;
+    // Método para calcular a média ponderada do preço de compra baseado nas ordens
+    private String calculateWeightedAverageBuyPrice(Product product) {
+        try {
+            // Aqui você deve implementar a lógica para buscar as ordens de compra do produto
+            // e calcular a média ponderada
+            
+            // Exemplo de implementação (substitua pela sua lógica real):
+            List<PurchaseOrderItem> purchaseOrdersItems = purchaseOrderItemService.findByProductSku(product.getSku());
+            
+            if (purchaseOrdersItems.isEmpty()) {
+                return "R$ 00.00";
+            }
+            
+            BigDecimal totalValue = BigDecimal.ZERO;
+            BigDecimal totalQuantity = BigDecimal.ZERO;
+            
+            for (PurchaseOrderItem order : purchaseOrdersItems) {
+                BigDecimal orderValue = order.getPrice().multiply(BigDecimal.valueOf(order.getQuantity()));
+                totalValue = totalValue.add(orderValue);
+                totalQuantity = totalQuantity.add(BigDecimal.valueOf(order.getQuantity()));
+            }
+            
+            if (totalQuantity.compareTo(BigDecimal.ZERO) == 0) {
+                return "R$ 00.00";
+            }
+            
+            BigDecimal weightedAverage = totalValue.divide(totalQuantity, 2, RoundingMode.HALF_UP);
+            return "R$ " + weightedAverage.toString();
+            
+        } catch (Exception e) {
+            return "Error";
+        }
+    }
+
+    private String calculateWeightedAverageSellPrice(Product product) {
+        try {
+            List<OrderItem> saleOrdersItems = orderItemService.findByProductSku(product.getSku()).get();
+            
+            if (saleOrdersItems.isEmpty()) {
+                return "R$ 00.00";
+            }
+            
+            BigDecimal totalValue = BigDecimal.ZERO;
+            BigDecimal totalQuantity = BigDecimal.ZERO;
+            
+            for (OrderItem orderItem : saleOrdersItems) {
+                BigDecimal orderItemValue = orderItem.getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+                totalValue = totalValue.add(orderItemValue);
+                totalQuantity = totalQuantity.add(BigDecimal.valueOf(orderItem.getQuantity()));
+            }
+            
+            if (totalQuantity.compareTo(BigDecimal.ZERO) == 0) {
+                return "R$ 00.00";
+            }
+            
+            BigDecimal weightedAverage = totalValue.divide(totalQuantity, 2, RoundingMode.HALF_UP);
+            return "R$ " + weightedAverage.toString();
+            
+        } catch (Exception e) {
+            return "Error";
+        }
     }
 
     private void populateUpdateForm(Product product) {
@@ -312,10 +396,6 @@ public class ProductsView extends VerticalLayout {
         updateName.setReadOnly(true);
         updateUnit.setValue(product.getMeasurementUnit());
         updateDescription.setValue(product.getDescription() != null ? product.getDescription() : "");
-        updateBuyPrice.setValue(product.getBuyPrice());
-        updateSellPrice.setValue(product.getSellPrice());
-
-        // Update button text based on product status
         setInactiveButton.setText(product.isActive() ? "Set Inactive" : "Set Active");
     }
 
@@ -326,8 +406,7 @@ public class ProductsView extends VerticalLayout {
         createName.setReadOnly(false);
         createUnit.clear();
         createDescription.clear();
-        createBuyPrice.clear();
-        createSellPrice.clear();
+        // Campos de preço removidos
     }
 
     private void clearUpdateForm() {
@@ -337,8 +416,6 @@ public class ProductsView extends VerticalLayout {
         updateName.setReadOnly(false);
         updateUnit.clear();
         updateDescription.clear();
-        updateBuyPrice.clear();
-        updateSellPrice.clear();
         currentProduct = null;
     }
 
@@ -348,9 +425,7 @@ public class ProductsView extends VerticalLayout {
                     .sku(createSku.getValue())
                     .name(createName.getValue())
                     .description(createDescription.getValue())
-                    .buyPrice(createBuyPrice.getValue())
-                    .sellPrice(createSellPrice.getValue())
-                    .active(true) // New products are active by default
+                    .active(true)
                     .measurementUnit(createUnit.getValue())
                     .build();
 
@@ -377,8 +452,6 @@ public class ProductsView extends VerticalLayout {
             UpdateProductDTO dto = UpdateProductDTO.builder()
                     .description(updateDescription.getValue())
                     .measurementUnit(updateUnit.getValue())
-                    .buyPrice(updateBuyPrice.getValue())
-                    .sellPrice(updateSellPrice.getValue())
                     .active(currentProduct.isActive())
                     .build();
 
