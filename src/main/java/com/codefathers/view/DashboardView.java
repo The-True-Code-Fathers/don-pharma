@@ -4,12 +4,10 @@ import com.codefathers.factory.ServiceFactory;
 import com.codefathers.model.entity.SystemUser;
 import com.codefathers.service.AuthService;
 import com.codefathers.service.DashboardService;
-import com.codefathers.service.OrderService;
-import com.github.appreciated.apexcharts.ApexCharts;
-import com.github.appreciated.apexcharts.config.xaxis.labels.DatetimeFormatter;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI; // Import UI
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
@@ -41,22 +39,18 @@ import com.github.appreciated.apexcharts.config.yaxis.builder.TitleBuilder;
 // ApexCharts Theming Imports
 import com.github.appreciated.apexcharts.config.builder.ThemeBuilder;
 import com.github.appreciated.apexcharts.config.theme.Mode;
-// import com.github.appreciated.apexcharts.config.theme.Palette; // Removed unused import for Palette
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Route("")
-@PageTitle("Dashboard | Sistema de Gestão")
+@PageTitle("Dashboard | Don Pharma")
 public class DashboardView extends FlexLayout {
 
     private final AuthService authService = ServiceFactory.getAuthService();
@@ -69,11 +63,6 @@ public class DashboardView extends FlexLayout {
         setSizeFull();
         setFlexDirection(FlexDirection.COLUMN);
         addClassName("dashboard-view");
-
-        // The initial theme is set by MainLayout.
-        // We ensure that the 'theme' attribute is not locally set here,
-        // it's controlled by the global 'html' element.
-
         // Header
         add(createHeader());
 
@@ -82,15 +71,18 @@ public class DashboardView extends FlexLayout {
 
         // Charts Section
         FlexLayout chartContainer = new FlexLayout();
-        chartContainer.setSizeFull();
-        chartContainer.setAlignItems(Alignment.CENTER);
-        chartContainer.setFlexDirection(FlexDirection.COLUMN);
-        chartContainer.add(createMainChartsSection(), createWrapChartsSection());
-
+            chartContainer.setSizeFull();
+            chartContainer.setAlignItems(Alignment.CENTER);
+            chartContainer.setFlexDirection(FlexDirection.COLUMN);
+            chartContainer.add(createMainChartsSection(), createWrapChartsSection());
         add(chartContainer);
 
         // Tables Section
         // add(createTablesSection());
+    }
+
+    private void datePickerListener() {
+
     }
 
     private Component createHeader() {
@@ -119,8 +111,8 @@ public class DashboardView extends FlexLayout {
         var subtitle = new Span("Business Key Performance Indicators");
         subtitle.addClassNames(LumoUtility.TextColor.SECONDARY);
 
-        var startDate = new DatePicker("Start date");
-        var endDate = new DatePicker("End date");
+        var startDate = new DatePicker("Start date", LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()));
+        var endDate = new DatePicker("End date", LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()));
         startDate
                 .addValueChangeListener(e -> endDate.setMin(e.getValue()));
         endDate.addValueChangeListener(
@@ -210,7 +202,7 @@ public class DashboardView extends FlexLayout {
     }
 
     private Component createWrapChartsSection() {
-        FlexLayout horizontalWrapChartsLayout = new FlexLayout();
+        var horizontalWrapChartsLayout = new FlexLayout();
 
         horizontalWrapChartsLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
 
@@ -261,7 +253,7 @@ public class DashboardView extends FlexLayout {
                         .withHeight("350px")
                         .build())
                 .withTitle(TitleSubtitleBuilder.get()
-                        .withText(String.format("Sales %s - %s", startDay, endDay))
+                        .withText("Sales summary")
                         .build())
                 .withSeries(new Series<>("Sales", chartData.data().toArray(new BigDecimal[0]))) // Use data from DTO
                 .withXaxis(XAxisBuilder.get()

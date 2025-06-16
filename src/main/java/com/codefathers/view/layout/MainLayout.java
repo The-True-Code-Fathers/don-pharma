@@ -3,6 +3,7 @@ package com.codefathers.view.layout;
 import com.codefathers.view.*;
 import com.codefathers.view.PurchaseOrderView;
 import com.codefathers.view.StorageView;
+import com.codefathers.view.DashboardView;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
