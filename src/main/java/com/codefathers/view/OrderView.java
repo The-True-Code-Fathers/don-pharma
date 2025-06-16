@@ -9,11 +9,7 @@ import java.util.stream.Collectors;
 import com.codefathers.exceptions.BusinessRuleException;
 import com.codefathers.model.dto.CreateOrderDTO;
 import com.codefathers.model.dto.CreateOrderItemDTO;
-import com.codefathers.model.entity.Employee;
-import com.codefathers.model.entity.Order;
-import com.codefathers.model.entity.OrderItem;
-import com.codefathers.model.entity.Product;
-import com.codefathers.model.entity.ShippingProvider;
+import com.codefathers.model.entity.*;
 import com.codefathers.model.enums.EmployeeRole;
 import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.implementations.EmployeeRepositoryImpl;
@@ -23,11 +19,7 @@ import com.codefathers.repository.implementations.ProductRepositoryImpl;
 import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
 import com.codefathers.repository.implementations.StorageRepositoryImpl;
 import com.codefathers.repository.interfaces.EmployeeRepository;
-import com.codefathers.service.EmployeeService;
-import com.codefathers.service.OrderItemService;
-import com.codefathers.service.OrderService;
-import com.codefathers.service.ProductService;
-import com.codefathers.service.ShippingProviderService;
+import com.codefathers.service.*;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -52,8 +44,10 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.codefathers.factory.ServiceFactory.*;
 
 import jakarta.validation.Validator;
 
@@ -75,7 +69,6 @@ public class OrderView extends VerticalLayout {
     private OrderStatus currentStatusFilter = null;
     private TextField searchField = new TextField();
     private Select<String> statusFilter = new Select<>();
-    private ComboBox<Employee> employeeComboBox;
     private Dialog dialog = new Dialog();
     private Dialog editDialog = new Dialog();
     private String currentSearchingTerm = "";
@@ -101,8 +94,7 @@ public class OrderView extends VerticalLayout {
         this.orderService = new OrderService(orderRepository, employeeRepository, storageRepository, validator);
         initializeFormComponents();
 
-        employeeComboBox = new ComboBox<>();
-        setupEmployeeComboBox();
+        setupEmployeeSearchField();
         searchStatusFilter();
         setupGrid();
         setupDialog();
@@ -111,7 +103,7 @@ public class OrderView extends VerticalLayout {
         Button createButton = new Button("Criar Pedido", new Icon(VaadinIcon.PLUS));
         createButton.addClickListener(e -> openCreateOrderDialog());
 
-        HorizontalLayout filters = new HorizontalLayout(employeeComboBox, statusFilter);
+        HorizontalLayout filters = new HorizontalLayout(searchField, statusFilter);
         filters.setAlignItems(Alignment.CENTER);
         filters.setSpacing(true);
 
@@ -214,12 +206,10 @@ public class OrderView extends VerticalLayout {
         editDialog.setHeight("600px");
     }
 
-    // Substitua o método openEditDialog existente por este código atualizado:
-
     private void openEditDialog(Order order) {
-        editDialog.removeAll(); // Limpa o conteúdo anterior
+        editDialog.removeAll();
 
-        this.currentOrderEditing = order; // Define o pedido atual sendo editado
+        this.currentOrderEditing = order;
 
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.setPadding(true);
@@ -351,40 +341,17 @@ public class OrderView extends VerticalLayout {
 
     private void refreshGrid() {
         dataView.refreshAll();
-        grid.getDataProvider().refreshAll();
     }
 
-    private void setupEmployeeComboBox() {
-        employeeComboBox.setAllowCustomValue(false);
-        employeeComboBox.setPageSize(10);
+    private void setupEmployeeSearchField() {
+        searchField.setPlaceholder("Buscar por ID, Vendedor ou Produto...");
+        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+        searchField.setValueChangeMode(ValueChangeMode.LAZY);
+        searchField.setClearButtonVisible(true);
 
-        List<Employee> allEmployees = new ArrayList<>();
-        allEmployees.add(allEmployee); // Adiciona o item "TODOS"
-
-        List<Employee> sellers = employeeService.employeeList().stream()
-                .filter(emp -> emp.getRole() == EmployeeRole.SALES || emp.getRole() == EmployeeRole.LOCAL_MANAGER)
-                .collect(Collectors.toList());
-
-        allEmployees.addAll(sellers);
-
-        employeeComboBox.setItems(query -> {
-            String filter = query.getFilter().orElse("");
-            return allEmployees.stream()
-                    .filter(emp -> {
-                        if (emp == allEmployee)
-                            return "todos".contains(filter.toLowerCase());
-                        return emp.getFullName().toLowerCase().contains(filter.toLowerCase());
-                    })
-                    .skip(query.getOffset())
-                    .limit(query.getLimit());
-        });
-
-        employeeComboBox.setValue(allEmployee);
-        currentEmployeeFilter = allEmployee;
-
-        employeeComboBox.addValueChangeListener(e -> {
-            currentEmployeeFilter = e.getValue();
-            dataView.refreshAll();
+        searchField.addValueChangeListener(e -> {
+            currentSearchingTerm = e.getValue().trim().toLowerCase();
+            refreshGrid();
         });
     }
 
@@ -432,12 +399,29 @@ public class OrderView extends VerticalLayout {
         }
 
         if (!currentSearchingTerm.isEmpty()) {
-            String sellerName = order.getSeller() != null ? order.getSeller().getFullName().toLowerCase() : "";
-            return sellerName.contains(currentSearchingTerm.toLowerCase());
+            String lowerCaseTerm = currentSearchingTerm.toLowerCase();
+
+            boolean idMatches = order.getId().toString().toLowerCase().contains(lowerCaseTerm);
+
+            boolean sellerMatches = order.getSeller() != null &&
+                    order.getSeller().getFullName() != null &&
+                    order.getSeller().getFullName().toLowerCase().contains(lowerCaseTerm);
+
+            boolean productMatches = order.getItems() != null &&
+                    order.getItems().stream()
+                            .anyMatch(item -> item.getProduct() != null &&
+                                    item.getProduct().getName() != null &&
+                                    item.getProduct().getName().toLowerCase().contains(lowerCaseTerm));
+
+            if (!(idMatches || sellerMatches || productMatches)) {
+                return false;
+            }
         }
 
         return true;
     }
+
+
 
     private void setupDialog() {
         dialog.setHeaderTitle("Detalhes do Pedido");
@@ -611,7 +595,7 @@ public class OrderView extends VerticalLayout {
         grid.addColumn(OrderItemRow::getQuantity)
                 .setHeader("Qtd")
                 .setWidth("70px")
-                .setFlexGrow(0);
+                .setFlexGrow(1);
 
         grid.addColumn(item -> "R$ " + String.format("%.2f", item.getPrice()))
                 .setHeader("Preço Unit.")
@@ -882,5 +866,4 @@ public class OrderView extends VerticalLayout {
 
         orderItems = new ArrayList<>();
     }
-
 }
