@@ -66,4 +66,12 @@ public class PurchaseOrderItemService {
             throw new IllegalArgumentException("Erros de validação: " + errors);
         }
     }
+
+    public List<PurchaseOrderItem> findByProductSku(String productSku) {
+        
+        var purchaseOrderItems = purchaseOrderItemRepository.findByProductSku(productSku);
+
+        return purchaseOrderItems.get();
+    }
+
 }
