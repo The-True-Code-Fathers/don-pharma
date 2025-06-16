@@ -466,7 +466,11 @@ private void setupStatusFilterComboBox() {
         statusField.setReadOnly(true);
 
         TextField createdAtField = new TextField("Created At");
-        createdAtField.setValue(order.getCreatedAt().toString());
+        if (order.getCreatedAt() != null) {
+            createdAtField.setValue(order.getCreatedAt().format(DATE_FORMAT));
+        } else {
+            createdAtField.setValue("N/A");
+        }
         createdAtField.setReadOnly(true);
 
         NumberField totalAmountField = new NumberField("Total Amount");
