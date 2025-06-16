@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import com.codefathers.model.entity.OrderItem;
 import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.repository.interfaces.PurchaseOrderItemRepository;
 import com.codefathers.util.HibernateUtil;
@@ -51,6 +52,15 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "select i from purchase_order_item i";
             return session.createQuery(hql, PurchaseOrderItem.class).getResultList();
+        }
+    }
+
+    public Optional<List<PurchaseOrderItem>> findByProductSku(String productSku) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM purchase_order_item poi WHERE poi.product.sku = :sku";
+            List<PurchaseOrderItem> purchaseOrderItem = session.createQuery(hql, PurchaseOrderItem.class)
+                    .setParameter("sku", productSku).list();
+            return Optional.ofNullable(purchaseOrderItem);
         }
     }
 

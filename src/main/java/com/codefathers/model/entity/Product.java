@@ -32,17 +32,10 @@ public class Product {
     @Column(columnDefinition = "text")
     private String description;
 
-    @Column(name = "buy_price", precision = 19, scale = 4, nullable = false)
-    private BigDecimal buyPrice;
-
-    @Column(name = "sell_price", precision = 19, scale = 4, nullable = false)
-    private BigDecimal sellPrice;
-
     @Column(name = "active", nullable = false)
     private boolean active;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
 
 }

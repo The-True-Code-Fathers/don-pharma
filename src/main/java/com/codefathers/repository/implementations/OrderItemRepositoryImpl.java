@@ -46,6 +46,15 @@ public class OrderItemRepositoryImpl implements OrderItemRepository {
         }
     }
 
+    public Optional<List<OrderItem>> findByProductSku(String productSku) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM order_item oi WHERE oi.product.sku = :sku";
+            List<OrderItem> orderItem = session.createQuery(hql, OrderItem.class)
+                    .setParameter("sku", productSku).list();
+            return Optional.ofNullable(orderItem);
+        }
+    }
+
     @Override
     public List<OrderItem> listAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

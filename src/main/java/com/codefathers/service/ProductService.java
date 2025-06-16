@@ -32,8 +32,6 @@ public class ProductService {
 
         Product product = Product.builder()
                     .sku(createProductDTO.getSku())
-                    .buyPrice(createProductDTO.getBuyPrice())
-                    .sellPrice(createProductDTO.getSellPrice())
                     .name(createProductDTO.getName())
                     .description(createProductDTO.getDescription())
                     .active(true)
@@ -57,8 +55,6 @@ public class ProductService {
             throw new RuntimeException("Produto com SKU '" + productSku + "' não encontrado.");
         }
         product.setDescription(updateProductDTO.getDescription());
-        product.setBuyPrice(updateProductDTO.getBuyPrice());
-        product.setSellPrice(updateProductDTO.getSellPrice());
         product.setActive(updateProductDTO.isActive());
         product.setMeasurementUnit(updateProductDTO.getMeasurementUnit());
         try {

@@ -11,5 +11,6 @@ public interface OrderItemRepository {
     void update(OrderItem orderItem);
     void delete(OrderItem orderItem);
     Optional<OrderItem> findById(UUID id);
+    Optional<List<OrderItem>> findByProductSku(String productSku);
     List<OrderItem> listAll();
 }

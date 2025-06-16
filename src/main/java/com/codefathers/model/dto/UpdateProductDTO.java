@@ -17,14 +17,6 @@ public class UpdateProductDTO {
     private String description;
 
     @NotNull(message = "Campo obrigatório")
-    @Positive(message = "O valor deve ser maior que zero")
-    private BigDecimal buyPrice;
-
-    @NotNull(message = "Campo obrigatório")
-    @Positive(message = "O valor deve ser maior que zero")
-    private BigDecimal sellPrice;
-
-    @NotNull(message = "Campo obrigatório")
     private boolean active;
 
     @NotNull(message = "Campo obrigatório")
