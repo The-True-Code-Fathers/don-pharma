@@ -326,7 +326,7 @@ public class ProductsView extends VerticalLayout {
             List<PurchaseOrderItem> purchaseOrdersItems = purchaseOrderItemService.findByProductSku(product.getSku());
             
             if (purchaseOrdersItems.isEmpty()) {
-                return "N/A";
+                return "R$ 00.00";
             }
             
             BigDecimal totalValue = BigDecimal.ZERO;
@@ -339,7 +339,7 @@ public class ProductsView extends VerticalLayout {
             }
             
             if (totalQuantity.compareTo(BigDecimal.ZERO) == 0) {
-                return "N/A";
+                return "R$ 00.00";
             }
             
             BigDecimal weightedAverage = totalValue.divide(totalQuantity, 2, RoundingMode.HALF_UP);
@@ -355,7 +355,7 @@ public class ProductsView extends VerticalLayout {
             List<OrderItem> saleOrdersItems = orderItemService.findByProductSku(product.getSku()).get();
             
             if (saleOrdersItems.isEmpty()) {
-                return "N/A";
+                return "R$ 00.00";
             }
             
             BigDecimal totalValue = BigDecimal.ZERO;
@@ -368,7 +368,7 @@ public class ProductsView extends VerticalLayout {
             }
             
             if (totalQuantity.compareTo(BigDecimal.ZERO) == 0) {
-                return "N/A";
+                return "R$ 00.00";
             }
             
             BigDecimal weightedAverage = totalValue.divide(totalQuantity, 2, RoundingMode.HALF_UP);
