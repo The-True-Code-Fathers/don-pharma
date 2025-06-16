@@ -117,7 +117,8 @@ public class OrderView extends VerticalLayout {
     }
 
     private void setupGrid() {
-        grid.setHeight("400px");
+        grid.setAllRowsVisible(true);
+        grid.setWidth("90%");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
@@ -362,7 +363,7 @@ public class OrderView extends VerticalLayout {
 
         employeeComboBox.setItemLabelGenerator(employee -> {
             if (employee == allEmployee)
-                return "TODOS";
+                return "Employee";
             return employee.getFullName();
         });
         employeeComboBox.setAllowCustomValue(false);
@@ -402,9 +403,9 @@ public class OrderView extends VerticalLayout {
         List<String> statusItems = List.of("TODOS", "OPEN", "CANCELLED", "INVOICED");
 
         statusFilter.setItems(statusItems);
-        statusFilter.setValue("TODOS");
+        statusFilter.setValue("Status");
         statusFilter.setEmptySelectionAllowed(false); // desativa seleção vazia
-        statusFilter.setPlaceholder("Selecione um status");
+        statusFilter.setPlaceholder("Status");
 
         statusFilter.addValueChangeListener(e -> {
             currentStatus = e.getValue();

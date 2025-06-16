@@ -110,7 +110,8 @@ public class PaymentView extends VerticalLayout {
         grid.addColumn(payment -> payment.getCreatedAt().toString()).setHeader("Created At").setSortable(true);
         grid.addColumn(payment -> payment.isActive() ? "Active" : "Inactive").setHeader("Status").setSortable(true);
 
-        grid.setHeight("400px");
+        grid.setAllRowsVisible(true);
+        grid.setWidth("90%");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
 
         grid.addItemDoubleClickListener(event -> {
