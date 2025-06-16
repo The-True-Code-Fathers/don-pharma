@@ -844,7 +844,6 @@ public class OrderView extends VerticalLayout {
                 orderInfoLayout,
                 new com.vaadin.flow.component.html.H4("Itens"),
                 itemsGrid,
-                new com.vaadin.flow.component.html.H5("Valor Total: R$ " + String.format("%.2f", totalAmount)),
                 buttonLayout);
 
         detailsDialog.add(mainLayout);

@@ -1,10 +1,5 @@
 package com.codefathers.view;
 
-import java.math.BigDecimal;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-
 import com.codefathers.model.dto.CreatePaymentDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
@@ -34,6 +29,11 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
 @PageTitle("Payment")
 @Route("payment")
@@ -77,7 +77,6 @@ public class PaymentView extends VerticalLayout {
     private final Button toggleStatusButton = new Button();
 
     // Date formatter
-    // Modificado para remover os segundos
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public PaymentView() {
@@ -87,16 +86,21 @@ public class PaymentView extends VerticalLayout {
         this.paymentService = new PaymentService(paymentRepository, employeeRepository);
         this.employeeService = new EmployeeService(employeeRepository, ValidatorUtil.getValidator());
 
+        // MODIFICAÇÃO: Faz o layout principal preencher todo o espaço disponível
+        setSizeFull(); 
+        setPadding(true); // Opcional, para adicionar algum espaçamento interno
+        setSpacing(true); // Opcional, para adicionar espaçamento entre os componentes filhos
+
         setupSearchField();
         setupGrid();
         setupPaymentDialog();
         setupEditDialog();
 
         HorizontalLayout topLayout = new HorizontalLayout();
-        topLayout.setWidthFull();
+        topLayout.setWidthFull(); // Garante que o layout superior ocupe toda a largura
         topLayout.setAlignItems(Alignment.END);
 
-        searchField.setWidth("300px");
+        searchField.setWidth("300px"); // Pode ser ajustado ou removido para flexibilidade total
         topLayout.add(openDialogButton, searchField);
 
         add(topLayout, grid, paymentDialog, editDialog);
@@ -114,11 +118,12 @@ public class PaymentView extends VerticalLayout {
                 .setSortable(true);
         grid.addColumn(payment -> "R$ " + calculateTotalIncome(payment).toString()).setHeader("Total Income")
                 .setSortable(true);
-        // Formata a data aqui (sem segundos)
         grid.addColumn(payment -> payment.getCreatedAt().format(dateFormatter)).setHeader("Created At").setSortable(true);
         grid.addColumn(payment -> payment.isActive() ? "Active" : "Inactive").setHeader("Status").setSortable(true);
 
-        grid.setHeight("400px");
+        // MODIFICAÇÃO: Faz a grid preencher a largura e altura disponíveis
+        grid.setWidth("100%"); // <--- Importante para a largura
+        grid.setHeightFull();  // <--- Importante para a altura
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
 
         grid.addItemDoubleClickListener(event -> {
@@ -618,7 +623,6 @@ public class PaymentView extends VerticalLayout {
         totalIncomeField.setReadOnly(true);
 
         TextField createdAtField = new TextField("Created At");
-        // Formata a data aqui (sem segundos)
         createdAtField.setValue(payment.getCreatedAt().format(dateFormatter));
         createdAtField.setReadOnly(true);
 
@@ -631,10 +635,8 @@ public class PaymentView extends VerticalLayout {
 
         VerticalLayout benefitsLayout = new VerticalLayout();
         benefitsLayout.add(new com.vaadin.flow.component.html.H4("Benefits Breakdown"));
-
         FormLayout benefitsForm = new FormLayout();
         benefitsForm.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
-
         TextField taxesField = new TextField("Taxes");
         taxesField.setValue("R$ " + payment.getAmountInTaxes().toString());
         taxesField.setReadOnly(true);
@@ -646,19 +648,15 @@ public class PaymentView extends VerticalLayout {
         TextField foodField = new TextField("Food Voucher");
         foodField.setValue("R$ " + payment.getFoodVoucherAmount().toString());
         foodField.setReadOnly(true);
-
         TextField healthField = new TextField("Health Insurance");
         healthField.setValue("R$ " + payment.getHealthInsuranceAmount().toString());
         healthField.setReadOnly(true);
-
         TextField dentalField = new TextField("Dental Insurance");
         dentalField.setValue("R$ " + payment.getDentalInsuranceAmount().toString());
         dentalField.setReadOnly(true);
-
         TextField profitField = new TextField("Profit Sharing");
         profitField.setValue("R$ " + payment.getProfitSharingAmount().toString());
         profitField.setReadOnly(true);
-
         benefitsForm.add(taxesField, mealField, foodField, profitField, dentalField, healthField);
         benefitsLayout.add(benefitsForm);
 
