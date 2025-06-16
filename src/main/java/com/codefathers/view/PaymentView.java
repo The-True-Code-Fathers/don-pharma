@@ -1,5 +1,11 @@
 package com.codefathers.view;
 
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.codefathers.model.dto.CreatePaymentDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
@@ -12,6 +18,7 @@ import com.codefathers.util.TaxCalculatorUtil;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -29,11 +36,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-
-import java.math.BigDecimal;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
 
 @PageTitle("Payment")
 @Route("payment")
@@ -75,6 +77,7 @@ public class PaymentView extends VerticalLayout {
     private final TextField editNetIncomeDisplay = new TextField("Net Income");
     private final TextField editTotalIncomeDisplay = new TextField("Total Income");
     private final Button toggleStatusButton = new Button();
+    private final Checkbox showInactiveCheckbox = new Checkbox("Show Inactive Status"); // NOVO
 
     // Date formatter
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -86,22 +89,32 @@ public class PaymentView extends VerticalLayout {
         this.paymentService = new PaymentService(paymentRepository, employeeRepository);
         this.employeeService = new EmployeeService(employeeRepository, ValidatorUtil.getValidator());
 
-        // MODIFICAÇÃO: Faz o layout principal preencher todo o espaço disponível
-        setSizeFull(); 
-        setPadding(true); // Opcional, para adicionar algum espaçamento interno
-        setSpacing(true); // Opcional, para adicionar espaçamento entre os componentes filhos
+        setSizeFull();
+        setPadding(true);
 
         setupSearchField();
         setupGrid();
         setupPaymentDialog();
         setupEditDialog();
+        setupStatusFilterCheckbox(); // NOVO: Chama o método de configuração do checkbox
 
         HorizontalLayout topLayout = new HorizontalLayout();
-        topLayout.setWidthFull(); // Garante que o layout superior ocupe toda a largura
-        topLayout.setAlignItems(Alignment.END);
+        topLayout.setWidthFull();
+        topLayout.setAlignItems(Alignment.CENTER);
 
-        searchField.setWidth("300px"); // Pode ser ajustado ou removido para flexibilidade total
-        topLayout.add(openDialogButton, searchField);
+        searchField.setWidth("300px");
+
+        // Botão "Create Payment" à esquerda
+        topLayout.add(openDialogButton);
+
+        // Campo de pesquisa também à esquerda, próximo ao botão
+        topLayout.add(searchField);
+
+        // Espaço flexível no meio para separar esquerda da direita
+        topLayout.addAndExpand(new Span());
+
+        // Checkbox à direita
+        topLayout.add(showInactiveCheckbox);
 
         add(topLayout, grid, paymentDialog, editDialog);
 
@@ -118,12 +131,13 @@ public class PaymentView extends VerticalLayout {
                 .setSortable(true);
         grid.addColumn(payment -> "R$ " + calculateTotalIncome(payment).toString()).setHeader("Total Income")
                 .setSortable(true);
-        grid.addColumn(payment -> payment.getCreatedAt().format(dateFormatter)).setHeader("Created At").setSortable(true);
+        grid.addColumn(payment -> payment.getCreatedAt().format(dateFormatter)).setHeader("Created At")
+                .setSortable(true);
         grid.addColumn(payment -> payment.isActive() ? "Active" : "Inactive").setHeader("Status").setSortable(true);
 
         // MODIFICAÇÃO: Faz a grid preencher a largura e altura disponíveis
         grid.setWidth("100%"); // <--- Importante para a largura
-        grid.setHeightFull();  // <--- Importante para a altura
+        grid.setHeightFull(); // <--- Importante para a altura
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
 
         grid.addItemDoubleClickListener(event -> {
@@ -367,7 +381,6 @@ public class PaymentView extends VerticalLayout {
                 editHealthInsuranceField.getValue() != null ? editHealthInsuranceField.getValue() : 0);
         BigDecimal dentalInsurance = BigDecimal.valueOf(
                 editDentalInsuranceField.getValue() != null ? editDentalInsuranceField.getValue() : 0);
-
 
         // Net Income = Gross Income - Taxes
         BigDecimal netIncome = grossIncome.subtract(amountInTaxes);
@@ -686,26 +699,48 @@ public class PaymentView extends VerticalLayout {
         detailsDialog.open();
     }
 
-    private void refreshGrid() {
-        List<Payment> payments = paymentService.listAll();
-        List<Payment> filtered = payments.stream()
-                .filter(this::matchesFilter)
-                .toList();
-        grid.setItems(filtered);
+    private void setupStatusFilterCheckbox() {
+        // Por padrão, mostra apenas os ativos (checkbox desmarcado)
+        showInactiveCheckbox.setValue(false);
+        // Adiciona um listener que atualiza a grid sempre que o valor do checkbox mudar
+        showInactiveCheckbox.addValueChangeListener(event -> refreshGrid());
     }
 
     private boolean matchesFilter(Payment payment) {
-        if (currentSearchTerm.isEmpty())
-            return true;
+        // 1. Filtro pelo status (ativo/inativo)
+        boolean showInactive = showInactiveCheckbox.getValue();
+        // O pagamento passa no filtro de status se:
+        // - O checkbox "Show Inactive" estiver marcado (mostra todos)
+        // - OU o pagamento estiver ativo.
+        boolean statusMatch = showInactive || payment.isActive();
 
-        String id = payment.getId().toString().toLowerCase();
-        String employeeName = payment.getEmployee().getFullName().toLowerCase();
-        String role = payment.getEmployee().getRole().toString().toLowerCase();
-        String status = (payment.isActive() ? "active" : "inactive").toLowerCase();
+        // Se não passar no filtro de status, já pode retornar falso
+        if (!statusMatch) {
+            return false;
+        }
 
-        return id.contains(currentSearchTerm) ||
-                employeeName.contains(currentSearchTerm) ||
-                role.contains(currentSearchTerm) ||
-                status.contains(currentSearchTerm);
+        // 2. Filtro pelo termo de busca (lógica existente)
+        if (currentSearchTerm.isEmpty()) {
+            return true; // Se a busca estiver vazia, passa no filtro de busca
+        }
+
+        // Lógica de busca (pode ser ajustada conforme necessário)
+        boolean searchMatch = payment.getEmployee().getFullName().toLowerCase().contains(currentSearchTerm) ||
+                payment.getEmployee().getRole().toString().toLowerCase().contains(currentSearchTerm) ||
+                payment.getId().toString().toLowerCase().contains(currentSearchTerm);
+
+        return searchMatch;
     }
+
+    private void refreshGrid() {
+        List<Payment> payments = paymentService.listAll();
+
+        // MODIFICADO: A lógica de filtro agora usa o método matchesFilter
+        List<Payment> filteredPayments = payments.stream()
+                .filter(this::matchesFilter)
+                .collect(Collectors.toList());
+
+        grid.setItems(filteredPayments);
+    }
+
 }

@@ -9,7 +9,11 @@ import java.util.stream.Collectors;
 import com.codefathers.exceptions.BusinessRuleException;
 import com.codefathers.model.dto.CreateOrderDTO;
 import com.codefathers.model.dto.CreateOrderItemDTO;
-import com.codefathers.model.entity.*;
+import com.codefathers.model.entity.Employee;
+import com.codefathers.model.entity.Order;
+import com.codefathers.model.entity.OrderItem;
+import com.codefathers.model.entity.Product;
+import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.model.enums.EmployeeRole;
 import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.implementations.EmployeeRepositoryImpl;
@@ -19,7 +23,11 @@ import com.codefathers.repository.implementations.ProductRepositoryImpl;
 import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
 import com.codefathers.repository.implementations.StorageRepositoryImpl;
 import com.codefathers.repository.interfaces.EmployeeRepository;
-import com.codefathers.service.*;
+import com.codefathers.service.EmployeeService;
+import com.codefathers.service.OrderItemService;
+import com.codefathers.service.OrderService;
+import com.codefathers.service.ProductService;
+import com.codefathers.service.ShippingProviderService;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -45,7 +53,6 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.codefathers.factory.ServiceFactory.*;
 
 @PageTitle("Order")
 @Route("order")
@@ -58,12 +65,9 @@ public class OrderView extends VerticalLayout {
     private ProductService productService;
     private EmployeeService employeeService;
     private OrderService orderService;
-    private OrderItemService orderItemService;
     private Grid<Order> grid = new Grid<>(Order.class, false);
     private GridLazyDataView<Order> dataView;
-    private Select<OrderStatus> orderStatusSelect;
     private OrderRepositoryImpl orderRepository;
-    private OrderStatus currentStatusFilter = null;
     private TextField searchField = new TextField();
     private Select<String> statusFilter = new Select<>();
     private Dialog dialog = new Dialog();
@@ -72,7 +76,6 @@ public class OrderView extends VerticalLayout {
     private String currentStatus = "ALL";
     private Order currentOrderEditing = null;
     private Employee currentEmployeeFilter = null;
-    private Employee allEmployee;
     private ComboBox<Product> productComboBox;
     private IntegerField quantityField;
     private NumberField priceField;
@@ -81,7 +84,6 @@ public class OrderView extends VerticalLayout {
 
     public OrderView() {
         productService = new ProductService(productRepository, ValidatorUtil.getValidator());
-        orderItemService = new OrderItemService(orderItemRepository, orderRepository);
         shippingProviderService = new ShippingProviderService(shippingProviderRepository);
         EmployeeRepository employeeRepository = new EmployeeRepositoryImpl();
         employeeService = new EmployeeService(employeeRepository, ValidatorUtil.getValidator());
@@ -90,7 +92,6 @@ public class OrderView extends VerticalLayout {
         this.orderService = new OrderService(orderRepository, employeeRepository, storageRepository,
                 ValidatorUtil.getValidator());
 
-        // 1. FAZ O LAYOUT OCUPAR TODA A TELA
         setSizeFull();
         initializeFormComponents();
 
@@ -102,30 +103,28 @@ public class OrderView extends VerticalLayout {
         Button createButton = new Button("Create Order", new Icon(VaadinIcon.PLUS));
         createButton.addClickListener(e -> openCreateOrderDialog());
 
-        HorizontalLayout filters = new HorizontalLayout(searchField, statusFilter);
-        filters.setAlignItems(Alignment.CENTER);
-        filters.setSpacing(true);
-
-        HorizontalLayout topLayout = new HorizontalLayout(createButton, filters);
+        HorizontalLayout topLayout = new HorizontalLayout();
         topLayout.setWidthFull();
-        topLayout.setAlignItems(Alignment.CENTER);
-        topLayout.expand(filters);
+        topLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        topLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        topLayout.setSpacing(true);
+        topLayout.setPadding(false);
+
+        topLayout.add(createButton, searchField, statusFilter);
+
+        searchField.setWidth("300px");
+        statusFilter.setWidth("150px");
 
         add(topLayout, grid);
-
-        // 1. FAZ A GRID EXPANDIR E OCUPAR O ESPAÇO RESTANTE
         setFlexGrow(1, grid);
         setupEmployeeSearchField();
         setupLazyDataProvider();
     }
 
     private void setupGrid() {
-        // 1. REMOVIDA A ALTURA FIXA
-        // grid.setHeight("400px");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
-        // 2. ADICIONADO .setSortable(true) A TODAS AS COLUNAS
         grid.addColumn(Order::getId)
                 .setHeader("Order ID")
                 .setSortable(true)
@@ -287,7 +286,7 @@ public class OrderView extends VerticalLayout {
         }
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
         buttonLayout.setWidthFull();
 
         Button saveButton = new Button("Save", new Icon(VaadinIcon.CHECK));
