@@ -70,17 +70,20 @@ public class ShippingOrderView extends VerticalLayout {
 
     private void openEditDialog(ShippingOrder order) {
         Dialog dialog = new Dialog();
-        dialog.setWidth("800px");
+        dialog.setWidth("480px"); // Igual ao dialog do ShippingProvider
 
+        // Campos
         TextField cepField = new TextField("CEP de Destino");
         cepField.setPattern("[0-9]{8}");
         cepField.setMaxLength(8);
         cepField.setPlaceholder("Digite apenas números");
+        cepField.setWidthFull();
 
         TextField destinationState = new TextField("Estado de Destino");
         destinationState.setRequired(true);
         destinationState.setPattern("[A-Za-z]{2}");
         destinationState.setErrorMessage("Sigla com 2 letras (ex: SP)");
+        destinationState.setWidthFull();
 
         Button buscarEstadoBtn = new Button("Buscar Estado por CEP", e -> {
             try {
@@ -94,10 +97,12 @@ public class ShippingOrderView extends VerticalLayout {
 
         TextField destinationCity = new TextField("Cidade de Destino");
         destinationCity.setRequired(true);
+        destinationCity.setWidthFull();
 
         ComboBox<ShippingProvider> providerComboBox = new ComboBox<>("Provedor");
         providerComboBox.setItemLabelGenerator(ShippingProvider::getName);
         providerComboBox.setRequired(true);
+        providerComboBox.setWidthFull();
 
         List<ShippingProvider> allProviders = shippingProviderService.listAllShippingProviders();
         providerComboBox.setItems(allProviders);
@@ -117,20 +122,27 @@ public class ShippingOrderView extends VerticalLayout {
 
         BigDecimalField weight = new BigDecimalField("Peso (kg)");
         weight.setRequiredIndicatorVisible(true);
+        weight.setWidthFull();
 
         ComboBox<ShippingServiceStatus> status = new ComboBox<>("Status");
         status.setItems(ShippingServiceStatus.values());
         status.setRequired(true);
+        status.setWidthFull();
 
         TextField estimatedDays = new TextField("Dias Estimados");
         estimatedDays.setPattern("\\d*");
         estimatedDays.setErrorMessage("Apenas números são permitidos");
+        estimatedDays.setWidthFull();
 
         DatePicker shipmentDate = new DatePicker("Data de Envio");
+        shipmentDate.setWidthFull();
+
         DatePicker deliveryDate = new DatePicker("Data Prevista");
+        deliveryDate.setWidthFull();
 
         BigDecimalField shippingCost = new BigDecimalField("Custo do Frete");
         shippingCost.setRequiredIndicatorVisible(true);
+        shippingCost.setWidthFull();
 
         // Preenchimento
         if (order != null) {
@@ -139,13 +151,13 @@ public class ShippingOrderView extends VerticalLayout {
                 destinationCity.setValue(order.getDestinationCity());
                 weight.setValue(order.getWeight());
                 status.setValue(order.getStatus());
-                estimatedDays.setValue(
-                        order.getEstimatedDeliveryDays() != null ? order.getEstimatedDeliveryDays().toString() : "");
+                estimatedDays.setValue(order.getEstimatedDeliveryDays() != null
+                        ? order.getEstimatedDeliveryDays().toString()
+                        : "");
                 shipmentDate.setValue(order.getShipmentDate());
                 deliveryDate.setValue(order.getDeliveryDate());
                 shippingCost.setValue(order.getShippingCost());
 
-                // Garante que o provider existe na lista
                 ShippingProvider matched = allProviders.stream()
                         .filter(p -> p.getId().equals(order.getShippingProvider().getId()))
                         .findFirst()
@@ -166,21 +178,29 @@ public class ShippingOrderView extends VerticalLayout {
 
         Button cancelButton = new Button("Cancelar", e -> dialog.close());
 
+        // Layout
         VerticalLayout formLayout = new VerticalLayout(
-                new HorizontalLayout(cepField, buscarEstadoBtn),
+                cepField,
+                buscarEstadoBtn,
                 destinationState,
                 destinationCity,
                 providerComboBox,
-                new HorizontalLayout(weight, shippingCost),
+                weight,
+                shippingCost,
                 status,
-                new HorizontalLayout(shipmentDate, deliveryDate),
                 estimatedDays,
-                new HorizontalLayout(saveButton, deleteButton, cancelButton));
+                shipmentDate,
+                deliveryDate,
+                new HorizontalLayout(saveButton, deleteButton, cancelButton)
+        );
         formLayout.setSpacing(true);
+        formLayout.setWidthFull();
 
         dialog.add(formLayout);
         dialog.open();
     }
+
+
 
     private void saveOrder(ShippingOrder existingOrder, Dialog dialog,
             ComboBox<ShippingProvider> providerComboBox,
@@ -225,15 +245,34 @@ public class ShippingOrderView extends VerticalLayout {
     }
 
     private void deleteOrder(ShippingOrder order, Dialog dialog) {
-        try {
-            shippingOrderService.removeShippingOrder(order.getId());
-            Notification.show("Pedido deletado com sucesso!");
-            updateGrid();
-            dialog.close();
-        } catch (Exception ex) {
-            Notification.show("Erro ao deletar: " + ex.getMessage(), 4000, Notification.Position.MIDDLE);
-            ex.printStackTrace();
+        if (order == null) {
+            Notification.show("Nenhum pedido selecionado para deletar.", 3000, Notification.Position.MIDDLE);
+            return;
         }
+
+        // Confirmação antes de deletar
+        Dialog confirmDialog = new Dialog();
+        confirmDialog.setHeaderTitle("Confirmar Exclusão");
+        confirmDialog.add("Tem certeza que deseja deletar o pedido #" + order.getId() + "?");
+
+        Button confirmButton = new Button("Confirmar", e -> {
+            try {
+                shippingOrderService.removeShippingOrder(order.getId());
+                Notification.show("Pedido #" + order.getId() + " deletado com sucesso!", 3000, Notification.Position.MIDDLE);
+                updateGrid();
+                dialog.close();
+                confirmDialog.close();
+            } catch (Exception ex) {
+                Notification.show("Erro ao deletar pedido: " + ex.getMessage(),
+                        4000, Notification.Position.MIDDLE);
+                ex.printStackTrace();
+            }
+        });
+
+        Button cancelButton = new Button("Cancelar", e -> confirmDialog.close());
+        confirmDialog.getFooter().add(cancelButton, confirmButton);
+
+        confirmDialog.open();
     }
 
     private void updateGrid() {
