@@ -99,6 +99,7 @@ public class OrderView extends VerticalLayout {
         var storageRepository = new StorageRepositoryImpl();
         Validator validator = ValidatorUtil.getValidator();
         this.orderService = new OrderService(orderRepository, employeeRepository, storageRepository, validator);
+        initializeFormComponents();
 
         employeeComboBox = new ComboBox<>();
         setupEmployeeComboBox();
@@ -137,7 +138,7 @@ public class OrderView extends VerticalLayout {
         grid.addColumn(order -> order.getSeller() != null ? order.getSeller().getFullName() : "N/A")
                 .setHeader("Vendedor")
                 .setAutoWidth(true)
-                .setFlexGrow(1);
+                .setFlexGrow(0);
 
         grid.addColumn(order -> {
                     if (order.getCreatedAt() != null) {
@@ -152,7 +153,6 @@ public class OrderView extends VerticalLayout {
         grid.addColumn(order -> {
                     String description = order.getDescription();
                     if (description != null && !description.trim().isEmpty()) {
-                        // Limita a descrição a 50 caracteres para não ocupar muito espaço
                         return description.length() > 50 ? description.substring(0, 47) + "..." : description;
                     }
                     return "Sem descrição";
@@ -355,13 +355,6 @@ public class OrderView extends VerticalLayout {
     }
 
     private void setupEmployeeComboBox() {
-        allEmployee = createTodosEmployee();
-
-        employeeComboBox.setItemLabelGenerator(employee -> {
-            if (employee == allEmployee)
-                return "TODOS";
-            return employee.getFullName();
-        });
         employeeComboBox.setAllowCustomValue(false);
         employeeComboBox.setPageSize(10);
 
@@ -631,6 +624,10 @@ public class OrderView extends VerticalLayout {
                 .setFlexGrow(0);
 
         grid.addComponentColumn(item -> {
+                    HorizontalLayout actions = new HorizontalLayout();
+                    actions.setSpacing(true);
+                    actions.setAlignItems(Alignment.CENTER);
+
                     Button removeButton = new Button(new Icon(VaadinIcon.TRASH));
                     removeButton.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
                     removeButton.addClickListener(e -> {
@@ -639,11 +636,18 @@ public class OrderView extends VerticalLayout {
                         Notification.show("Item removido", 2000, Notification.Position.MIDDLE);
                     });
 
+                    Button editButton = new Button(new Icon(VaadinIcon.EDIT));
+                    editButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+                    editButton.addClickListener(e -> {
+                        editItem(item);
+                        editButton.getElement().setAttribute("title", "Editar item");
+                    });
 
-                    return removeButton;
+                    actions.add(editButton, removeButton);
+                    return actions;
                 })
                 .setHeader("Ações")
-                .setWidth("80px")
+                .setWidth("120px")
                 .setFlexGrow(0);
     }
 
@@ -848,15 +852,35 @@ public class OrderView extends VerticalLayout {
         detailsDialog.open();
     }
 
-    private Employee createTodosEmployee() {
-        Employee todos = new Employee();
-        todos.setId(UUID.fromString("00000000-0000-0000-0000-000000000000"));
+    private void editItem(OrderItemRow item) {
+        productComboBox.setValue(item.getProduct());
+        quantityField.setValue(item.getQuantity());
+        priceField.setValue(item.getPrice().doubleValue());
 
-        try {
-            todos.setFullName("TODOS");
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return todos;
+        orderItems.remove(item);
+        itemsGrid.getDataProvider().refreshAll();
+
+        Notification.show("Item carregado para edição. Modifique e clique em 'Adicionar Item' para atualizar.",
+                3000, Notification.Position.MIDDLE);
     }
+
+    private void initializeFormComponents() {
+        productComboBox = new ComboBox<>("Produto");
+        setupProductComboBox(productComboBox);
+
+        quantityField = new IntegerField("Quantidade");
+        quantityField.setValue(1);
+        quantityField.setMin(1);
+        quantityField.setStepButtonsVisible(true);
+
+        priceField = new NumberField("Preço");
+        priceField.setPrefixComponent(new Span("R$"));
+        priceField.setStepButtonsVisible(false);
+        priceField.setValue(1.0);
+        priceField.setMin(0.01);
+        priceField.setStep(0.01);
+
+        orderItems = new ArrayList<>();
+    }
+
 }
