@@ -232,11 +232,9 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     private static class PurchaseOrderItemForm {
-        private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(new Locale("en", "US"));
         ComboBox<Product> productField;
         NumberField quantityField;
         NumberField priceField;
-
 
         public PurchaseOrderItemForm(List<Product> products) {
             this.productField = new ComboBox<>("Product");
@@ -247,10 +245,12 @@ public class PurchaseOrderView extends VerticalLayout {
             this.quantityField = new NumberField("Quantity");
             this.quantityField.setMin(1);
             this.quantityField.setStep(1);
+            this.quantityField.setStepButtonsVisible(true); // Adiciona step buttons visíveis
 
             this.priceField = new NumberField("Price");
             this.priceField.setMin(0.01);
             this.priceField.setStep(0.01);
+            this.priceField.setPrefixComponent(new Span("R$")); // Adiciona prefixo R$
         }
     }
 
@@ -428,12 +428,13 @@ public class PurchaseOrderView extends VerticalLayout {
         createdAtField.setValue(order.getCreatedAt().toString());
         createdAtField.setReadOnly(true);
 
-        TextField totalAmountField = new TextField("Total Amount");
-        totalAmountField.setValue(String.valueOf(order.getPurchaseTotalProductAmount()));
+        NumberField totalAmountField = new NumberField("Total Amount");
+        totalAmountField.setValue((double) order.getPurchaseTotalProductAmount());
         totalAmountField.setReadOnly(true);
 
-        TextField totalPriceField = new TextField("Total Price");
-        totalPriceField.setValue(order.getPurchaseTotalPriceAmount().toString());
+        NumberField totalPriceField = new NumberField("Total Price");
+        totalPriceField.setValue(order.getPurchaseTotalPriceAmount().doubleValue());
+        totalPriceField.setPrefixComponent(new Span("R$"));
         totalPriceField.setReadOnly(true);
 
         orderInfoLayout.add(idField, purchaserField, statusField, createdAtField, totalAmountField, totalPriceField);
@@ -441,10 +442,10 @@ public class PurchaseOrderView extends VerticalLayout {
         Grid<PurchaseOrderItem> itemsGrid = new Grid<>(PurchaseOrderItem.class, false);
         itemsGrid.addColumn(item -> item.getProduct().getName()).setHeader("Product").setAutoWidth(true);
         itemsGrid.addColumn(PurchaseOrderItem::getQuantity).setHeader("Quantity").setAutoWidth(true);
-        itemsGrid.addColumn(item -> item.getPrice().toString()).setHeader("Unit Price").setAutoWidth(true);
+        itemsGrid.addColumn(item -> CURRENCY_FORMAT.format(item.getPrice())).setHeader("Unit Price").setAutoWidth(true);
         itemsGrid.addColumn(item -> {
             BigDecimal total = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-            return total.toString();
+            return CURRENCY_FORMAT.format(total);
         }).setHeader("Total").setAutoWidth(true);
 
         itemsGrid.setItems(order.getPurchaseItems());
