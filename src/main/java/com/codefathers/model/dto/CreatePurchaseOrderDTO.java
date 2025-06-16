@@ -1,5 +1,6 @@
 package com.codefathers.model.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,5 +25,7 @@ public class CreatePurchaseOrderDTO {
 
     @NotEmpty
     private List<@Valid CreatePurchaseOrderItemDTO> item;
+
+    private BigDecimal purchaseTotalPriceAmount;
 
 }

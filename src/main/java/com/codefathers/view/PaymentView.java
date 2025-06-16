@@ -1,9 +1,5 @@
 package com.codefathers.view;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-
 import com.codefathers.model.dto.CreatePaymentDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
@@ -33,6 +29,11 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
 @PageTitle("Payment")
 @Route("payment")
@@ -73,7 +74,10 @@ public class PaymentView extends VerticalLayout {
     private final NumberField editProfitSharingField = new NumberField("Profit Sharing");
     private final TextField editNetIncomeDisplay = new TextField("Net Income");
     private final TextField editTotalIncomeDisplay = new TextField("Total Income");
-    private final Button toggleStatusButton = new Button(); // Botão de ativar/desativar
+    private final Button toggleStatusButton = new Button();
+
+    // Date formatter
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public PaymentView() {
         var paymentRepository = new PaymentRepositoryImpl();
@@ -82,16 +86,21 @@ public class PaymentView extends VerticalLayout {
         this.paymentService = new PaymentService(paymentRepository, employeeRepository);
         this.employeeService = new EmployeeService(employeeRepository, ValidatorUtil.getValidator());
 
+        // MODIFICAÇÃO: Faz o layout principal preencher todo o espaço disponível
+        setSizeFull(); 
+        setPadding(true); // Opcional, para adicionar algum espaçamento interno
+        setSpacing(true); // Opcional, para adicionar espaçamento entre os componentes filhos
+
         setupSearchField();
         setupGrid();
         setupPaymentDialog();
         setupEditDialog();
 
         HorizontalLayout topLayout = new HorizontalLayout();
-        topLayout.setWidthFull();
+        topLayout.setWidthFull(); // Garante que o layout superior ocupe toda a largura
         topLayout.setAlignItems(Alignment.END);
 
-        searchField.setWidth("300px");
+        searchField.setWidth("300px"); // Pode ser ajustado ou removido para flexibilidade total
         topLayout.add(openDialogButton, searchField);
 
         add(topLayout, grid, paymentDialog, editDialog);
@@ -109,10 +118,12 @@ public class PaymentView extends VerticalLayout {
                 .setSortable(true);
         grid.addColumn(payment -> "R$ " + calculateTotalIncome(payment).toString()).setHeader("Total Income")
                 .setSortable(true);
-        grid.addColumn(payment -> payment.getCreatedAt().toString()).setHeader("Created At").setSortable(true);
+        grid.addColumn(payment -> payment.getCreatedAt().format(dateFormatter)).setHeader("Created At").setSortable(true);
         grid.addColumn(payment -> payment.isActive() ? "Active" : "Inactive").setHeader("Status").setSortable(true);
 
-        grid.setHeight("400px");
+        // MODIFICAÇÃO: Faz a grid preencher a largura e altura disponíveis
+        grid.setWidth("100%"); // <--- Importante para a largura
+        grid.setHeightFull();  // <--- Importante para a altura
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
 
         grid.addItemDoubleClickListener(event -> {
@@ -130,6 +141,8 @@ public class PaymentView extends VerticalLayout {
     private BigDecimal calculateTotalIncome(Payment payment) {
         BigDecimal totalBenefits = payment.getMealVoucherAmount()
                 .add(payment.getFoodVoucherAmount())
+                .add(payment.getHealthInsuranceAmount())
+                .add(payment.getDentalInsuranceAmount())
                 .add(payment.getProfitSharingAmount());
 
         return payment.getGrossIncome()
@@ -276,15 +289,11 @@ public class PaymentView extends VerticalLayout {
             updateEditIncomeDisplays();
         });
 
-        // Remover o listener do editAmountInTaxesField já que agora é read-only
         editMealVoucherField.addValueChangeListener(e -> updateEditIncomeDisplays());
         editFoodVoucherField.addValueChangeListener(e -> updateEditIncomeDisplays());
-        editHealthInsuranceField.addValueChangeListener(e -> updateEditIncomeDisplays());
-        editDentalInsuranceField.addValueChangeListener(e -> updateEditIncomeDisplays());
         editProfitSharingField.addValueChangeListener(e -> updateEditIncomeDisplays());
         editAmountInTaxesField.addValueChangeListener(e -> updateEditIncomeDisplays());
-        healthInsuranceField.setReadOnly(true);
-        dentalInsuranceField.setReadOnly(true);
+
         FormLayout editFormLayout = new FormLayout();
         editFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
         editFormLayout.add(
@@ -307,8 +316,7 @@ public class PaymentView extends VerticalLayout {
                     currentPaymentEditing
                             .setDentalInsuranceAmount(BigDecimal.valueOf(editDentalInsuranceField.getValue()));
                     currentPaymentEditing.setProfitSharingAmount(BigDecimal.valueOf(editProfitSharingField.getValue()));
-                    healthInsuranceField.setReadOnly(true);
-                    dentalInsuranceField.setReadOnly(true);
+
                     paymentService.update(currentPaymentEditing);
                     Notification.show("Payment updated successfully.");
                     refreshGrid();
@@ -320,14 +328,11 @@ public class PaymentView extends VerticalLayout {
         });
         updateButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        // Configure the toggleStatusButton
         toggleStatusButton.addClickListener(e -> {
             if (currentPaymentEditing != null) {
                 togglePaymentStatus(currentPaymentEditing);
-                // Update button text and theme immediately after toggle
                 updateToggleStatusButton(currentPaymentEditing.isActive());
-                // Also update the fields' enabled state based on the new status
-                setEditFieldsEnabled(currentPaymentEditing.isActive());
+                setEditFieldsEnabled(currentPaymentEditing.isActive()); // Atualiza o estado dos campos
             }
         });
 
@@ -358,12 +363,19 @@ public class PaymentView extends VerticalLayout {
                 editFoodVoucherField.getValue() != null ? editFoodVoucherField.getValue() : 0);
         BigDecimal profitSharing = BigDecimal.valueOf(
                 editProfitSharingField.getValue() != null ? editProfitSharingField.getValue() : 0);
+        BigDecimal healthInsurance = BigDecimal.valueOf(
+                editHealthInsuranceField.getValue() != null ? editHealthInsuranceField.getValue() : 0);
+        BigDecimal dentalInsurance = BigDecimal.valueOf(
+                editDentalInsuranceField.getValue() != null ? editDentalInsuranceField.getValue() : 0);
+
 
         // Net Income = Gross Income - Taxes
         BigDecimal netIncome = grossIncome.subtract(amountInTaxes);
 
         // Total Income = Gross Income + Benefits - Taxes
         BigDecimal totalBenefits = mealVoucher.add(foodVoucher)
+                .add(healthInsurance)
+                .add(dentalInsurance)
                 .add(profitSharing);
         BigDecimal totalIncome = grossIncome.add(totalBenefits).subtract(amountInTaxes);
 
@@ -391,13 +403,11 @@ public class PaymentView extends VerticalLayout {
         field.setStep(0.01);
         field.setValue(0.0);
 
-        // Adiciona o prefixo R$
         Span prefix = new Span("R$");
         prefix.getElement().getThemeList().add("badge");
         field.setPrefixComponent(prefix);
     }
 
-    // Substitua o método updateTaxesForCreation por este:
     private void updateTaxesForCreation(Employee employee, Double grossIncome) {
         if (employee != null && grossIncome != null && grossIncome > 0) {
             BigDecimal grossIncomeDecimal = BigDecimal.valueOf(grossIncome);
@@ -562,17 +572,17 @@ public class PaymentView extends VerticalLayout {
         }
     }
 
-    // CORREÇÃO 4: Atualizar o método setEditFieldsEnabled para não desabilitar o
-    // campo de taxes
+    // Deixa todos os campos editáveis "bloqueados" quando o pagamento está inativo
     private void setEditFieldsEnabled(boolean enabled) {
         editEmployeeComboBox.setEnabled(enabled);
         editGrossIncomeField.setEnabled(enabled);
-        // editAmountInTaxesField sempre fica read-only, não precisa ser controlado aqui
-        // editMealVoucherField.setEnabled(enabled);
-        // editFoodVoucherField.setEnabled(enabled);
-        editHealthInsuranceField.setEnabled(enabled);
-        editDentalInsuranceField.setEnabled(enabled);
+        editMealVoucherField.setEnabled(enabled);
+        editFoodVoucherField.setEnabled(enabled);
         editProfitSharingField.setEnabled(enabled);
+        // Os campos abaixo já são read-only, então não precisam ser controlados aqui
+        // editAmountInTaxesField.setEnabled(enabled);
+        // editHealthInsuranceField.setEnabled(enabled);
+        // editDentalInsuranceField.setEnabled(enabled);
     }
 
     private void showPaymentDetails(Payment payment) {
@@ -613,7 +623,7 @@ public class PaymentView extends VerticalLayout {
         totalIncomeField.setReadOnly(true);
 
         TextField createdAtField = new TextField("Created At");
-        createdAtField.setValue(payment.getCreatedAt().toString());
+        createdAtField.setValue(payment.getCreatedAt().format(dateFormatter));
         createdAtField.setReadOnly(true);
 
         TextField statusField = new TextField("Status");
@@ -623,13 +633,10 @@ public class PaymentView extends VerticalLayout {
         paymentInfoLayout.add(idField, employeeField, roleField, grossIncomeField,
                 netIncomeField, totalIncomeField, createdAtField, statusField);
 
-        // Benefits breakdown
         VerticalLayout benefitsLayout = new VerticalLayout();
         benefitsLayout.add(new com.vaadin.flow.component.html.H4("Benefits Breakdown"));
-
         FormLayout benefitsForm = new FormLayout();
         benefitsForm.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
-
         TextField taxesField = new TextField("Taxes");
         taxesField.setValue("R$ " + payment.getAmountInTaxes().toString());
         taxesField.setReadOnly(true);
@@ -641,19 +648,15 @@ public class PaymentView extends VerticalLayout {
         TextField foodField = new TextField("Food Voucher");
         foodField.setValue("R$ " + payment.getFoodVoucherAmount().toString());
         foodField.setReadOnly(true);
-
         TextField healthField = new TextField("Health Insurance");
         healthField.setValue("R$ " + payment.getHealthInsuranceAmount().toString());
         healthField.setReadOnly(true);
-
         TextField dentalField = new TextField("Dental Insurance");
         dentalField.setValue("R$ " + payment.getDentalInsuranceAmount().toString());
         dentalField.setReadOnly(true);
-
         TextField profitField = new TextField("Profit Sharing");
         profitField.setValue("R$ " + payment.getProfitSharingAmount().toString());
         profitField.setReadOnly(true);
-
         benefitsForm.add(taxesField, mealField, foodField, profitField, dentalField, healthField);
         benefitsLayout.add(benefitsForm);
 
@@ -663,7 +666,6 @@ public class PaymentView extends VerticalLayout {
 
         Button editButton = new Button("Edit Payment", new Icon(VaadinIcon.EDIT));
         editButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        editButton.setEnabled(payment.isActive()); // Bloqueia o botão se inativo
         editButton.addClickListener(e -> {
             detailsDialog.close();
             openEditDialog(payment);
@@ -699,9 +701,11 @@ public class PaymentView extends VerticalLayout {
         String id = payment.getId().toString().toLowerCase();
         String employeeName = payment.getEmployee().getFullName().toLowerCase();
         String role = payment.getEmployee().getRole().toString().toLowerCase();
+        String status = (payment.isActive() ? "active" : "inactive").toLowerCase();
 
         return id.contains(currentSearchTerm) ||
                 employeeName.contains(currentSearchTerm) ||
-                role.contains(currentSearchTerm);
+                role.contains(currentSearchTerm) ||
+                status.contains(currentSearchTerm);
     }
 }

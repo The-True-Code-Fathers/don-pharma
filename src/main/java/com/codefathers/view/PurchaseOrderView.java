@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Arrays; // Importe esta classe
 
 import com.codefathers.model.dto.CreatePurchaseOrderDTO;
 import com.codefathers.model.dto.CreatePurchaseOrderItemDTO;
@@ -65,6 +66,8 @@ public class PurchaseOrderView extends VerticalLayout {
     private final ComboBox<Employee> purchaserComboBox = new ComboBox<>("Purchaser");
     private final Dialog editDialog = new Dialog();
     private final Dialog orderDialog = new Dialog();
+    private final ComboBox<String> statusFilterComboBox = new ComboBox<>("Filter by Status");
+    private String currentStatusFilter = "TODOS";
 
     private final List<CreatePurchaseOrderItemDTO> items = new ArrayList<>();
     private String currentSearchTerm = "";
@@ -81,6 +84,7 @@ public class PurchaseOrderView extends VerticalLayout {
         this.productService = new ProductService(productRepository, ValidatorUtil.getValidator());
 
         setupSearchField();
+        setupStatusFilterComboBox(); // Adicione esta linha
         setupItemGrid();
         setupGrid();
         setupForm();
@@ -92,18 +96,37 @@ public class PurchaseOrderView extends VerticalLayout {
         topLayout.setAlignItems(Alignment.END);
 
         searchField.setWidth("300px");
-        topLayout.add(openDialogButton, searchField);
+        // Adicione o statusFilterComboBox ao layout superior
+        topLayout.add(openDialogButton, searchField, statusFilterComboBox);
 
         add(topLayout, grid, orderDialog, editDialog);
 
         refreshGrid();
     }
 
+    // Novo método para configurar o ComboBox de status
+private void setupStatusFilterComboBox() {
+    statusFilterComboBox.setItems("TODOS",
+            PurchaseOrderStatus.OPEN.toString(),
+            PurchaseOrderStatus.CANCELLED.toString(),
+            PurchaseOrderStatus.INVOICED.toString());
+    statusFilterComboBox.setValue("TODOS"); // Valor inicial
+    statusFilterComboBox.setPlaceholder("Select Status");
+    // statusFilterComboBox.setClearButtonVisible(true); // Remova ou comente esta linha
+    statusFilterComboBox.setWidth("200px"); // Defina uma largura adequada
+
+    statusFilterComboBox.addValueChangeListener(e -> {
+        currentStatusFilter = e.getValue() != null ? e.getValue() : "TODOS";
+        refreshGrid(); // Atualiza a grid com o novo filtro
+    });
+}
+
     private void setupGrid() {
         grid.addColumn(po -> po.getId().toString()).setHeader("ID").setSortable(true);
         grid.addColumn(po -> po.getPurchaserId().getFullName()).setHeader("Purchaser").setSortable(true);
         grid.addColumn(po -> po.getPurchaseTotalProductAmount()).setHeader("Total Amount").setSortable(true);
-        grid.addColumn(po -> CURRENCY_FORMAT.format(po.getPurchaseTotalPriceAmount())).setHeader("Total Price Amount").setSortable(true);
+        grid.addColumn(po -> CURRENCY_FORMAT.format(po.getPurchaseTotalPriceAmount())).setHeader("Total Price Amount")
+                .setSortable(true);
         grid.addColumn(po -> po.getCreatedAt().format(DATE_FORMAT)).setHeader("Created At").setSortable(true);
         grid.addColumn(po -> po.getPurchaseOrderStatus().toString()).setHeader("Status").setSortable(true);
         grid.setHeight("400px");
@@ -116,7 +139,7 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     private void setupSearchField() {
-        searchField.setPlaceholder("Search purchase orders...");
+        searchField.setPlaceholder("Search by ID, purchaser, status or product name...");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
         searchField.setClearButtonVisible(true);
@@ -232,11 +255,9 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     private static class PurchaseOrderItemForm {
-        private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(new Locale("en", "US"));
         ComboBox<Product> productField;
         NumberField quantityField;
         NumberField priceField;
-
 
         public PurchaseOrderItemForm(List<Product> products) {
             this.productField = new ComboBox<>("Product");
@@ -247,10 +268,12 @@ public class PurchaseOrderView extends VerticalLayout {
             this.quantityField = new NumberField("Quantity");
             this.quantityField.setMin(1);
             this.quantityField.setStep(1);
+            this.quantityField.setStepButtonsVisible(true); // Adiciona step buttons visíveis
 
             this.priceField = new NumberField("Price");
             this.priceField.setMin(0.01);
             this.priceField.setStep(0.01);
+            this.priceField.setPrefixComponent(new Span("R$")); // Adiciona prefixo R$
         }
     }
 
@@ -339,7 +362,7 @@ public class PurchaseOrderView extends VerticalLayout {
         try {
             purchaseOrderService.createPurchaseOrder(dto);
             Notification.show("Purchase order created successfully.");
-            
+
             clearOrderForm();
             orderDialog.close();
             refreshGrid();
@@ -361,8 +384,17 @@ public class PurchaseOrderView extends VerticalLayout {
         List<PurchaseOrder> orders = purchaseOrderService.getAllPurchaseOrders();
         List<PurchaseOrder> filtered = orders.stream()
                 .filter(this::matchesFilter)
+                .filter(this::matchesStatusFilter) // Adicione esta linha
                 .toList();
         grid.setItems(filtered);
+    }
+
+    // Novo método para filtrar por status
+    private boolean matchesStatusFilter(PurchaseOrder order) {
+        if (currentStatusFilter.equals("TODOS")) {
+            return true;
+        }
+        return order.getPurchaseOrderStatus().toString().equals(currentStatusFilter);
     }
 
     private boolean matchesFilter(PurchaseOrder order) {
@@ -371,8 +403,16 @@ public class PurchaseOrderView extends VerticalLayout {
 
         String id = order.getId().toString().toLowerCase();
         String purchaserName = order.getPurchaserId().getFullName().toLowerCase();
+        String status = order.getPurchaseOrderStatus().toString().toLowerCase();
 
-        return id.contains(currentSearchTerm) || purchaserName.contains(currentSearchTerm);
+        // Verifica se algum produto na order contém o termo de busca
+        boolean hasMatchingProduct = order.getPurchaseItems().stream()
+                .anyMatch(item -> item.getProduct().getName().toLowerCase().contains(currentSearchTerm));
+
+        return id.contains(currentSearchTerm) ||
+                purchaserName.contains(currentSearchTerm) ||
+                status.contains(currentSearchTerm) ||
+                hasMatchingProduct;
     }
 
     private void setupItemGrid() {
@@ -389,7 +429,8 @@ public class PurchaseOrderView extends VerticalLayout {
             editButton.addClickListener(e -> editItem(item));
 
             Button deleteButton = new Button(new Icon(VaadinIcon.TRASH));
-            deleteButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
+            deleteButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY,
+                    ButtonVariant.LUMO_ERROR);
             deleteButton.addClickListener(e -> deleteItem(item));
 
             actions.add(editButton, deleteButton);
@@ -425,15 +466,20 @@ public class PurchaseOrderView extends VerticalLayout {
         statusField.setReadOnly(true);
 
         TextField createdAtField = new TextField("Created At");
-        createdAtField.setValue(order.getCreatedAt().toString());
+        if (order.getCreatedAt() != null) {
+            createdAtField.setValue(order.getCreatedAt().format(DATE_FORMAT));
+        } else {
+            createdAtField.setValue("N/A");
+        }
         createdAtField.setReadOnly(true);
 
-        TextField totalAmountField = new TextField("Total Amount");
-        totalAmountField.setValue(String.valueOf(order.getPurchaseTotalProductAmount()));
+        NumberField totalAmountField = new NumberField("Total Amount");
+        totalAmountField.setValue((double) order.getPurchaseTotalProductAmount());
         totalAmountField.setReadOnly(true);
 
-        TextField totalPriceField = new TextField("Total Price");
-        totalPriceField.setValue(order.getPurchaseTotalPriceAmount().toString());
+        NumberField totalPriceField = new NumberField("Total Price");
+        totalPriceField.setValue(order.getPurchaseTotalPriceAmount().doubleValue());
+        totalPriceField.setPrefixComponent(new Span("R$"));
         totalPriceField.setReadOnly(true);
 
         orderInfoLayout.add(idField, purchaserField, statusField, createdAtField, totalAmountField, totalPriceField);
@@ -441,10 +487,10 @@ public class PurchaseOrderView extends VerticalLayout {
         Grid<PurchaseOrderItem> itemsGrid = new Grid<>(PurchaseOrderItem.class, false);
         itemsGrid.addColumn(item -> item.getProduct().getName()).setHeader("Product").setAutoWidth(true);
         itemsGrid.addColumn(PurchaseOrderItem::getQuantity).setHeader("Quantity").setAutoWidth(true);
-        itemsGrid.addColumn(item -> item.getPrice().toString()).setHeader("Unit Price").setAutoWidth(true);
+        itemsGrid.addColumn(item -> CURRENCY_FORMAT.format(item.getPrice())).setHeader("Unit Price").setAutoWidth(true);
         itemsGrid.addColumn(item -> {
             BigDecimal total = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-            return total.toString();
+            return CURRENCY_FORMAT.format(total);
         }).setHeader("Total").setAutoWidth(true);
 
         itemsGrid.setItems(order.getPurchaseItems());
@@ -462,7 +508,7 @@ public class PurchaseOrderView extends VerticalLayout {
 
         // Desabilita edição para pedidos cancelados ou finalizados
         if (order.getPurchaseOrderStatus() == PurchaseOrderStatus.CANCELLED ||
-            order.getPurchaseOrderStatus() == PurchaseOrderStatus.INVOICED) {
+                order.getPurchaseOrderStatus() == PurchaseOrderStatus.INVOICED) {
             editButton.setEnabled(false);
         }
 
@@ -476,8 +522,7 @@ public class PurchaseOrderView extends VerticalLayout {
                 orderInfoLayout,
                 new com.vaadin.flow.component.html.H4("Items"),
                 itemsGrid,
-                buttonLayout
-        );
+                buttonLayout);
         detailsDialog.add(mainLayout);
         detailsDialog.open();
     }

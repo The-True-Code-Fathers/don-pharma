@@ -1,7 +1,5 @@
 package com.codefathers.view;
 
-import java.util.List;
-
 import com.codefathers.model.entity.Product;
 import com.codefathers.model.entity.Storage;
 import com.codefathers.repository.implementations.ProductRepositoryImpl;
@@ -19,6 +17,8 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import java.util.List;
+
 @PageTitle("Storage")
 @Route("storage")
 public class StorageView extends VerticalLayout {
@@ -32,45 +32,63 @@ public class StorageView extends VerticalLayout {
     private String currentSearchTerm = "";
 
     public StorageView() {
+        // Inicializa os serviços
         var productRepository = new ProductRepositoryImpl();
         var storageRepository = new StorageRepositoryImpl();
         this.storageService = new StorageService(storageRepository, productRepository);
 
+        // Configura a aparência e comportamento do layout principal
+        setSizeFull(); // 1. Faz o VerticalLayout ocupar toda a tela
+
+        // Configura os componentes da UI
         setupSearchField();
         setupGrid();
         setupRedirectButton();
 
+        // Monta o cabeçalho e adiciona os componentes ao layout
         HorizontalLayout header = new HorizontalLayout(openDialogButton, searchField);
-        add(header, grid);
+        header.setWidthFull();
+        header.expand(searchField); // Faz o campo de busca expandir
 
+        add(header, grid);
+        setFlexGrow(1, grid); // 1. Faz a grid expandir e ocupar o espaço restante
+
+        // Carrega os dados na grid
         refreshGrid();
     }
 
     private void setupSearchField() {
-        searchField.setWidth("300px");
-        searchField.setPlaceholder("Search by SKU...");
+        searchField.setPlaceholder("Search by SKU or Name..."); // 3. Placeholder atualizado
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
         searchField.setClearButtonVisible(true);
 
         searchField.addValueChangeListener(e -> {
-            currentSearchTerm = e.getValue().trim().toLowerCase();
+            currentSearchTerm = e.getValue() != null ? e.getValue().trim().toLowerCase() : "";
             refreshGrid();
         });
     }
 
     private void setupRedirectButton() {
         openDialogButton.addClickListener(e -> {
-            getUI().ifPresent(ui -> ui.navigate("purchaseOrder")); //
+            getUI().ifPresent(ui -> ui.navigate("purchaseOrder"));
         });
     }
 
     private void setupGrid() {
-        grid.addColumn(s -> s.getProduct().getSku()).setHeader("Product SKU").setSortable(true).setAutoWidth(true);
-        grid.addColumn(s -> s.getProduct().getName()).setHeader("Product Name").setAutoWidth(true);
-        grid.addColumn(Storage::getProductQuantity).setHeader("Quantity").setAutoWidth(true);
+        // Configura as colunas da grid
+        grid.addColumn(s -> s.getProduct().getSku()).setHeader("Product SKU")
+                .setSortable(true) // 2. Coluna classificável
+                .setAutoWidth(true);
+        grid.addColumn(s -> s.getProduct().getName()).setHeader("Product Name")
+                .setSortable(true) // 2. Coluna classificável
+                .setAutoWidth(true);
+        grid.addColumn(Storage::getProductQuantity).setHeader("Quantity")
+                .setSortable(true) // 2. Coluna classificável
+                .setAutoWidth(true);
 
-        grid.setHeight("400px");
+        // Remove a altura fixa para permitir que a grid expanda
+        // grid.setHeight("400px"); // 1. Linha removida
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
     }
 
@@ -85,9 +103,19 @@ public class StorageView extends VerticalLayout {
     }
 
     private boolean matchesFilter(Storage storage) {
-        if (currentSearchTerm.isEmpty())
+        if (currentSearchTerm.isEmpty()) {
             return true;
+        }
+
         Product product = storage.getProduct();
-        return product != null && product.getSku().toLowerCase().contains(currentSearchTerm);
+        if (product == null) {
+            return false;
+        }
+
+        // 3. Lógica de pesquisa atualizada para SKU e Nome
+        boolean skuMatches = product.getSku() != null && product.getSku().toLowerCase().contains(currentSearchTerm);
+        boolean nameMatches = product.getName() != null && product.getName().toLowerCase().contains(currentSearchTerm);
+
+        return skuMatches || nameMatches;
     }
 }
