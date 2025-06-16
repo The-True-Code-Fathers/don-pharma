@@ -202,4 +202,7 @@ public class OrderService {
         orderRepository.update(order);
     }
 
+    public List<Order> findOrdersByStatusAndTimePeriod(OrderStatus status, LocalDate start, LocalDate end) {
+        return orderRepository.findOrdersByStatusAndTimePeriod(status, start, end);
+    }
 }

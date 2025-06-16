@@ -2,6 +2,7 @@ package com.codefathers.repository.interfaces;
 
 import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.OrderItem;
+import com.codefathers.model.enums.OrderStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,4 +20,6 @@ public interface OrderRepository {
     BigDecimal getTotalRevenue();
     List<OrderItem> findAllOrderItemsByOrderId(UUID orderId);
     List<Order> findOrdersByTimePeriod(LocalDate start, LocalDate end);
+    List<Order> findOrdersByStatus(OrderStatus status);
+    List<Order> findOrdersByStatusAndTimePeriod(OrderStatus status, LocalDate start, LocalDate end);
 }

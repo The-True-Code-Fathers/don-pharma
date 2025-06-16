@@ -1,15 +1,18 @@
 package com.codefathers.service;
 
 import com.codefathers.model.entity.Order;
+import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.dto.MostSoldProductDTO;
 import com.codefathers.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -67,9 +70,37 @@ public class DashboardService {
                 )
         );
 
-        log.debug("{}", JsonUtil.toPrettyJson(data));
-
         return data;
     }
 
+    public SeriesData getOrderStatusChartData(LocalDate from, LocalDate to) {
+        List<Order> ordersInPeriod = orderService.findOrdersByPeriod(from, to);
+
+        if (ordersInPeriod == null || ordersInPeriod.isEmpty()) {
+            return new SeriesData(new ArrayList<>(), new ArrayList<>());
+        }
+
+        Map<OrderStatus, Long> statusCount = ordersInPeriod.stream()
+                .collect(Collectors.groupingBy(Order::getOrderStatus, Collectors.counting()));
+
+        BigDecimal totalOrders = BigDecimal.valueOf(ordersInPeriod.size());
+
+        List<String> categories = Arrays.stream(OrderStatus.values())
+                .map(OrderStatus::name)
+                .toList();
+
+        List<BigDecimal> data = Arrays.stream(OrderStatus.values())
+                .map(status -> {
+                    long count = statusCount.getOrDefault(status, 0L);
+                    return BigDecimal.valueOf(count)
+                            .multiply(BigDecimal.valueOf(100))
+                            .divide(totalOrders, 2, RoundingMode.HALF_UP);
+                })
+                .toList();
+
+        log.debug("Percentile: {}", JsonUtil.toPrettyJson(data));
+        log.debug("Order Status: {}", JsonUtil.toPrettyJson(categories));
+
+        return new SeriesData(categories, data);
+    }
 }

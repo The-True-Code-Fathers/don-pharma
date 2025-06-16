@@ -2,8 +2,10 @@ package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.OrderItem;
+import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.util.HibernateUtil;
+import com.codefathers.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Transaction;
 import org.hibernate.Session;
@@ -97,6 +99,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         }
     }
 
+    @Override
     public List<Order> findOrdersByTimePeriod(LocalDate start, LocalDate end) {
         String hql = "from orders o where o.createdAt between :startDate and :endDate";
         try (var session = HibernateUtil.getSessionFactory().openSession()) {
@@ -104,9 +107,41 @@ public class OrderRepositoryImpl implements OrderRepository {
             query.setParameter("startDate", start.atStartOfDay());
             // + 1 for inclusive interval + 1 for start of next day (end of previous one)
             query.setParameter("endDate", end.plusDays(1 + 1).atStartOfDay());
+
+            List<Order> queryList = query.getResultList();
+            log.debug("Orders by time period: {}", JsonUtil.toPrettyJson(queryList));
+
             return query.getResultList();
         } catch (Exception e) {
             log.error("Error finding orders between {} and {}", start, end, e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<Order> findOrdersByStatus(OrderStatus status) {
+        String hql = "from orders o where o.orderStatus = :status";
+        try (var session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(hql, Order.class)
+                    .setParameter("status", status)
+                    .getResultList();
+        } catch (Exception e) {
+            log.error("Error finding orders with status {}", status, e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<Order> findOrdersByStatusAndTimePeriod(OrderStatus status, LocalDate start, LocalDate end) {
+        String hql = "from orders o where o.orderStatus = :status and o.createdAt >= :startDate and o.createdAt < :endDate";
+        try (var session = HibernateUtil.getSessionFactory().openSession()) {
+            var query = session.createQuery(hql, Order.class);
+            query.setParameter("status", status);
+            query.setParameter("startDate", start.atStartOfDay());
+            query.setParameter("endDate", end.plusDays(1).atStartOfDay());
+            return query.getResultList();
+        } catch (Exception e) {
+            log.error("Error finding orders with status {} between {} and {}", status, start, end, e);
             return Collections.emptyList();
         }
     }

@@ -57,8 +57,8 @@ public class DashboardView extends FlexLayout {
     private final AuthService authService = ServiceFactory.getAuthService();
     private final DashboardService dashboardService = ServiceFactory.getDashboardService();
 
-    private LocalDate startDay = LocalDate.of(2024, 6, 1);
-    private LocalDate endDay = LocalDate.of(2024, 6, 30);
+    private LocalDate startDay = LocalDate.of(2024, 1, 1);
+    private LocalDate endDay = LocalDate.of(2026, 1, 1);
 
     public DashboardView() {
         setSizeFull();
@@ -294,9 +294,15 @@ public class DashboardView extends FlexLayout {
                         .build()
         );
 
-        // Dummy data for order statuses
-        chartBuilder.withLabels("Pendente", "Processando", "Enviado", "Entregue", "Cancelado");
-        chartBuilder.withSeries(45.0, 32.0, 28.0, 95.0, 8.0);
+        DashboardService.SeriesData seriesData = dashboardService.getOrderStatusChartData(startDay, endDay);
+
+        chartBuilder.withLabels(seriesData.categories().toArray(String[]::new));
+
+        Double[] seriesValues = seriesData.data()
+                .stream()
+                .map(BigDecimal::doubleValue)
+                .toArray(Double[]::new);
+        chartBuilder.withSeries(seriesValues);
 
         chartBuilder.withLegend(
                 LegendBuilder.get()
@@ -344,8 +350,8 @@ public class DashboardView extends FlexLayout {
         );
 
         DashboardService.SeriesData seriesData = dashboardService.getTopProductChartData(
-                LocalDate.of(2010, 1, 1),
-                LocalDate.of(2030, 1, 1),
+                startDay,
+                endDay,
                 5);
 
         log.debug("{}", JsonUtil.toPrettyJson(seriesData));
