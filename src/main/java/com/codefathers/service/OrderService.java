@@ -2,6 +2,8 @@ package com.codefathers.service;
 
 import com.codefathers.exceptions.BusinessRuleException;
 import com.codefathers.model.dto.CreateOrderDTO;
+import com.codefathers.model.dto.EmployeeSalesDataDTO;
+import com.codefathers.model.dto.EmployeeSalesValueDataDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.OrderItem;
@@ -13,10 +15,14 @@ import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.repository.interfaces.StorageRepository;
 
+import jakarta.persistence.criteria.*;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,6 +30,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.codefathers.util.HibernateUtil.sessionFactory;
 
 @Slf4j
 public class OrderService {
@@ -196,5 +204,26 @@ public class OrderService {
 
         orderRepository.update(order);
     }
+
+    public List<EmployeeSalesDataDTO> buscarVendasPorVendedor() {
+        return orderRepository.buscarVendasPorVendedor();
+    }
+    public List<EmployeeSalesDataDTO> buscarVendedoresComVendas() {
+        return orderRepository.buscarVendedoresComVendas();
+    }
+    public List<EmployeeSalesDataDTO> buscarVendasPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+        return orderRepository.buscarVendasPorPeriodo(inicio, fim);
+    }
+    public List<EmployeeSalesValueDataDTO> buscarVendasComValorTotal() {
+        return orderRepository.buscarVendasComValorTotal();
+    }
+    public List<EmployeeSalesDataDTO> buscarVendasComCriteria() {
+        return orderRepository.buscarVendasComCriteria();
+    }
+    public Employee buscarFuncionarioPorId(UUID employeeId) {
+        return orderRepository.buscarFuncionarioPorId(employeeId);
+    }
+
+
 
 }

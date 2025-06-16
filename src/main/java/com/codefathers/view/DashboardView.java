@@ -1,6 +1,7 @@
 package com.codefathers.view;
 
 import com.codefathers.factory.ServiceFactory;
+import com.codefathers.model.dto.EmployeeSalesDataDTO;
 import com.codefathers.model.entity.SystemUser;
 import com.codefathers.service.AuthService;
 import com.codefathers.service.DashboardService;
@@ -371,6 +372,9 @@ public class DashboardView extends FlexLayout {
      *
      * @return An ApexCharts component displaying employee sales performance.
      */
+
+
+
     private Component createEmployeePerformanceChart() {
 
         boolean isDarkTheme = UI.getCurrent().getElement().getAttribute("theme") != null &&
@@ -400,20 +404,30 @@ public class DashboardView extends FlexLayout {
                         .build()
         );
 
-        // Dummy data for employee performance
+        DashboardService.SeriesData employeeSales = DashboardService.getTopEmployeeChartData();
+
+        // Extrair nomes dos vendedores e quantidades de vendas
+        String[] nomeVendedores = employeeSales.stream()
+                .map(EmployeeSalesDataDTO::getEmployeeName)
+                .toArray(String[]::new);
+
+        Long[] quantidadeVendas = employeeSales.stream()
+                .map(EmployeeSalesDataDTO::getSalesCount)
+                .toArray(Long[]::new);
+
         chartBuilder.withSeries(
-                new Series<>("Sales (Goal %)", 80, 70, 60, 65, 75)
+                new Series<>("Quantidade de Vendas", quantidadeVendas)
         );
 
         chartBuilder.withXaxis(
                 XAxisBuilder.get()
-                        .withCategories("João Silva", "Maria Santos", "Pedro Oliveira", "Ana Costa", "Carlos Lima")
+                        .withCategories(nomeVendedores)
                         .build()
         );
 
         chartBuilder.withYaxis(
                 YAxisBuilder.get()
-                        .withTitle(TitleBuilder.get().withText("Sales").build())
+                        .withTitle(TitleBuilder.get().withText("Quantidade").build())
                         .build()
         );
 
