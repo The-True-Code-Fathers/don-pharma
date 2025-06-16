@@ -115,7 +115,7 @@ public class OrderView extends VerticalLayout {
 
         // 1. FAZ A GRID EXPANDIR E OCUPAR O ESPAÇO RESTANTE
         setFlexGrow(1, grid);
-
+        setupEmployeeSearchField();
         setupLazyDataProvider();
     }
 
@@ -212,10 +212,6 @@ public class OrderView extends VerticalLayout {
         });
     }
 
-    // O restante do seu código permanece o mesmo...
-    // [showOrderDetails, setupEditDialog, openEditDialog, etc.]
-    // ...
-    // <editor-fold desc="O restante do código foi omitido para brevidade">
     private void setupEditDialog() {
         editDialog.setHeaderTitle("Edit Order");
         editDialog.setResizable(true);
@@ -357,15 +353,26 @@ public class OrderView extends VerticalLayout {
 
     private void refreshGrid() {
         dataView.refreshAll();
-        grid.getDataProvider().refreshAll();
+    }
+
+    public void setupEmployeeSearchField() {
+        searchField.setPlaceholder("Search by ID, Seller, or Product...");
+        searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+        searchField.setValueChangeMode(ValueChangeMode.LAZY);
+        searchField.setClearButtonVisible(true);
+
+        searchField.addValueChangeListener(e -> {
+            currentSearchingTerm = e.getValue() != null ? e.getValue() : "";
+            dataView.refreshAll();
+        });
     }
 
     private void searchStatusFilter() {
         List<String> statusItems = List.of("ALL", "OPEN", "CANCELLED", "INVOICED");
 
         statusFilter.setItems(statusItems);
-        statusFilter.setValue("TODOS");
-        statusFilter.setEmptySelectionAllowed(false); // desativa seleção vazia
+        statusFilter.setValue("ALL");
+        statusFilter.setEmptySelectionAllowed(false);
         statusFilter.setPlaceholder("Selecione um status");
 
         statusFilter.addValueChangeListener(e -> {
@@ -426,8 +433,6 @@ public class OrderView extends VerticalLayout {
 
         return true;
     }
-
-
 
     private void setupDialog() {
         dialog.setHeaderTitle("Order details");
@@ -584,9 +589,9 @@ public class OrderView extends VerticalLayout {
         grid.setWidthFull();
 
         grid.addColumn(item -> {
-                    String productName = item.getProduct().getName();
-                    return productName.length() > 25 ? productName.substring(0, 22) + "..." : productName;
-                })
+            String productName = item.getProduct().getName();
+            return productName.length() > 25 ? productName.substring(0, 22) + "..." : productName;
+        })
                 .setHeader("Products")
                 .setWidth("130px")
                 .setFlexGrow(0);
@@ -613,28 +618,28 @@ public class OrderView extends VerticalLayout {
                 .setFlexGrow(0);
 
         grid.addComponentColumn(item -> {
-                    HorizontalLayout actions = new HorizontalLayout();
-                    actions.setSpacing(true);
-                    actions.setAlignItems(Alignment.CENTER);
+            HorizontalLayout actions = new HorizontalLayout();
+            actions.setSpacing(true);
+            actions.setAlignItems(Alignment.CENTER);
 
-                    Button removeButton = new Button(new Icon(VaadinIcon.TRASH));
-                    removeButton.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
-                    removeButton.addClickListener(e -> {
-                        items.remove(item);
-                        grid.getDataProvider().refreshAll();
-                        Notification.show("Removed items.", 2000, Notification.Position.MIDDLE);
-                    });
+            Button removeButton = new Button(new Icon(VaadinIcon.TRASH));
+            removeButton.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
+            removeButton.addClickListener(e -> {
+                items.remove(item);
+                grid.getDataProvider().refreshAll();
+                Notification.show("Removed items.", 2000, Notification.Position.MIDDLE);
+            });
 
-                    Button editButton = new Button(new Icon(VaadinIcon.EDIT));
-                    editButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-                    editButton.addClickListener(e -> {
-                        editItem(item);
-                        editButton.getElement().setAttribute("title", "Edit item");
-                    });
+            Button editButton = new Button(new Icon(VaadinIcon.EDIT));
+            editButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+            editButton.addClickListener(e -> {
+                editItem(item);
+                editButton.getElement().setAttribute("title", "Edit item");
+            });
 
-                    actions.add(editButton, removeButton);
-                    return actions;
-                })
+            actions.add(editButton, removeButton);
+            return actions;
+        })
                 .setHeader("Actions")
                 .setWidth("120px")
                 .setFlexGrow(0);
