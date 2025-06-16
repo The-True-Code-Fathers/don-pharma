@@ -1,11 +1,16 @@
 package com.codefathers.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import com.codefathers.exceptions.BusinessRuleException;
 import com.codefathers.model.dto.CreateOrderDTO;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.OrderItem;
-import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.model.entity.Storage;
 import com.codefathers.model.enums.EmployeeRole;
 import com.codefathers.model.enums.OrderStatus;
@@ -71,7 +76,7 @@ public class OrderService {
             OrderItem orderItem = new OrderItem();
             orderItem.setProduct(dto.getProduct());
             orderItem.setQuantity(dto.getQuantity());
-            BigDecimal itemPrice = dto.getProduct().getSellPrice().multiply(new BigDecimal(dto.getQuantity()));
+            BigDecimal itemPrice = dto.getPrice();
             orderItem.setPrice(itemPrice);
             orderItem.setOrder(order);
             orderItem.setCreatedAt(LocalDateTime.now());
@@ -88,7 +93,7 @@ public class OrderService {
         }
 
         BigDecimal productsPrice = orderItems.stream()
-                .map(OrderItem::getPrice)
+                .map(orderItem -> orderItem.getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal shippingPrice = productsPrice.multiply(new BigDecimal("0.05"));
