@@ -404,36 +404,8 @@ public class DashboardView extends FlexLayout {
                         .build()
         );
 
-        DashboardService.SeriesData employeeSales = DashboardService.getTopEmployeeChartData();
+        return null;
 
-        // Extrair nomes dos vendedores e quantidades de vendas
-        String[] nomeVendedores = employeeSales.stream()
-                .map(EmployeeSalesDataDTO::getEmployeeName)
-                .toArray(String[]::new);
-
-        Long[] quantidadeVendas = employeeSales.stream()
-                .map(EmployeeSalesDataDTO::getSalesCount)
-                .toArray(Long[]::new);
-
-        chartBuilder.withSeries(
-                new Series<>("Quantidade de Vendas", quantidadeVendas)
-        );
-
-        chartBuilder.withXaxis(
-                XAxisBuilder.get()
-                        .withCategories(nomeVendedores)
-                        .build()
-        );
-
-        chartBuilder.withYaxis(
-                YAxisBuilder.get()
-                        .withTitle(TitleBuilder.get().withText("Quantidade").build())
-                        .build()
-        );
-
-        configureChartForLumoTheme(chartBuilder, isDarkTheme); // Apply theme configuration
-        com.github.appreciated.apexcharts.ApexCharts apexChart = chartBuilder.build();
-        return wrapChartInContainer(apexChart);
     }
 
     /**
