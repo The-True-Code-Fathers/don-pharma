@@ -30,15 +30,12 @@ import com.codefathers.service.ProductService;
 import com.codefathers.service.ShippingProviderService;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.dataview.GridLazyDataView;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -55,11 +52,10 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-import jakarta.validation.Validator;
-
 @PageTitle("Order")
 @Route("order")
 public class OrderView extends VerticalLayout {
+    private static final UUID ALL_EMPLOYEES_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
     private ShippingProviderService shippingProviderService;
     ProductRepositoryImpl productRepository = new ProductRepositoryImpl();
     ShippingProviderRepositoryImpl shippingProviderRepository = new ShippingProviderRepositoryImpl();
@@ -97,8 +93,11 @@ public class OrderView extends VerticalLayout {
         employeeService = new EmployeeService(employeeRepository, ValidatorUtil.getValidator());
         var orderRepository = new OrderRepositoryImpl();
         var storageRepository = new StorageRepositoryImpl();
-        Validator validator = ValidatorUtil.getValidator();
-        this.orderService = new OrderService(orderRepository, employeeRepository, storageRepository, validator);
+        this.orderService = new OrderService(orderRepository, employeeRepository, storageRepository,
+                ValidatorUtil.getValidator());
+
+        // 1. FAZ O LAYOUT OCUPAR TODA A TELA
+        setSizeFull();
 
         employeeComboBox = new ComboBox<>();
         setupEmployeeComboBox();
@@ -121,91 +120,109 @@ public class OrderView extends VerticalLayout {
 
         add(topLayout, grid);
 
+        // 1. FAZ A GRID EXPANDIR E OCUPAR O ESPAÇO RESTANTE
+        setFlexGrow(1, grid);
+
         setupLazyDataProvider();
     }
 
     private void setupGrid() {
-        grid.setHeight("400px");
+        // 1. REMOVIDA A ALTURA FIXA
+        // grid.setHeight("400px");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
+        // 2. ADICIONADO .setSortable(true) A TODAS AS COLUNAS
         grid.addColumn(Order::getId)
                 .setHeader("ID do Pedido")
+                .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
         grid.addColumn(order -> order.getSeller() != null ? order.getSeller().getFullName() : "N/A")
                 .setHeader("Vendedor")
+                .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(1);
 
         grid.addColumn(order -> {
-                    if (order.getCreatedAt() != null) {
-                        return order.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-                    }
-                    return "N/A";
-                })
+            if (order.getCreatedAt() != null) {
+                return order.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            }
+            return "N/A";
+        })
                 .setHeader("Criado em")
+                .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
         grid.addColumn(order -> {
-                    String description = order.getDescription();
-                    if (description != null && !description.trim().isEmpty()) {
-                        // Limita a descrição a 50 caracteres para não ocupar muito espaço
-                        return description.length() > 50 ? description.substring(0, 47) + "..." : description;
-                    }
-                    return "Sem descrição";
-                })
+            String description = order.getDescription();
+            if (description != null && !description.trim().isEmpty()) {
+                return description.length() > 50 ? description.substring(0, 47) + "..." : description;
+            }
+            return "Sem descrição";
+        })
                 .setHeader("Descrição")
+                .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(1);
 
         grid.addColumn(order -> {
-                    BigDecimal totalAmount = order.getTotalAmount();
-                    if (totalAmount != null) {
-                        return "R$ " + String.format("%.2f", totalAmount);
-                    }
-                    return "R$ 0,00";
-                })
+            BigDecimal totalAmount = order.getTotalAmount();
+            if (totalAmount != null) {
+                return "R$ " + String.format("%.2f", totalAmount);
+            }
+            return "R$ 0,00";
+        })
                 .setHeader("Valor Total")
+                .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
         grid.addColumn(order -> {
-                    if (order.getItems() != null && !order.getItems().isEmpty()) {
-                        int totalQuantity = order.getItems().stream()
-                                .mapToInt(OrderItem::getQuantity)
-                                .sum();
-                        return String.valueOf(totalQuantity);
-                    }
-                    return "0";
-                })
+            if (order.getItems() != null && !order.getItems().isEmpty()) {
+                int totalQuantity = order.getItems().stream()
+                        .mapToInt(OrderItem::getQuantity)
+                        .sum();
+                return String.valueOf(totalQuantity);
+            }
+            return "0";
+        })
                 .setHeader("Qtd. Itens")
+                .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
         grid.addColumn(order -> {
-                    if (order.getShippingProvider() != null) {
-                        return order.getShippingProvider().getName();
-                    }
-                    return "N/A";
-                })
+            if (order.getShippingProvider() != null) {
+                return order.getShippingProvider().getName();
+            }
+            return "N/A";
+        })
                 .setHeader("Transportadora")
+                .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
         grid.addColumn(Order::getOrderStatus)
                 .setHeader("Status")
+                .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
         grid.addItemDoubleClickListener(event -> {
             Order selectedOrder = event.getItem();
-            showOrderDetails(selectedOrder);
+            if (selectedOrder != null) {
+                showOrderDetails(selectedOrder);
+            }
         });
     }
 
+    // O restante do seu código permanece o mesmo...
+    // [showOrderDetails, setupEditDialog, openEditDialog, etc.]
+    // ...
+    // <editor-fold desc="O restante do código foi omitido para brevidade">
     private void setupEditDialog() {
         editDialog.setHeaderTitle("Editar Pedido");
         editDialog.setResizable(true);
@@ -214,18 +231,15 @@ public class OrderView extends VerticalLayout {
         editDialog.setHeight("600px");
     }
 
-    // Substitua o método openEditDialog existente por este código atualizado:
-
     private void openEditDialog(Order order) {
-        editDialog.removeAll(); // Limpa o conteúdo anterior
+        editDialog.removeAll();
 
-        this.currentOrderEditing = order; // Define o pedido atual sendo editado
+        this.currentOrderEditing = order;
 
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.setPadding(true);
         mainLayout.setSpacing(true);
 
-        // Formulário de edição do pedido
         FormLayout orderEditLayout = new FormLayout();
         orderEditLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
@@ -238,7 +252,6 @@ public class OrderView extends VerticalLayout {
         statusSelect.setItems(OrderStatus.values());
         statusSelect.setValue(order.getOrderStatus());
 
-        // Só permite editar para OPEN se não estiver CANCELLED ou INVOICED
         if (order.getOrderStatus() == OrderStatus.CANCELLED || order.getOrderStatus() == OrderStatus.INVOICED) {
             statusSelect.setEnabled(false);
         }
@@ -308,7 +321,7 @@ public class OrderView extends VerticalLayout {
     }
 
     private void saveOrderEdit(Select<OrderStatus> statusSelect, ComboBox<Employee> sellerComboBox,
-                               TextField descriptionField) {
+            TextField descriptionField) {
         try {
             if (currentOrderEditing == null) {
                 Notification.show("Erro: Nenhum pedido selecionado para edição", 5000, Notification.Position.MIDDLE);
@@ -351,22 +364,31 @@ public class OrderView extends VerticalLayout {
 
     private void refreshGrid() {
         dataView.refreshAll();
-        grid.getDataProvider().refreshAll();
+    }
+
+    private Employee createTodosEmployee() {
+        Employee e = new Employee();
+        e.setId(ALL_EMPLOYEES_ID);
+        e.setFullName("TODOS");
+        return e;
     }
 
     private void setupEmployeeComboBox() {
         allEmployee = createTodosEmployee();
 
         employeeComboBox.setItemLabelGenerator(employee -> {
-            if (employee == allEmployee)
+            // ALTERE A COMPARAÇÃO AQUI
+            if (employee.getId().equals(ALL_EMPLOYEES_ID))
                 return "TODOS";
             return employee.getFullName();
         });
+
         employeeComboBox.setAllowCustomValue(false);
         employeeComboBox.setPageSize(10);
+        employeeComboBox.setPlaceholder("Filtrar por Vendedor");
 
         List<Employee> allEmployees = new ArrayList<>();
-        allEmployees.add(allEmployee); // Adiciona o item "TODOS"
+        allEmployees.add(allEmployee);
 
         List<Employee> sellers = employeeService.employeeList().stream()
                 .filter(emp -> emp.getRole() == EmployeeRole.SALES || emp.getRole() == EmployeeRole.LOCAL_MANAGER)
@@ -374,17 +396,7 @@ public class OrderView extends VerticalLayout {
 
         allEmployees.addAll(sellers);
 
-        employeeComboBox.setItems(query -> {
-            String filter = query.getFilter().orElse("");
-            return allEmployees.stream()
-                    .filter(emp -> {
-                        if (emp == allEmployee)
-                            return "todos".contains(filter.toLowerCase());
-                        return emp.getFullName().toLowerCase().contains(filter.toLowerCase());
-                    })
-                    .skip(query.getOffset())
-                    .limit(query.getLimit());
-        });
+        employeeComboBox.setItems(allEmployees);
 
         employeeComboBox.setValue(allEmployee);
         currentEmployeeFilter = allEmployee;
@@ -400,8 +412,8 @@ public class OrderView extends VerticalLayout {
 
         statusFilter.setItems(statusItems);
         statusFilter.setValue("TODOS");
-        statusFilter.setEmptySelectionAllowed(false); // desativa seleção vazia
-        statusFilter.setPlaceholder("Selecione um status");
+        statusFilter.setEmptySelectionAllowed(false);
+        statusFilter.setPlaceholder("Filtrar por Status");
 
         statusFilter.addValueChangeListener(e -> {
             currentStatus = e.getValue();
@@ -413,9 +425,9 @@ public class OrderView extends VerticalLayout {
         CallbackDataProvider<Order, Void> dataProvider = DataProvider.fromCallbacks(
                 query -> {
                     List<Order> allOrders = orderService.findAll();
-                    System.out.println("Total de pedidos encontrados: " + allOrders.size());
                     return allOrders.stream()
                             .filter(this::matchesFilters)
+                            .sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt())) // Ordenação padrão
                             .skip(query.getOffset())
                             .limit(query.getLimit());
                 },
@@ -432,17 +444,11 @@ public class OrderView extends VerticalLayout {
             return false;
         }
 
-        if (currentEmployeeFilter != null && currentEmployeeFilter != allEmployee) {
+        if (currentEmployeeFilter != null && !currentEmployeeFilter.getId().equals(ALL_EMPLOYEES_ID)) {
             if (order.getSeller() == null || !order.getSeller().getId().equals(currentEmployeeFilter.getId())) {
                 return false;
             }
         }
-
-        if (!currentSearchingTerm.isEmpty()) {
-            String sellerName = order.getSeller() != null ? order.getSeller().getFullName().toLowerCase() : "";
-            return sellerName.contains(currentSearchingTerm.toLowerCase());
-        }
-
         return true;
     }
 
@@ -457,7 +463,7 @@ public class OrderView extends VerticalLayout {
     private void openCreateOrderDialog() {
         Dialog createDialog = new Dialog();
         createDialog.setHeaderTitle("Criar Novo Pedido");
-        createDialog.setWidth("900px"); // Aumentado para acomodar melhor o grid
+        createDialog.setWidth("900px");
         createDialog.setHeight("800px");
         createDialog.setResizable(true);
 
@@ -492,8 +498,7 @@ public class OrderView extends VerticalLayout {
         priceField.setMin(0.01);
         priceField.setStep(0.01);
 
-
-        setupItemsGridImproved(itemsGrid, orderItems); // Passa o callback
+        setupItemsGridImproved(itemsGrid, orderItems);
 
         addItemButton.addClickListener(e -> {
             Product selectedProduct = productComboBox.getValue();
@@ -525,7 +530,7 @@ public class OrderView extends VerticalLayout {
 
             OrderItemRow newItem = new OrderItemRow(selectedProduct, quantity, price);
             orderItems.add(newItem);
-            itemsGrid.getDataProvider().refreshAll();
+            itemsGrid.setItems(orderItems);
 
             productComboBox.clear();
             quantityField.setValue(1);
@@ -561,7 +566,6 @@ public class OrderView extends VerticalLayout {
 
                 Notification.show("Pedido criado com sucesso!", 3000, Notification.Position.MIDDLE);
                 dataView.refreshAll();
-                grid.getDataProvider().refreshAll();
                 createDialog.close();
 
             } catch (Exception ex) {
@@ -579,7 +583,7 @@ public class OrderView extends VerticalLayout {
         addItemLayout.setWidthFull();
         productComboBox.setWidth("300px");
         quantityField.setWidth("100px");
-        priceField.setWidth("120px"); // Aumentado um pouco para acomodar o prefixo R$
+        priceField.setWidth("120px");
 
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.add(
@@ -603,9 +607,9 @@ public class OrderView extends VerticalLayout {
         grid.setWidthFull();
 
         grid.addColumn(item -> {
-                    String productName = item.getProduct().getName();
-                    return productName.length() > 25 ? productName.substring(0, 22) + "..." : productName;
-                })
+            String productName = item.getProduct().getName();
+            return productName.length() > 25 ? productName.substring(0, 22) + "..." : productName;
+        })
                 .setHeader("Produto")
                 .setWidth("130px")
                 .setFlexGrow(0);
@@ -625,28 +629,27 @@ public class OrderView extends VerticalLayout {
                 .setWidth("120px")
                 .setFlexGrow(0);
 
-        grid.addColumn(item -> "R$ " + String.format("%.2f", item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
+        grid.addColumn(
+                item -> "R$ " + String.format("%.2f", item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
                 .setHeader("Total")
                 .setWidth("130px")
                 .setFlexGrow(0);
 
         grid.addComponentColumn(item -> {
-                    Button removeButton = new Button(new Icon(VaadinIcon.TRASH));
-                    removeButton.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
-                    removeButton.addClickListener(e -> {
-                        items.remove(item);
-                        grid.getDataProvider().refreshAll();
-                        Notification.show("Item removido", 2000, Notification.Position.MIDDLE);
-                    });
+            Button removeButton = new Button(new Icon(VaadinIcon.TRASH));
+            removeButton.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
+            removeButton.addClickListener(e -> {
+                items.remove(item);
+                grid.setItems(items);
+                Notification.show("Item removido", 2000, Notification.Position.MIDDLE);
+            });
 
-
-                    return removeButton;
-                })
+            return removeButton;
+        })
                 .setHeader("Ações")
                 .setWidth("80px")
                 .setFlexGrow(0);
     }
-
 
     private void setupSellerComboBox(ComboBox<Employee> sellerComboBox) {
         sellerComboBox.setItemLabelGenerator(Employee::getFullName);
@@ -662,7 +665,7 @@ public class OrderView extends VerticalLayout {
     }
 
     private CreateOrderDTO buildCreateOrderDTO(Employee seller, ShippingProvider shippingProvider,
-                                               String description, List<OrderItemRow> items) {
+            String description, List<OrderItemRow> items) {
 
         List<CreateOrderItemDTO> itemDTOs = items.stream()
                 .map(item -> CreateOrderItemDTO.builder()
@@ -691,7 +694,7 @@ public class OrderView extends VerticalLayout {
         grid.addColumn(item -> "R$ " + String.format("%.2f", item.getPrice())).setHeader("Preço Unit.")
                 .setAutoWidth(true);
         grid.addColumn(
-                        item -> "R$ " + String.format("%.2f", item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
+                item -> "R$ " + String.format("%.2f", item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
                 .setHeader("Total").setAutoWidth(true);
 
         grid.addComponentColumn(item -> {
@@ -699,7 +702,7 @@ public class OrderView extends VerticalLayout {
             removeButton.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
             removeButton.addClickListener(e -> {
                 items.remove(item);
-                grid.getDataProvider().refreshAll();
+                grid.setItems(items);
                 Notification.show("Item removido", 2000, Notification.Position.MIDDLE);
             });
             return removeButton;
@@ -754,7 +757,7 @@ public class OrderView extends VerticalLayout {
         Dialog detailsDialog = new Dialog();
         detailsDialog.setHeaderTitle("Detalhes do Pedido");
         detailsDialog.setWidth("600px");
-        detailsDialog.setHeight("550px"); // Aumentado para acomodar o total
+        detailsDialog.setHeight("550px");
 
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.setPadding(true);
@@ -772,7 +775,9 @@ public class OrderView extends VerticalLayout {
         statusField.setReadOnly(true);
 
         TextField createdAtField = new TextField("Criado em");
-        createdAtField.setValue(order.getCreatedAt() != null ? order.getCreatedAt().toString() : "N/A");
+        createdAtField.setValue(order.getCreatedAt() != null
+                ? order.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                : "N/A");
         createdAtField.setReadOnly(true);
 
         TextField customerField = new TextField("Vendedor");
@@ -826,10 +831,7 @@ public class OrderView extends VerticalLayout {
         } else {
             editButton.setEnabled(false);
             String statusText = order.getOrderStatus() == OrderStatus.CANCELLED ? "cancelado" : "faturado";
-            editButton.addClickListener(e -> {
-                Notification.show("⚠️ Este pedido não pode ser editado pois foi " + statusText + ".",
-                        4000, Notification.Position.MIDDLE);
-            });
+            editButton.setTooltipText("Este pedido não pode ser editado pois foi " + statusText + ".");
         }
 
         Button closeButton = new Button("Fechar");
@@ -842,21 +844,11 @@ public class OrderView extends VerticalLayout {
                 orderInfoLayout,
                 new com.vaadin.flow.component.html.H4("Itens"),
                 itemsGrid,
+                new com.vaadin.flow.component.html.H5("Valor Total: R$ " + String.format("%.2f", totalAmount)),
                 buttonLayout);
 
         detailsDialog.add(mainLayout);
         detailsDialog.open();
     }
-
-    private Employee createTodosEmployee() {
-        Employee todos = new Employee();
-        todos.setId(UUID.fromString("00000000-0000-0000-0000-000000000000"));
-
-        try {
-            todos.setFullName("TODOS");
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return todos;
-    }
+    // </editor-fold>
 }
