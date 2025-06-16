@@ -116,7 +116,7 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     private void setupSearchField() {
-        searchField.setPlaceholder("Search purchase orders...");
+        searchField.setPlaceholder("Search by ID, purchaser, status or product name...");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
         searchField.setClearButtonVisible(true);
@@ -371,8 +371,16 @@ public class PurchaseOrderView extends VerticalLayout {
 
         String id = order.getId().toString().toLowerCase();
         String purchaserName = order.getPurchaserId().getFullName().toLowerCase();
+        String status = order.getPurchaseOrderStatus().toString().toLowerCase();
+        
+        // Verifica se algum produto na order contém o termo de busca
+        boolean hasMatchingProduct = order.getPurchaseItems().stream()
+                .anyMatch(item -> item.getProduct().getName().toLowerCase().contains(currentSearchTerm));
 
-        return id.contains(currentSearchTerm) || purchaserName.contains(currentSearchTerm);
+        return id.contains(currentSearchTerm) || 
+               purchaserName.contains(currentSearchTerm) || 
+               status.contains(currentSearchTerm) ||
+               hasMatchingProduct;
     }
 
     private void setupItemGrid() {
