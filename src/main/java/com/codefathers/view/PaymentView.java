@@ -249,16 +249,20 @@ public class PaymentView extends VerticalLayout {
         setupNumberFieldWithCurrency(editDentalInsuranceField, 0.00);
         setupNumberFieldWithCurrency(editProfitSharingField, 0.00);
 
-        // CORREÇÃO 1: Bloquear o campo Amount in Taxes para edição
         editAmountInTaxesField.setReadOnly(true);
-    editHealthInsuranceField.setReadOnly(true);
-    editDentalInsuranceField.setReadOnly(true);
+        editHealthInsuranceField.setReadOnly(true);
+        editDentalInsuranceField.setReadOnly(true);
         setupIncomeDisplayField(editNetIncomeDisplay);
         setupIncomeDisplayField(editTotalIncomeDisplay);
 
         editEmployeeComboBox.addValueChangeListener(e -> {
-            if (e.getValue() != null && editGrossIncomeField.getValue() != null) {
-                updateTaxesBasedOnEmployee(e.getValue(), editGrossIncomeField.getValue());
+            Employee selectedEmployee = e.getValue();
+            if (selectedEmployee != null) {
+                populateEditDefaultValues(selectedEmployee);
+
+                if (editGrossIncomeField.getValue() != null) {
+                    updateTaxesBasedOnEmployee(selectedEmployee, editGrossIncomeField.getValue());
+                }
             }
             updateEditIncomeDisplays();
         });
@@ -277,8 +281,8 @@ public class PaymentView extends VerticalLayout {
         editDentalInsuranceField.addValueChangeListener(e -> updateEditIncomeDisplays());
         editProfitSharingField.addValueChangeListener(e -> updateEditIncomeDisplays());
         editAmountInTaxesField.addValueChangeListener(e -> updateEditIncomeDisplays());
-                    healthInsuranceField.setReadOnly(true);
-                    dentalInsuranceField.setReadOnly(true);
+        healthInsuranceField.setReadOnly(true);
+        dentalInsuranceField.setReadOnly(true);
         FormLayout editFormLayout = new FormLayout();
         editFormLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
         editFormLayout.add(
@@ -492,6 +496,18 @@ public class PaymentView extends VerticalLayout {
         } catch (Exception ex) {
             Notification.show("Error creating payment: " + ex.getMessage());
         }
+    }
+
+    private void populateEditDefaultValues(Employee employee) {
+        Map<EmployeeBenefits, BigDecimal> benefits = employee.getRole().getBENEFITS();
+
+        editGrossIncomeField.setValue(benefits.get(EmployeeBenefits.GROSS_INCOME).doubleValue());
+        editAmountInTaxesField.setValue(benefits.get(EmployeeBenefits.AMOUNT_IN_TAXES).doubleValue());
+        editMealVoucherField.setValue(benefits.get(EmployeeBenefits.MEAL_VOUCHER).doubleValue());
+        editFoodVoucherField.setValue(benefits.get(EmployeeBenefits.FOOD_VOUCHER).doubleValue());
+        editHealthInsuranceField.setValue(benefits.get(EmployeeBenefits.HEALTH_INSURANCE).doubleValue());
+        editDentalInsuranceField.setValue(benefits.get(EmployeeBenefits.DENTAL_INSURANCE).doubleValue());
+        editProfitSharingField.setValue(benefits.get(EmployeeBenefits.PROFIT_SHARING).doubleValue());
     }
 
     private void openEditDialog(Payment payment) {
