@@ -78,6 +78,7 @@ public class ServiceFactory {
     @Getter
     private static DashboardService dashboardService =
             new DashboardService(
-                ServiceFactory.getOrderService()
+                ServiceFactory.getOrderService(),
+                    ServiceFactory.getProductService()
             );
 }

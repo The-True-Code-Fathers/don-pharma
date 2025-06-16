@@ -4,10 +4,10 @@ import com.codefathers.factory.ServiceFactory;
 import com.codefathers.model.entity.SystemUser;
 import com.codefathers.service.AuthService;
 import com.codefathers.service.DashboardService;
+import com.codefathers.util.JsonUtil;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI; // Import UI
 import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
@@ -39,16 +39,17 @@ import com.github.appreciated.apexcharts.config.yaxis.builder.TitleBuilder;
 // ApexCharts Theming Imports
 import com.github.appreciated.apexcharts.config.builder.ThemeBuilder;
 import com.github.appreciated.apexcharts.config.theme.Mode;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Route("")
 @PageTitle("Dashboard | Don Pharma")
 public class DashboardView extends FlexLayout {
@@ -245,7 +246,7 @@ public class DashboardView extends FlexLayout {
         // A more concise and safe way to check the theme
         boolean isDarkTheme = Lumo.DARK.equals(UI.getCurrent().getElement().getAttribute("theme"));
 
-        DashboardService.TimeSeriesData chartData = dashboardService.getSalesChartData(startDay, endDay);
+        DashboardService.SeriesData chartData = dashboardService.getSalesChartData(startDay, endDay);
 
         ApexChartsBuilder chartBuilder = ApexChartsBuilder.get()
                 .withChart(ChartBuilder.get()
@@ -342,14 +343,21 @@ public class DashboardView extends FlexLayout {
                         .build()
         );
 
+        DashboardService.SeriesData seriesData = dashboardService.getTopProductChartData(
+                LocalDate.of(2010, 1, 1),
+                LocalDate.of(2030, 1, 1),
+                10);
+
+        log.debug("{}", JsonUtil.toPrettyJson(seriesData));
+
         // Dummy data for top products
         chartBuilder.withSeries(
-                new Series<>("Units Sold", 127.0, 98.0, 87.0, 76.0, 65.0)
+                new Series<>("Units Sold", seriesData.data())
         );
 
         chartBuilder.withXaxis(
                 XAxisBuilder.get()
-                        .withCategories("Produto A", "Produto B", "Produto C", "Produto D", "Produto E")
+                        .withCategories(seriesData.categories())
                         .build()
         );
 

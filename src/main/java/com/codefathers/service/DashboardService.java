@@ -1,6 +1,9 @@
 package com.codefathers.service;
 
 import com.codefathers.model.entity.Order;
+import com.codefathers.repository.dto.MostSoldProductDTO;
+import com.codefathers.util.JsonUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,14 +14,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class DashboardService {
 
-    public record TimeSeriesData(List<String> categories, List<BigDecimal> data) {}
+    public record SeriesData(List<String> categories, List<BigDecimal> data) {}
 
     private final OrderService orderService;
+    private final ProductService productService;
 
-    public DashboardService(OrderService orderService) {
+    public DashboardService(OrderService orderService, ProductService productService) {
         this.orderService = orderService;
+        this.productService = productService;
     }
 
     /**
@@ -26,7 +32,7 @@ public class DashboardService {
      * It calls the OrderService to get the raw data, then performs the
      * dashboard-specific logic of aggregation and transformation into a DTO.
      */
-    public TimeSeriesData getSalesChartData(LocalDate start, LocalDate end) {
+    public SeriesData getSalesChartData(LocalDate start, LocalDate end) {
         List<Order> orders = orderService.findOrdersByPeriod(start, end);
 
         // 2. Perform dashboard-specific business logic (aggregation)
@@ -45,6 +51,25 @@ public class DashboardService {
             data.add(salesByDay.getOrDefault(day, BigDecimal.ZERO));
         });
 
-        return new TimeSeriesData(categories, data);
+        return new SeriesData(categories, data);
     }
+
+    public SeriesData getTopProductChartData(LocalDate from, LocalDate to, int limit) {
+        List<MostSoldProductDTO> mostSoldProducts = productService.findMostSoldProducts(from, to, limit);
+
+        SeriesData data = mostSoldProducts.stream().collect(Collectors.teeing(
+                        Collectors.mapping(MostSoldProductDTO::name, Collectors.toList()),
+                        Collectors.mapping(
+                                product -> BigDecimal.valueOf(product.totalQuantity()),
+                                Collectors.toList()
+                        ),
+                        SeriesData::new
+                )
+        );
+
+        log.debug("{}", JsonUtil.toPrettyJson(data));
+
+        return data;
+    }
+
 }
