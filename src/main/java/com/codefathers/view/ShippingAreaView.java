@@ -23,7 +23,6 @@ import com.vaadin.flow.router.Route;
 import jakarta.validation.Validation;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Route("shipping-areas")
 @PageTitle("Shipping Areas")
@@ -34,7 +33,10 @@ public class ShippingAreaView extends VerticalLayout {
     private final Grid<ShippingArea> grid = new Grid<>(ShippingArea.class, false);
 
     public ShippingAreaView() {
-        this.areaService = new ShippingAreaService(new ShippingAreaRepositoryImpl(), Validation.buildDefaultValidatorFactory().getValidator());
+        this.areaService = new ShippingAreaService(
+                new ShippingAreaRepositoryImpl(),
+                Validation.buildDefaultValidatorFactory().getValidator()
+        );
         this.providerService = new ShippingProviderService(new ShippingProviderRepositoryImpl());
 
         Button newButton = new Button("Nova Área de Entrega", e -> openFormDialog(null));
@@ -51,6 +53,7 @@ public class ShippingAreaView extends VerticalLayout {
                 .setHeader("Transportadora").setAutoWidth(true);
         grid.addColumn(area -> String.join(", ", area.getStates())).setHeader("Estados").setAutoWidth(true);
         grid.addColumn(ShippingArea::getCep).setHeader("CEP").setAutoWidth(true);
+        grid.addColumn(area -> area.isActive() ? "Ativo" : "Inativo").setHeader("Status").setAutoWidth(true);
 
         grid.addItemDoubleClickListener(event -> openFormDialog(event.getItem()));
         grid.setHeight("300px");
@@ -58,8 +61,6 @@ public class ShippingAreaView extends VerticalLayout {
         grid.getStyle().set("margin-top", "10px");
         grid.setId("custom-grid");
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-
-
     }
 
     private void openFormDialog(ShippingArea area) {
@@ -129,6 +130,7 @@ public class ShippingAreaView extends VerticalLayout {
                             .shippingProvider(selectedProvider)
                             .states(states)
                             .cep(cepField.getValue())
+                            .active(area.isActive())
                             .build();
                     areaService.updateShippingArea(updated);
                     Notification.show("Área atualizada com sucesso!");
@@ -142,20 +144,23 @@ public class ShippingAreaView extends VerticalLayout {
             }
         });
 
-        Button deleteButton = new Button("Deletar", e -> {
-            try {
-                if (area != null) {
-                    areaService.deleteShippingAreaById(area.getId());
-                    Notification.show("Área deletada com sucesso!");
-                    updateGrid();
-                    dialog.close();
+        Button toggleStatusButton = new Button(
+                (area != null && area.isActive()) ? "Desativar" : "Ativar",
+                e -> {
+                    try {
+                        if (area != null) {
+                            areaService.atualizarStatusShippingArea(area.getId());
+                            Notification.show("Status atualizado com sucesso!");
+                            updateGrid();
+                            dialog.close();
+                        }
+                    } catch (Exception ex) {
+                        Notification.show("Erro ao atualizar status: " + ex.getMessage(), 4000, Notification.Position.MIDDLE);
+                        ex.printStackTrace();
+                    }
                 }
-            } catch (Exception ex) {
-                Notification.show("Erro ao deletar: " + ex.getMessage(), 4000, Notification.Position.MIDDLE);
-                ex.printStackTrace();
-            }
-        });
-        deleteButton.setVisible(area != null);
+        );
+        toggleStatusButton.setVisible(area != null);
 
         Button cancelButton = new Button("Cancelar", e -> dialog.close());
 
@@ -165,7 +170,7 @@ public class ShippingAreaView extends VerticalLayout {
                 statesField,
                 cepField,
                 buscarEstadoBtn,
-                new HorizontalLayout(saveButton, deleteButton, cancelButton)
+                new HorizontalLayout(saveButton, toggleStatusButton, cancelButton)
         );
         formLayout.setWidthFull();
         formLayout.setSpacing(true);
@@ -173,7 +178,6 @@ public class ShippingAreaView extends VerticalLayout {
         dialog.add(formLayout);
         dialog.open();
     }
-
 
     private void updateGrid() {
         grid.setItems(areaService.findAllShippingAreas());

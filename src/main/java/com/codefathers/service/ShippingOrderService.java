@@ -75,11 +75,17 @@ public class ShippingOrderService {
             throw new IllegalArgumentException("ID do pedido não pode ser nulo");
         }
 
-        var removedOrder = shippingOrderRepository.findById(orderId);
-        if (removedOrder.isPresent()) {
+        var optionalOrder = shippingOrderRepository.findById(orderId);
+
+        if (optionalOrder.isEmpty()) {
             throw new IllegalArgumentException("Pedido não encontrado para o ID: " + orderId);
         }
+
+        ShippingOrder order = optionalOrder.get();
+        order.setActive(false); // Desativa logicamente
+        shippingOrderRepository.update(order); // Persiste a alteração
     }
+
 
     public void updateOrder(UUID orderId, CreateShippingOrderDTO dto) {
         // Validação do DTO
@@ -124,7 +130,6 @@ public class ShippingOrderService {
         ShippingOrder existingOrder = shippingOrderRepository.findById(id)
                 .orElseThrow(() -> new Exception("Pedido não encontrado com ID: " + id));
 
-        // Atualiza os campos da entidade com os valores do DTO
         ShippingProvider provider = shippingProviderRepository.findById(dto.getShippingProviderId())
                 .orElseThrow(
                         () -> new Exception("Provedor de frete não encontrado com ID: " + dto.getShippingProviderId()));

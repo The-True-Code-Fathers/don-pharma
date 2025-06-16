@@ -15,5 +15,7 @@ public interface PurchaseOrderItemRepository {
 
     Optional<PurchaseOrderItem> findById(UUID purchaseOrderItemId);
 
+    Optional<List<PurchaseOrderItem>> findByProductSku(String productSku);
+
     List<PurchaseOrderItem> findAll();
 }

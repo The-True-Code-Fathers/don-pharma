@@ -1,17 +1,23 @@
 package com.codefathers.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import com.codefathers.model.dto.CreateProductDTO;
 import com.codefathers.model.dto.UpdateProductDTO;
 import com.codefathers.model.entity.Product;
+import com.codefathers.repository.dto.MostSoldProductDTO;
 import com.codefathers.repository.interfaces.ProductRepository;
 
+import com.codefathers.util.JsonUtil;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ProductService {
 
     private final ProductRepository productRepository;
@@ -32,8 +38,6 @@ public class ProductService {
 
         Product product = Product.builder()
                     .sku(createProductDTO.getSku())
-                    .buyPrice(createProductDTO.getBuyPrice())
-                    .sellPrice(createProductDTO.getSellPrice())
                     .name(createProductDTO.getName())
                     .description(createProductDTO.getDescription())
                     .active(true)
@@ -50,15 +54,13 @@ public class ProductService {
 
     public void updateProduct(@Valid String productSku, UpdateProductDTO updateProductDTO) {
 
-        Product product = productRepository.findBySKU(productSku).get();
-
-
-        if (product == null) {
+        Optional<Product> maybeProduct = productRepository.findBySKU(productSku);
+        if (maybeProduct.isEmpty()) {
             throw new RuntimeException("Produto com SKU '" + productSku + "' não encontrado.");
         }
+        Product product = maybeProduct.get();
+
         product.setDescription(updateProductDTO.getDescription());
-        product.setBuyPrice(updateProductDTO.getBuyPrice());
-        product.setSellPrice(updateProductDTO.getSellPrice());
         product.setActive(updateProductDTO.isActive());
         product.setMeasurementUnit(updateProductDTO.getMeasurementUnit());
         try {
@@ -74,6 +76,10 @@ public class ProductService {
 
     public List<Product> findAllProducts() {
         return productRepository.listAll();
+    }
+
+    public List<MostSoldProductDTO> findMostSoldProducts(LocalDate from, LocalDate to, int limit) {
+        return productRepository.findMostSoldProducts(from, to, limit);
     }
 
 }
