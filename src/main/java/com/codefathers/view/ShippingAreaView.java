@@ -67,12 +67,18 @@ public class ShippingAreaView extends VerticalLayout {
         dialog.setWidth("600px");
 
         TextField descriptionField = new TextField("Descrição");
+        descriptionField.setWidthFull();
+
         TextArea statesField = new TextArea("Estados (separados por vírgula)");
+        statesField.setWidthFull();
+
         TextField cepField = new TextField("CEP de origem");
+        cepField.setWidthFull();
 
         ComboBox<ShippingProvider> providerComboBox = new ComboBox<>("Transportadora");
         providerComboBox.setItems(providerService.listAllShippingProviders());
         providerComboBox.setItemLabelGenerator(ShippingProvider::getName);
+        providerComboBox.setWidthFull();
 
         Button buscarEstadoBtn = new Button("Buscar Estado", ev -> {
             try {
@@ -85,6 +91,7 @@ public class ShippingAreaView extends VerticalLayout {
                 ex.printStackTrace();
             }
         });
+        buscarEstadoBtn.setWidthFull();
 
         if (area != null) {
             descriptionField.setValue(area.getDescription());
@@ -152,16 +159,21 @@ public class ShippingAreaView extends VerticalLayout {
 
         Button cancelButton = new Button("Cancelar", e -> dialog.close());
 
-        dialog.add(new VerticalLayout(
+        VerticalLayout formLayout = new VerticalLayout(
                 descriptionField,
                 providerComboBox,
                 statesField,
                 cepField,
                 buscarEstadoBtn,
                 new HorizontalLayout(saveButton, deleteButton, cancelButton)
-        ));
+        );
+        formLayout.setWidthFull();
+        formLayout.setSpacing(true);
+
+        dialog.add(formLayout);
         dialog.open();
     }
+
 
     private void updateGrid() {
         grid.setItems(areaService.findAllShippingAreas());

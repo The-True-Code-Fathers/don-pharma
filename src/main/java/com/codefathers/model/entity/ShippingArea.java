@@ -9,8 +9,6 @@ import lombok.*;
 @Data
 @Entity(name = "shipping_area")
 @Builder
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ShippingArea {
