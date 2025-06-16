@@ -661,10 +661,10 @@ public class PaymentView extends VerticalLayout {
         TextField foodField = new TextField("Food Voucher");
         foodField.setValue("R$ " + payment.getFoodVoucherAmount().toString());
         foodField.setReadOnly(true);
-        TextField healthField = new TextField("Health Insurance");
+        TextField healthField = new TextField("Health Insurance Coverage");
         healthField.setValue("R$ " + payment.getHealthInsuranceAmount().toString());
         healthField.setReadOnly(true);
-        TextField dentalField = new TextField("Dental Insurance");
+        TextField dentalField = new TextField("Dental Insurance Coverage");
         dentalField.setValue("R$ " + payment.getDentalInsuranceAmount().toString());
         dentalField.setReadOnly(true);
         TextField profitField = new TextField("Profit Sharing");

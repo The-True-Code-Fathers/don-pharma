@@ -80,7 +80,6 @@ public class ProductsView extends VerticalLayout {
     private Button setInactiveButton = new Button("Inactivate Product");
 
     private Button dialogButtonCreateProduct = new Button("Create Product");
-    private Button refreshButton = new Button("Refresh", new Icon(VaadinIcon.REFRESH));
 
     private Grid<Product> grid = new Grid<>(Product.class, false);
     private GridLazyDataView<Product> dataView;
@@ -124,7 +123,7 @@ public class ProductsView extends VerticalLayout {
         setupCreateComboBox(createUnit);
         setupUpdateComboBox(updateUnit);
 
-        HorizontalLayout leftLayout = new HorizontalLayout(dialogButtonCreateProduct, searchField, refreshButton);
+        HorizontalLayout leftLayout = new HorizontalLayout(dialogButtonCreateProduct, searchField);
         leftLayout.setAlignItems(Alignment.CENTER);
         leftLayout.setSpacing(true);
 
@@ -224,7 +223,6 @@ public class ProductsView extends VerticalLayout {
         updateCloseButton.addClickListener(e -> updateDialog.close());
         setInactiveButton.addClickListener(e -> toggleProductActive());
 
-        refreshButton.addClickListener(e -> refreshGrid());
     }
 
     private void setupGrid() {
