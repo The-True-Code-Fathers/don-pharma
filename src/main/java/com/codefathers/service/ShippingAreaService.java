@@ -9,6 +9,7 @@ import jakarta.validation.Validator;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ShippingAreaService {
@@ -20,10 +21,9 @@ public class ShippingAreaService {
         this.validator = validator;
     }
 
-    public void saveShippingArea(@Valid CreateShippingAreaDTO createShippingAreaDTO){
+    public void saveShippingArea(@Valid CreateShippingAreaDTO createShippingAreaDTO) {
         var violations = validator.validate(createShippingAreaDTO);
-
-        if (!violations.isEmpty()){
+        if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
 
@@ -36,32 +36,16 @@ public class ShippingAreaService {
                 .cep(createShippingAreaDTO.getCep())
                 .build();
 
-        try{
-            shippingAreaRepository.save(shippingArea);
-        }catch (ConstraintViolationException e){
-            System.out.println("Erro ao salvar ShippingArea: " + e.getMessage());
-        }
+        shippingAreaRepository.save(shippingArea);
     }
-
 
     public ShippingArea findShippingAreaById(UUID shippingAreaId) {
-        ShippingArea area = shippingAreaRepository.findById(shippingAreaId).get();
-        if (area == null) {
-            throw new RuntimeException("Área de entrega com ID '" + shippingAreaId + "' não encontrada.");
-        }
-        return area;
-    }
-
-    public void deleteShippingAreaById(UUID shippingAreaId) {
-        var shippingArea = shippingAreaRepository.findById(shippingAreaId).get();
-        if (shippingArea == null) {
-            throw new RuntimeException("Não foi possível remover a área de entrega com ID '" + shippingAreaId + "'.");
-        }
+        return shippingAreaRepository.findById(shippingAreaId)
+                .orElseThrow(() -> new RuntimeException("Área de entrega com ID '" + shippingAreaId + "' não encontrada."));
     }
 
     public void updateShippingArea(@Valid ShippingArea shippingArea) {
         var violations = validator.validate(shippingArea);
-
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
@@ -69,22 +53,30 @@ public class ShippingAreaService {
         shippingAreaRepository.update(shippingArea);
     }
 
+    public void atualizarStatusShippingArea(UUID id) {
+        Optional<ShippingArea> areaOpt = shippingAreaRepository.findById(id);
+        if (areaOpt.isEmpty()) {
+            throw new RuntimeException("Área de entrega com ID '" + id + "' não encontrada.");
+        }
+
+        ShippingArea area = areaOpt.get();
+        area.setActive(!area.isActive());
+        shippingAreaRepository.update(area);
+    }
+
     public List<ShippingArea> findAllShippingAreas() {
         try {
             List<ShippingArea> areas = shippingAreaRepository.listAll();
 
-            // Log detalhado para diagnóstico
+            // Log para diagnóstico
             System.out.println("Total de áreas encontradas: " + areas.size());
             areas.forEach(area -> {
                 System.out.println("Área ID: " + area.getId());
                 System.out.println("Descrição: " + area.getDescription());
                 System.out.println("Estados: " + String.join(", ", area.getStates()));
-
-                if (area.getShippingProvider() != null) {
-                    System.out.println("Transportadora: " + area.getShippingProvider().getName());
-                } else {
-                    System.out.println("Transportadora: Nenhuma associada");
-                }
+                System.out.println("Transportadora: " +
+                        (area.getShippingProvider() != null ? area.getShippingProvider().getName() : "Nenhuma"));
+                System.out.println("Status: " + (area.isActive() ? "Ativo" : "Inativo"));
                 System.out.println("-------------------");
             });
 
@@ -95,5 +87,4 @@ public class ShippingAreaService {
             return List.of();
         }
     }
-
 }
