@@ -1,10 +1,9 @@
 package com.codefathers.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,6 +21,8 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "orders_id", nullable = false)
+    @ToString.Exclude // Prevent recursive calls when doing something with parent entity
+    @JsonBackReference
     private Order order;
 
     @ManyToOne

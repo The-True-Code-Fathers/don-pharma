@@ -74,4 +74,10 @@ public class ServiceFactory {
                     RepositoryFactory.getStorageRepository(),
                     RepositoryFactory.getProductRepository()
             );
+
+    @Getter
+    private static DashboardService dashboardService =
+            new DashboardService(
+                ServiceFactory.getOrderService()
+            );
 }

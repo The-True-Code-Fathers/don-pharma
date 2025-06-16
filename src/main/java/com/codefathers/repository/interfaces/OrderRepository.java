@@ -4,6 +4,7 @@ import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.OrderItem;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,4 +18,5 @@ public interface OrderRepository {
     Long count();
     BigDecimal getTotalRevenue();
     List<OrderItem> findAllOrderItemsByOrderId(UUID orderId);
+    List<Order> findOrdersByTimePeriod(LocalDate start, LocalDate end);
 }
