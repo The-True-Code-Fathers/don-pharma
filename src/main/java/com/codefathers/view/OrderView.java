@@ -72,7 +72,7 @@ public class OrderView extends VerticalLayout {
     private Dialog dialog = new Dialog();
     private Dialog editDialog = new Dialog();
     private String currentSearchingTerm = "";
-    private String currentStatus = "TODOS";
+    private String currentStatus = "ALL";
     private Order currentOrderEditing = null;
     private Employee currentEmployeeFilter = null;
     private Employee allEmployee;
@@ -100,7 +100,7 @@ public class OrderView extends VerticalLayout {
         setupDialog();
         setupEditDialog();
 
-        Button createButton = new Button("Criar Pedido", new Icon(VaadinIcon.PLUS));
+        Button createButton = new Button("Create Order", new Icon(VaadinIcon.PLUS));
         createButton.addClickListener(e -> openCreateOrderDialog());
 
         HorizontalLayout filters = new HorizontalLayout(searchField, statusFilter);
@@ -123,12 +123,12 @@ public class OrderView extends VerticalLayout {
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
         grid.addColumn(Order::getId)
-                .setHeader("ID do Pedido")
+                .setHeader("Order ID")
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
         grid.addColumn(order -> order.getSeller() != null ? order.getSeller().getFullName() : "N/A")
-                .setHeader("Vendedor")
+                .setHeader("Seller")
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
@@ -138,7 +138,7 @@ public class OrderView extends VerticalLayout {
                     }
                     return "N/A";
                 })
-                .setHeader("Criado em")
+                .setHeader("Created At")
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
@@ -147,9 +147,9 @@ public class OrderView extends VerticalLayout {
                     if (description != null && !description.trim().isEmpty()) {
                         return description.length() > 50 ? description.substring(0, 47) + "..." : description;
                     }
-                    return "Sem descrição";
+                    return "No description";
                 })
-                .setHeader("Descrição")
+                .setHeader("Description")
                 .setAutoWidth(true)
                 .setFlexGrow(1);
 
@@ -160,7 +160,7 @@ public class OrderView extends VerticalLayout {
                     }
                     return "R$ 0,00";
                 })
-                .setHeader("Valor Total")
+                .setHeader("Total Amount")
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
@@ -173,7 +173,7 @@ public class OrderView extends VerticalLayout {
                     }
                     return "0";
                 })
-                .setHeader("Qtd. Itens")
+                .setHeader("Qty. Items")
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
@@ -183,7 +183,7 @@ public class OrderView extends VerticalLayout {
                     }
                     return "N/A";
                 })
-                .setHeader("Transportadora")
+                .setHeader("Shipping Provider")
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
@@ -199,7 +199,7 @@ public class OrderView extends VerticalLayout {
     }
 
     private void setupEditDialog() {
-        editDialog.setHeaderTitle("Editar Pedido");
+        editDialog.setHeaderTitle("Edit Order");
         editDialog.setResizable(true);
         editDialog.setDraggable(true);
         editDialog.setWidth("800px");
@@ -215,11 +215,10 @@ public class OrderView extends VerticalLayout {
         mainLayout.setPadding(true);
         mainLayout.setSpacing(true);
 
-        // Formulário de edição do pedido
         FormLayout orderEditLayout = new FormLayout();
         orderEditLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        TextField idField = new TextField("ID do Pedido");
+        TextField idField = new TextField("Order ID");
         idField.setValue(order.getId().toString());
         idField.setReadOnly(true);
 
@@ -228,16 +227,15 @@ public class OrderView extends VerticalLayout {
         statusSelect.setItems(OrderStatus.values());
         statusSelect.setValue(order.getOrderStatus());
 
-        // Só permite editar para OPEN se não estiver CANCELLED ou INVOICED
         if (order.getOrderStatus() == OrderStatus.CANCELLED || order.getOrderStatus() == OrderStatus.INVOICED) {
             statusSelect.setEnabled(false);
         }
 
-        ComboBox<Employee> sellerComboBox = new ComboBox<>("Vendedor");
+        ComboBox<Employee> sellerComboBox = new ComboBox<>("Seller");
         setupSellerComboBox(sellerComboBox);
         sellerComboBox.setValue(order.getSeller());
 
-        TextField descriptionField = new TextField("Descrição");
+        TextField descriptionField = new TextField("Description");
         descriptionField.setValue(order.getDescription() != null ? order.getDescription() : "");
         descriptionField.setWidthFull();
 
@@ -245,14 +243,14 @@ public class OrderView extends VerticalLayout {
 
         Grid<OrderItem> itemsGrid = new Grid<>(OrderItem.class, false);
         itemsGrid.addColumn(item -> item.getProduct() != null ? item.getProduct().getName() : "N/A")
-                .setHeader("Produto").setAutoWidth(true);
+                .setHeader("Product").setAutoWidth(true);
         itemsGrid.addColumn(item -> item.getProduct() != null ? item.getProduct().getSku() : "N/A")
                 .setHeader("SKU").setAutoWidth(true);
         itemsGrid.addColumn(OrderItem::getQuantity)
-                .setHeader("Quantidade").setAutoWidth(true);
+                .setHeader("Quantity").setAutoWidth(true);
         itemsGrid
                 .addColumn(item -> item.getPrice() != null ? "R$ " + String.format("%.2f", item.getPrice()) : "R$ 0,00")
-                .setHeader("Preço Unitário").setAutoWidth(true);
+                .setHeader("Unit Price").setAutoWidth(true);
         itemsGrid.addColumn(item -> {
             if (item.getPrice() != null) {
                 BigDecimal total = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
@@ -278,18 +276,18 @@ public class OrderView extends VerticalLayout {
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         buttonLayout.setWidthFull();
 
-        Button saveButton = new Button("Salvar", new Icon(VaadinIcon.CHECK));
+        Button saveButton = new Button("Save", new Icon(VaadinIcon.CHECK));
         saveButton.addClickListener(e -> saveOrderEdit(statusSelect, sellerComboBox, descriptionField));
 
-        Button cancelButton = new Button("Cancelar");
+        Button cancelButton = new Button("Cancel");
         cancelButton.addClickListener(e -> editDialog.close());
 
         buttonLayout.add(saveButton, cancelButton);
 
         mainLayout.add(
-                new com.vaadin.flow.component.html.H4("Editar Pedido"),
+                new com.vaadin.flow.component.html.H4("Edit Order"),
                 orderEditLayout,
-                new com.vaadin.flow.component.html.H4("Itens do Pedido"),
+                new com.vaadin.flow.component.html.H4("Order Items"),
                 itemsGrid,
                 buttonLayout);
 
@@ -301,17 +299,17 @@ public class OrderView extends VerticalLayout {
                                TextField descriptionField) {
         try {
             if (currentOrderEditing == null) {
-                Notification.show("Erro: Nenhum pedido selecionado para edição", 5000, Notification.Position.MIDDLE);
+                Notification.show("Error: No order selected for editing", 5000, Notification.Position.MIDDLE);
                 return;
             }
 
             if (sellerComboBox.getValue() == null) {
-                Notification.show("Selecione um vendedor", 3000, Notification.Position.MIDDLE);
+                Notification.show("Select a seller", 3000, Notification.Position.MIDDLE);
                 return;
             }
 
             if (statusSelect.getValue() == null) {
-                Notification.show("Selecione um status", 3000, Notification.Position.MIDDLE);
+                Notification.show("Select a status", 3000, Notification.Position.MIDDLE);
                 return;
             }
 
@@ -321,7 +319,7 @@ public class OrderView extends VerticalLayout {
                     sellerComboBox.getValue(),
                     descriptionField.getValue());
 
-            Notification.show("Pedido atualizado com sucesso!", 3000, Notification.Position.MIDDLE);
+            Notification.show("Order updated successfully!", 3000, Notification.Position.MIDDLE);
 
             refreshGrid();
             editDialog.close();
@@ -329,13 +327,13 @@ public class OrderView extends VerticalLayout {
             currentOrderEditing = null;
 
         } catch (BusinessRuleException ex) {
-            Notification.show("Erro de regra de negócio: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            Notification.show("Business Rule Error: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
         } catch (IllegalArgumentException ex) {
-            Notification.show("Erro: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            Notification.show("Error: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
         } catch (Exception ex) {
-            System.err.println("Erro ao salvar pedido: " + ex.getMessage());
+            System.err.println("Error saving order: " + ex.getMessage());
             ex.printStackTrace();
-            Notification.show("Erro inesperado ao salvar: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            Notification.show("Unexpected error saving: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
         }
     }
 
@@ -344,7 +342,7 @@ public class OrderView extends VerticalLayout {
     }
 
     private void setupEmployeeSearchField() {
-        searchField.setPlaceholder("Buscar por ID, Vendedor ou Produto...");
+        searchField.setPlaceholder("Search by ID, Seller, or Product...");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
         searchField.setClearButtonVisible(true);
@@ -356,12 +354,12 @@ public class OrderView extends VerticalLayout {
     }
 
     private void searchStatusFilter() {
-        List<String> statusItems = List.of("TODOS", "OPEN", "CANCELLED", "INVOICED");
+        List<String> statusItems = List.of("ALL", "OPEN", "CANCELLED", "INVOICED");
 
         statusFilter.setItems(statusItems);
-        statusFilter.setValue("TODOS");
-        statusFilter.setEmptySelectionAllowed(false); // desativa seleção vazia
-        statusFilter.setPlaceholder("Selecione um status");
+        statusFilter.setValue("ALL");
+        statusFilter.setEmptySelectionAllowed(false);
+        statusFilter.setPlaceholder("Select a status");
 
         statusFilter.addValueChangeListener(e -> {
             currentStatus = e.getValue();
@@ -373,7 +371,7 @@ public class OrderView extends VerticalLayout {
         CallbackDataProvider<Order, Void> dataProvider = DataProvider.fromCallbacks(
                 query -> {
                     List<Order> allOrders = orderService.findAll();
-                    System.out.println("Total de pedidos encontrados: " + allOrders.size());
+                    System.out.println("Total orders found: " + allOrders.size());
                     return allOrders.stream()
                             .filter(this::matchesFilters)
                             .skip(query.getOffset())
@@ -388,7 +386,7 @@ public class OrderView extends VerticalLayout {
     }
 
     private boolean matchesFilters(Order order) {
-        if (!currentStatus.equals("TODOS") && !order.getOrderStatus().name().equalsIgnoreCase(currentStatus)) {
+        if (!currentStatus.equals("ALL") && !order.getOrderStatus().name().equalsIgnoreCase(currentStatus)) {
             return false;
         }
 
@@ -424,7 +422,7 @@ public class OrderView extends VerticalLayout {
 
 
     private void setupDialog() {
-        dialog.setHeaderTitle("Detalhes do Pedido");
+        dialog.setHeaderTitle("Order details");
         dialog.setResizable(true);
         dialog.setDraggable(true);
         dialog.setWidth("400px");
@@ -433,26 +431,26 @@ public class OrderView extends VerticalLayout {
 
     private void openCreateOrderDialog() {
         Dialog createDialog = new Dialog();
-        createDialog.setHeaderTitle("Criar Novo Pedido");
+        createDialog.setHeaderTitle("Create new order");
         createDialog.setWidth("900px"); // Aumentado para acomodar melhor o grid
         createDialog.setHeight("800px");
         createDialog.setResizable(true);
 
-        ComboBox<Employee> sellerComboBox = new ComboBox<>("Vendedor");
-        ComboBox<ShippingProvider> shippingComboBox = new ComboBox<>("Transportadora");
-        TextField descriptionField = new TextField("Descrição");
+        ComboBox<Employee> sellerComboBox = new ComboBox<>("Seller");
+        ComboBox<ShippingProvider> shippingComboBox = new ComboBox<>("Shipping provider");
+        TextField descriptionField = new TextField("Description");
 
         itemsGrid = new Grid<>();
         orderItems = new ArrayList<>();
 
-        ComboBox<Product> productComboBox = new ComboBox<>("Produto");
-        IntegerField quantityField = new IntegerField("Quantidade");
+        ComboBox<Product> productComboBox = new ComboBox<>("Product");
+        IntegerField quantityField = new IntegerField("Quantity");
 
-        NumberField priceField = new NumberField("Preço");
+        NumberField priceField = new NumberField("Price");
         priceField.setPrefixComponent(new Span("R$"));
         priceField.setStepButtonsVisible(false);
 
-        Button addItemButton = new Button("Adicionar Item");
+        Button addItemButton = new Button("Add item");
 
         setupSellerComboBox(sellerComboBox);
         setupShippingComboBox(shippingComboBox);
@@ -477,18 +475,18 @@ public class OrderView extends VerticalLayout {
             Integer quantity = quantityField.getValue();
             Double priceDouble = priceField.getValue();
             if (priceDouble == null || priceDouble <= 0) {
-                Notification.show("Informe um preço válido", 3000, Notification.Position.MIDDLE);
+                Notification.show("Inform a valid price", 3000, Notification.Position.MIDDLE);
                 return;
             }
             BigDecimal price = BigDecimal.valueOf(priceDouble);
 
             if (selectedProduct == null) {
-                Notification.show("Selecione um produto", 3000, Notification.Position.MIDDLE);
+                Notification.show("Select a product", 3000, Notification.Position.MIDDLE);
                 return;
             }
 
             if (quantity == null || quantity < 1) {
-                Notification.show("Informe uma quantidade válida", 3000, Notification.Position.MIDDLE);
+                Notification.show("Inform a valid quantity", 3000, Notification.Position.MIDDLE);
                 return;
             }
 
@@ -496,7 +494,7 @@ public class OrderView extends VerticalLayout {
                     .anyMatch(item -> item.getProduct().getSku().equals(selectedProduct.getSku()));
 
             if (exists) {
-                Notification.show("Produto já adicionado ao pedido", 3000, Notification.Position.MIDDLE);
+                Notification.show("Product already added to the order.", 3000, Notification.Position.MIDDLE);
                 return;
             }
 
@@ -508,23 +506,23 @@ public class OrderView extends VerticalLayout {
             quantityField.setValue(1);
             priceField.setValue(1.0);
 
-            Notification.show("Item adicionado!", 2000, Notification.Position.MIDDLE);
+            Notification.show("Item added!", 2000, Notification.Position.MIDDLE);
         });
 
-        Button saveButton = new Button("Criar Pedido", e -> {
+        Button saveButton = new Button("Create order", e -> {
             try {
                 if (sellerComboBox.getValue() == null) {
-                    Notification.show("Selecione um vendedor", 3000, Notification.Position.MIDDLE);
+                    Notification.show("Select an seller", 3000, Notification.Position.MIDDLE);
                     return;
                 }
 
                 if (shippingComboBox.getValue() == null) {
-                    Notification.show("Selecione uma transportadora", 3000, Notification.Position.MIDDLE);
+                    Notification.show("Select a shipping provider", 3000, Notification.Position.MIDDLE);
                     return;
                 }
 
                 if (orderItems.isEmpty()) {
-                    Notification.show("Adicione pelo menos um item ao pedido", 3000, Notification.Position.MIDDLE);
+                    Notification.show("Add at least one item", 3000, Notification.Position.MIDDLE);
                     return;
                 }
 
@@ -536,19 +534,19 @@ public class OrderView extends VerticalLayout {
 
                 orderService.createOrder(createOrderDTO);
 
-                Notification.show("Pedido criado com sucesso!", 3000, Notification.Position.MIDDLE);
+                Notification.show("Succeed creating order!", 3000, Notification.Position.MIDDLE);
                 dataView.refreshAll();
                 grid.getDataProvider().refreshAll();
                 createDialog.close();
 
             } catch (Exception ex) {
-                System.out.println("Erro ao criar pedido: " + ex.getMessage());
+                System.out.println("Error creating order: " + ex.getMessage());
                 ex.printStackTrace();
-                Notification.show("Erro ao criar pedido: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+                Notification.show("Error creating order: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
             }
         });
 
-        Button cancelButton = new Button("Cancelar", e -> createDialog.close());
+        Button cancelButton = new Button("Cancel", e -> createDialog.close());
 
         HorizontalLayout addItemLayout = new HorizontalLayout(productComboBox, quantityField, priceField,
                 addItemButton);
@@ -563,7 +561,7 @@ public class OrderView extends VerticalLayout {
                 sellerComboBox,
                 shippingComboBox,
                 descriptionField,
-                new com.vaadin.flow.component.html.H4("Itens do Pedido"),
+                new com.vaadin.flow.component.html.H4("Order items"),
                 addItemLayout,
                 itemsGrid,
                 new HorizontalLayout(saveButton, cancelButton));
@@ -583,7 +581,7 @@ public class OrderView extends VerticalLayout {
                     String productName = item.getProduct().getName();
                     return productName.length() > 25 ? productName.substring(0, 22) + "..." : productName;
                 })
-                .setHeader("Produto")
+                .setHeader("Products")
                 .setWidth("130px")
                 .setFlexGrow(0);
 
@@ -598,7 +596,7 @@ public class OrderView extends VerticalLayout {
                 .setFlexGrow(1);
 
         grid.addColumn(item -> "R$ " + String.format("%.2f", item.getPrice()))
-                .setHeader("Preço Unit.")
+                .setHeader("Unit price.")
                 .setWidth("120px")
                 .setFlexGrow(0);
 
@@ -617,24 +615,23 @@ public class OrderView extends VerticalLayout {
                     removeButton.addClickListener(e -> {
                         items.remove(item);
                         grid.getDataProvider().refreshAll();
-                        Notification.show("Item removido", 2000, Notification.Position.MIDDLE);
+                        Notification.show("Removed items.", 2000, Notification.Position.MIDDLE);
                     });
 
                     Button editButton = new Button(new Icon(VaadinIcon.EDIT));
                     editButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
                     editButton.addClickListener(e -> {
                         editItem(item);
-                        editButton.getElement().setAttribute("title", "Editar item");
+                        editButton.getElement().setAttribute("title", "Edit item");
                     });
 
                     actions.add(editButton, removeButton);
                     return actions;
                 })
-                .setHeader("Ações")
+                .setHeader("Actions")
                 .setWidth("120px")
                 .setFlexGrow(0);
     }
-
 
     private void setupSellerComboBox(ComboBox<Employee> sellerComboBox) {
         sellerComboBox.setItemLabelGenerator(Employee::getFullName);
@@ -646,7 +643,7 @@ public class OrderView extends VerticalLayout {
                 .collect(Collectors.toList());
 
         sellerComboBox.setItems(sellers);
-        sellerComboBox.setPlaceholder("Selecione um vendedor");
+        sellerComboBox.setPlaceholder("Select a seller");
     }
 
     private CreateOrderDTO buildCreateOrderDTO(Employee seller, ShippingProvider shippingProvider,
@@ -673,10 +670,10 @@ public class OrderView extends VerticalLayout {
         grid.setItems(items);
         grid.setHeight("200px");
 
-        grid.addColumn(item -> item.getProduct().getName()).setHeader("Produto").setAutoWidth(true);
+        grid.addColumn(item -> item.getProduct().getName()).setHeader("Product").setAutoWidth(true);
         grid.addColumn(item -> item.getProduct().getSku()).setHeader("SKU").setAutoWidth(true);
-        grid.addColumn(OrderItemRow::getQuantity).setHeader("Quantidade").setAutoWidth(true);
-        grid.addColumn(item -> "R$ " + String.format("%.2f", item.getPrice())).setHeader("Preço Unit.")
+        grid.addColumn(OrderItemRow::getQuantity).setHeader("Quantity").setAutoWidth(true);
+        grid.addColumn(item -> "R$ " + String.format("%.2f", item.getPrice())).setHeader("Unit Price")
                 .setAutoWidth(true);
         grid.addColumn(
                         item -> "R$ " + String.format("%.2f", item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
@@ -688,17 +685,17 @@ public class OrderView extends VerticalLayout {
             removeButton.addClickListener(e -> {
                 items.remove(item);
                 grid.getDataProvider().refreshAll();
-                Notification.show("Item removido", 2000, Notification.Position.MIDDLE);
+                Notification.show("Item removed", 2000, Notification.Position.MIDDLE);
             });
             return removeButton;
-        }).setHeader("Ações").setAutoWidth(true);
+        }).setHeader("Actions").setAutoWidth(true);
     }
 
     private void setupShippingComboBox(ComboBox<ShippingProvider> shippingComboBox) {
         shippingComboBox.setItemLabelGenerator(provider -> provider.getName());
         shippingComboBox.setAllowCustomValue(false);
         shippingComboBox.setWidthFull();
-        shippingComboBox.setPlaceholder("Selecione uma transportadora");
+        shippingComboBox.setPlaceholder("Select a shipping provider");
 
         List<ShippingProvider> providers = shippingProviderService.listAllShippingProviders();
         shippingComboBox.setItems(providers);
@@ -707,7 +704,7 @@ public class OrderView extends VerticalLayout {
     private void setupProductComboBox(ComboBox<Product> productComboBox) {
         productComboBox.setItemLabelGenerator(product -> product.getName() + " (" + product.getSku() + ")");
         productComboBox.setAllowCustomValue(false);
-        productComboBox.setPlaceholder("Selecione um produto");
+        productComboBox.setPlaceholder("Select a product");
 
         List<Product> products = productService.findAllProducts();
         productComboBox.setItems(products);
@@ -740,9 +737,9 @@ public class OrderView extends VerticalLayout {
 
     private void showOrderDetails(Order order) {
         Dialog detailsDialog = new Dialog();
-        detailsDialog.setHeaderTitle("Detalhes do Pedido");
+        detailsDialog.setHeaderTitle("Order Details");
         detailsDialog.setWidth("600px");
-        detailsDialog.setHeight("550px"); // Aumentado para acomodar o total
+        detailsDialog.setHeight("550px");
 
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.setPadding(true);
@@ -751,7 +748,7 @@ public class OrderView extends VerticalLayout {
         FormLayout orderInfoLayout = new FormLayout();
         orderInfoLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2));
 
-        TextField idField = new TextField("ID do Pedido");
+        TextField idField = new TextField("Order ID");
         idField.setValue(order.getId().toString());
         idField.setReadOnly(true);
 
@@ -759,11 +756,11 @@ public class OrderView extends VerticalLayout {
         statusField.setValue(order.getOrderStatus().toString());
         statusField.setReadOnly(true);
 
-        TextField createdAtField = new TextField("Criado em");
+        TextField createdAtField = new TextField("Created At");
         createdAtField.setValue(order.getCreatedAt() != null ? order.getCreatedAt().toString() : "N/A");
         createdAtField.setReadOnly(true);
 
-        TextField customerField = new TextField("Vendedor");
+        TextField customerField = new TextField("Seller");
         customerField.setValue(order.getSeller() != null ? order.getSeller().getFullName() : "N/A");
         customerField.setReadOnly(true);
 
@@ -771,11 +768,11 @@ public class OrderView extends VerticalLayout {
 
         Grid<OrderItem> itemsGrid = new Grid<>(OrderItem.class, false);
         itemsGrid.addColumn(item -> item.getProduct() != null ? item.getProduct().getName() : "N/A")
-                .setHeader("Produto").setAutoWidth(true);
-        itemsGrid.addColumn(OrderItem::getQuantity).setHeader("Quantidade").setAutoWidth(true);
+                .setHeader("Product").setAutoWidth(true);
+        itemsGrid.addColumn(OrderItem::getQuantity).setHeader("Quantity").setAutoWidth(true);
         itemsGrid
                 .addColumn(item -> item.getPrice() != null ? "R$ " + String.format("%.2f", item.getPrice()) : "R$ 0,00")
-                .setHeader("Preço Unitário").setAutoWidth(true);
+                .setHeader("Unit Price").setAutoWidth(true);
         itemsGrid.addColumn(item -> {
             if (item.getPrice() != null) {
                 BigDecimal total = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
@@ -801,7 +798,7 @@ public class OrderView extends VerticalLayout {
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         buttonLayout.setWidthFull();
 
-        Button editButton = new Button("Editar", new Icon(VaadinIcon.EDIT));
+        Button editButton = new Button("Edit", new Icon(VaadinIcon.EDIT));
 
         boolean canEdit = order.getOrderStatus() != OrderStatus.CANCELLED &&
                 order.getOrderStatus() != OrderStatus.INVOICED;
@@ -813,22 +810,22 @@ public class OrderView extends VerticalLayout {
             });
         } else {
             editButton.setEnabled(false);
-            String statusText = order.getOrderStatus() == OrderStatus.CANCELLED ? "cancelado" : "faturado";
+            String statusText = order.getOrderStatus() == OrderStatus.CANCELLED ? "cancelled" : "invoiced";
             editButton.addClickListener(e -> {
-                Notification.show("⚠️ Este pedido não pode ser editado pois foi " + statusText + ".",
+                Notification.show("⚠️ This order cannot be edited as it has been " + statusText + ".",
                         4000, Notification.Position.MIDDLE);
             });
         }
 
-        Button closeButton = new Button("Fechar");
+        Button closeButton = new Button("Close");
         closeButton.addClickListener(e -> detailsDialog.close());
 
         buttonLayout.add(editButton, closeButton);
 
         mainLayout.add(
-                new com.vaadin.flow.component.html.H4("Informações do Pedido"),
+                new com.vaadin.flow.component.html.H4("Order Information"),
                 orderInfoLayout,
-                new com.vaadin.flow.component.html.H4("Itens"),
+                new com.vaadin.flow.component.html.H4("Items"),
                 itemsGrid,
                 buttonLayout);
 
@@ -844,20 +841,20 @@ public class OrderView extends VerticalLayout {
         orderItems.remove(item);
         itemsGrid.getDataProvider().refreshAll();
 
-        Notification.show("Item carregado para edição. Modifique e clique em 'Adicionar Item' para atualizar.",
+        Notification.show("Item loaded for editing. Modify and click 'Add Item' to update.",
                 3000, Notification.Position.MIDDLE);
     }
 
     private void initializeFormComponents() {
-        productComboBox = new ComboBox<>("Produto");
+        productComboBox = new ComboBox<>("Product");
         setupProductComboBox(productComboBox);
 
-        quantityField = new IntegerField("Quantidade");
+        quantityField = new IntegerField("Quantity");
         quantityField.setValue(1);
         quantityField.setMin(1);
         quantityField.setStepButtonsVisible(true);
 
-        priceField = new NumberField("Preço");
+        priceField = new NumberField("Price");
         priceField.setPrefixComponent(new Span("R$"));
         priceField.setStepButtonsVisible(false);
         priceField.setValue(1.0);
