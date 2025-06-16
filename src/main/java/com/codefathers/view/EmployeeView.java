@@ -94,7 +94,7 @@ public class EmployeeView extends VerticalLayout {
         HorizontalLayout headerLayout = new HorizontalLayout(leftLayout, rightLayout);
         headerLayout.setAlignItems(Alignment.CENTER);
         headerLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
-        headerLayout.setWidth("80%");
+        headerLayout.setWidth("90%");
 
         add(headerLayout, grid);
         setupLazyDataProvider();
@@ -233,8 +233,8 @@ public class EmployeeView extends VerticalLayout {
 
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
-        grid.setPageSize(20);
-        grid.setWidth("80%");
+        grid.setAllRowsVisible(true);
+        grid.setWidth("90%");
     }
 
     private void setupCreateDialog() {

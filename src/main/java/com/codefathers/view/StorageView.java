@@ -69,8 +69,9 @@ public class StorageView extends VerticalLayout {
         grid.addColumn(s -> s.getProduct().getName()).setHeader("Product Name").setAutoWidth(true);
         grid.addColumn(Storage::getProductQuantity).setHeader("Quantity").setAutoWidth(true);
 
-        grid.setHeight("400px");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
+        grid.setAllRowsVisible(true);
+        grid.setWidth("90%");
     }
 
     private void refreshGrid() {

@@ -82,7 +82,7 @@ public class PurchaseOrderView extends VerticalLayout {
         topLayout.setWidthFull();
         topLayout.setAlignItems(Alignment.END);
 
-        searchField.setWidth("300px");
+        searchField.setWidth("400px");
         topLayout.add(openDialogButton, searchField);
 
         add(topLayout, grid, orderDialog, editDialog);
@@ -97,13 +97,14 @@ public class PurchaseOrderView extends VerticalLayout {
         grid.addColumn(po -> po.getPurchaseTotalPriceAmount()).setHeader("Total Price Amount").setSortable(true);
         grid.addColumn(po -> po.getCreatedAt().toString()).setHeader("Created At").setSortable(true);
         grid.addColumn(po -> po.getPurchaseOrderStatus().toString()).setHeader("Status").setSortable(true);
-        grid.setHeight("400px");
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
 
         grid.addItemDoubleClickListener(event -> {
             PurchaseOrder selectedOrder = event.getItem();
             showOrderDetails(selectedOrder);
         });
+        grid.setAllRowsVisible(true);
+        grid.setWidth("90%");
     }
 
     private void setupSearchField() {
