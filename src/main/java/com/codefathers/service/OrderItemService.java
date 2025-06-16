@@ -44,4 +44,8 @@ public class OrderItemService {
         orderItemRepository.update(orderItem);
     }
 
+    public Optional<List<OrderItem>> findByProductSku(String productSku) {
+        return orderItemRepository.findByProductSku(productSku);
+    }
+
 }
