@@ -1,14 +1,19 @@
 package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.Employee;
+import com.codefathers.model.enums.EmployeeRole;
+import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.util.HibernateUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override
