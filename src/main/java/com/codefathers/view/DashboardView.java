@@ -3,10 +3,11 @@ package com.codefathers.view;
 import com.codefathers.factory.ServiceFactory;
 import com.codefathers.model.entity.SystemUser;
 import com.codefathers.service.AuthService;
-import com.github.appreciated.apexcharts.ApexCharts;
+import com.codefathers.service.DashboardService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI; // Import UI
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
@@ -38,28 +39,30 @@ import com.github.appreciated.apexcharts.config.yaxis.builder.TitleBuilder;
 // ApexCharts Theming Imports
 import com.github.appreciated.apexcharts.config.builder.ThemeBuilder;
 import com.github.appreciated.apexcharts.config.theme.Mode;
-// import com.github.appreciated.apexcharts.config.theme.Palette; // Removed unused import for Palette
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Route("")
-@PageTitle("Dashboard | Sistema de Gestão")
+@PageTitle("Dashboard | Don Pharma")
 public class DashboardView extends FlexLayout {
 
-    private AuthService authService = ServiceFactory.getAuthService();
+    private final AuthService authService = ServiceFactory.getAuthService();
+    private final DashboardService dashboardService = ServiceFactory.getDashboardService();
+
+    private LocalDate startDay = LocalDate.of(2024, 6, 1);
+    private LocalDate endDay = LocalDate.of(2024, 6, 30);
 
     public DashboardView() {
         setSizeFull();
         setFlexDirection(FlexDirection.COLUMN);
         addClassName("dashboard-view");
-
-        // The initial theme is set by MainLayout.
-        // We ensure that the 'theme' attribute is not locally set here,
-        // it's controlled by the global 'html' element.
-
         // Header
         add(createHeader());
 
@@ -68,15 +71,18 @@ public class DashboardView extends FlexLayout {
 
         // Charts Section
         FlexLayout chartContainer = new FlexLayout();
-        chartContainer.setSizeFull();
-        chartContainer.setAlignItems(Alignment.CENTER);
-        chartContainer.setFlexDirection(FlexDirection.COLUMN);
-        chartContainer.add(createMainChartsSection(), createWrapChartsSection());
-
+            chartContainer.setSizeFull();
+            chartContainer.setAlignItems(Alignment.CENTER);
+            chartContainer.setFlexDirection(FlexDirection.COLUMN);
+            chartContainer.add(createMainChartsSection(), createWrapChartsSection());
         add(chartContainer);
 
         // Tables Section
         // add(createTablesSection());
+    }
+
+    private void datePickerListener() {
+
     }
 
     private Component createHeader() {
@@ -105,8 +111,8 @@ public class DashboardView extends FlexLayout {
         var subtitle = new Span("Business Key Performance Indicators");
         subtitle.addClassNames(LumoUtility.TextColor.SECONDARY);
 
-        var startDate = new DatePicker("Start date");
-        var endDate = new DatePicker("End date");
+        var startDate = new DatePicker("Start date", LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()));
+        var endDate = new DatePicker("End date", LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()));
         startDate
                 .addValueChangeListener(e -> endDate.setMin(e.getValue()));
         endDate.addValueChangeListener(
@@ -196,7 +202,7 @@ public class DashboardView extends FlexLayout {
     }
 
     private Component createWrapChartsSection() {
-        FlexLayout horizontalWrapChartsLayout = new FlexLayout();
+        var horizontalWrapChartsLayout = new FlexLayout();
 
         horizontalWrapChartsLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
 
@@ -215,6 +221,7 @@ public class DashboardView extends FlexLayout {
     /**
      * Helper to configure ApexCharts for Lumo theme integration, especially dark mode.
      * This will set the chart's internal theme mode and try to use Lumo CSS variables for colors.
+     *
      * @param builder The ApexChartsBuilder instance.
      */
     private void configureChartForLumoTheme(ApexChartsBuilder builder, boolean isDarkMode) {
@@ -231,54 +238,40 @@ public class DashboardView extends FlexLayout {
 
     /**
      * Creates an ApexCharts Line Chart for sales summary.
+     *
      * @return An ApexCharts component displaying sales trend.
      */
-
     private Component createSalesSummaryChart() {
+        // A more concise and safe way to check the theme
+        boolean isDarkTheme = Lumo.DARK.equals(UI.getCurrent().getElement().getAttribute("theme"));
 
-        boolean isDarkTheme = UI.getCurrent().getElement().getAttribute("theme") != null &&
-                UI.getCurrent().getElement().getAttribute("theme").equals(Lumo.DARK);
+        DashboardService.TimeSeriesData chartData = dashboardService.getSalesChartData(startDay, endDay);
 
-        ApexChartsBuilder chartBuilder = ApexChartsBuilder.get();
-
-        chartBuilder.withChart(
-                ChartBuilder.get()
+        ApexChartsBuilder chartBuilder = ApexChartsBuilder.get()
+                .withChart(ChartBuilder.get()
                         .withType(Type.LINE)
                         .withHeight("350px")
-                        .build()
-        );
-
-        chartBuilder.withTitle(
-                TitleSubtitleBuilder.get()
-                        .withText("Vendas dos Últimos 30 Dias")
-                        .build()
-        );
-
-        chartBuilder.withSeries(
-                new Series<>("Sales", 25000.0, 28000.0, 32000.0, 29000.0, 35000.0, 38000.0, 45000.0)
-        );
-
-        chartBuilder.withXaxis(
-                XAxisBuilder.get()
-                        .withCategories("Day 1", "Day 5", "Day 10", "Day 15", "Day 20", "Day 25", "Day 30")
-                        .build()
-        );
-
-        chartBuilder.withYaxis(
-                YAxisBuilder.get()
+                        .build())
+                .withTitle(TitleSubtitleBuilder.get()
+                        .withText("Sales summary")
+                        .build())
+                .withSeries(new Series<>("Sales", chartData.data().toArray(new BigDecimal[0]))) // Use data from DTO
+                .withXaxis(XAxisBuilder.get()
+                        .withCategories(chartData.categories()) // Use categories from DTO
+                        .build())
+                .withYaxis(YAxisBuilder.get()
                         .withTitle(TitleBuilder.get().withText("Amount (R$)").build())
-                        .build()
-        );
+                        .build());
 
+
+        // 3. Apply theme and wrap
         configureChartForLumoTheme(chartBuilder, isDarkTheme);
-
-        ApexCharts apexChart = chartBuilder.build();
-
-        return wrapChartInContainer(apexChart);
+        return wrapChartInContainer(chartBuilder.build());
     }
 
     /**
      * Creates an ApexCharts Donut Chart for order status.
+     *
      * @return An ApexCharts component displaying order status distribution.
      */
     private Component createOrderStatusChart() {
@@ -317,6 +310,7 @@ public class DashboardView extends FlexLayout {
 
     /**
      * Creates an ApexCharts Bar Chart for top products sold.
+     *
      * @return An ApexCharts component displaying top 5 products.
      */
     private Component createTopProductsChart() {
@@ -366,6 +360,7 @@ public class DashboardView extends FlexLayout {
 
     /**
      * Creates an ApexCharts Bar Chart for employee performance.
+     *
      * @return An ApexCharts component displaying employee sales performance.
      */
     private Component createEmployeePerformanceChart() {
@@ -377,7 +372,7 @@ public class DashboardView extends FlexLayout {
         chartBuilder.withChart(
                 ChartBuilder.get()
                         .withType(Type.BAR)
-                         .withHeight("300px") // Removed fixed height
+                        .withHeight("300px") // Removed fixed height
                         .build()
         );
 
@@ -441,6 +436,7 @@ public class DashboardView extends FlexLayout {
     /**
      * Creates a section containing tables, replacing the commercial 'Board' with a FlexLayout.
      * Uses Vaadin Grid for tabular data display.
+     *
      * @return A component representing the Tables section.
      */
     private Component createTablesSection() {
@@ -458,6 +454,7 @@ public class DashboardView extends FlexLayout {
 
     /**
      * Creates a table for recent orders using Vaadin Grid.
+     *
      * @return A component displaying recent orders table.
      */
     private Component createRecentOrdersTable() {
@@ -499,7 +496,9 @@ public class DashboardView extends FlexLayout {
         return container;
     }
 
-    /** Helper to create order data for the Grid */
+    /**
+     * Helper to create order data for the Grid
+     */
     private Map<String, String> createOrderData(String id, String client, String value, String status) {
         Map<String, String> data = new HashMap<>();
         data.put("id", id);
@@ -511,6 +510,7 @@ public class DashboardView extends FlexLayout {
 
     /**
      * Creates a table for low stock products using Vaadin Grid.
+     *
      * @return A component displaying low stock products table.
      */
     private Component createLowStockTable() {
@@ -551,7 +551,9 @@ public class DashboardView extends FlexLayout {
         return container;
     }
 
-    /** Helper to create product data for the Grid */
+    /**
+     * Helper to create product data for the Grid
+     */
     private Map<String, String> createProductData(String product, String sku, String stock, String min) {
         Map<String, String> data = new HashMap<>();
         data.put("product", product);
@@ -563,6 +565,7 @@ public class DashboardView extends FlexLayout {
 
     /**
      * Creates a table for shipping status using Vaadin Grid.
+     *
      * @return A component displaying shipping status table.
      */
     private Component createShippingStatusTable() {
@@ -602,7 +605,9 @@ public class DashboardView extends FlexLayout {
         return container;
     }
 
-    /** Helper to create shipping data for the Grid */
+    /**
+     * Helper to create shipping data for the Grid
+     */
     private Map<String, String> createShippingData(String carrier, String deliveries, String avgTime, String status) {
         Map<String, String> data = new HashMap<>();
         data.put("carrier", carrier);

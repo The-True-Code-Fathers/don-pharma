@@ -3,6 +3,7 @@ package com.codefathers.model.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +19,7 @@ public class ShippingArea {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "shipping_provider_id")
+    @JsonBackReference
     private ShippingProvider shippingProvider;
 
     @Column(columnDefinition = "text")

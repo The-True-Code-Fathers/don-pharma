@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,6 +35,8 @@ public class ShippingProvider {
     private int averageDeliveryDays;
 
     @OneToMany(mappedBy = "shippingProvider", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude // Prevent recursive calls when doing something with parent entity
+    @JsonBackReference
     private List<ShippingArea> shippingAreas;
     
     @Column(name = "active", nullable = false)
