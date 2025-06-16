@@ -70,7 +70,8 @@ public class PurchaseOrderService {
             return purchaseOrderItem;
         }).toList();
 
-        BigDecimal purchaseProductsPrice = purchaseOrderItems.stream().map(PurchaseOrderItem::getPrice)
+        BigDecimal purchaseProductsPrice = purchaseOrderItems.stream()
+                .map(purchaseOrderItem -> purchaseOrderItem.getPrice().multiply(BigDecimal.valueOf(purchaseOrderItem.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         int purchaseProductsQuantity = purchaseOrderItems.stream()
