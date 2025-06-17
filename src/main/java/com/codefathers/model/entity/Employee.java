@@ -45,14 +45,4 @@ public class Employee {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    public Employee(String fullName, LocalDate birthDate, EmployeeGender gender, EmployeeRole role, boolean active) {
-        this.fullName = fullName;
-        this.birthDate = birthDate;
-        this.gender = gender;
-        this.role = role;
-        this.active = active;
-    }
-
-
-
 }

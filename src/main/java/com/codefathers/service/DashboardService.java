@@ -24,10 +24,14 @@ public class DashboardService {
 
     private final OrderService orderService;
     private final ProductService productService;
+    private final FinancialService financialService;
 
-    public DashboardService(OrderService orderService, ProductService productService) {
+    public DashboardService(OrderService orderService,
+                            ProductService productService,
+                            FinancialService financialService) {
         this.orderService = orderService;
         this.productService = productService;
+        this.financialService = financialService;
     }
 
     /**
@@ -102,5 +106,10 @@ public class DashboardService {
         log.debug("Order Status: {}", JsonUtil.toPrettyJson(categories));
 
         return new SeriesData(categories, data);
+    }
+
+    public SeriesData getSellersPerformanceChartData(LocalDate from, LocalDate to) {
+        financialService.getTopPerformingSellers(from, to, 5);
+        return new SeriesData(new ArrayList<>(), new ArrayList<>());
     }
 }

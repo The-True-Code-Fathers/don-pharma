@@ -1,7 +1,9 @@
 package com.codefathers.repository.implementations;
 
+import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.OrderItem;
+import com.codefathers.model.enums.EmployeeRole;
 import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.util.HibernateUtil;
@@ -142,6 +144,27 @@ public class OrderRepositoryImpl implements OrderRepository {
             return query.getResultList();
         } catch (Exception e) {
             log.error("Error finding orders with status {} between {} and {}", status, start, end, e);
+            return Collections.emptyList();
+        }
+    }
+    @Override
+    public List<Employee> findSellersRankedByOrderStatus(LocalDate from, LocalDate to, OrderStatus status, int limit) {
+        String hql = "SELECT o.seller FROM orders o " +
+                "WHERE o.orderStatus = :status AND o.seller.role = :role " +
+                "AND o.createdAt between :startDate and :endDate" +
+                "GROUP BY o.seller " +
+                "ORDER BY COUNT(o) DESC";
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(hql, Employee.class)
+                    .setParameter("status", status)
+                    .setParameter("role", EmployeeRole.SALES)
+                    .setParameter("startDate", from.atStartOfDay())
+                    .setParameter("endDate", to.plusDays(1 + 1).atStartOfDay())
+                    .setMaxResults(limit)
+                    .getResultList();
+        } catch (Exception e) {
+            log.error("Error finding sellers ranked by order status", e);
             return Collections.emptyList();
         }
     }

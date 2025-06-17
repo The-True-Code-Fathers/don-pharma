@@ -1,14 +1,19 @@
 package com.codefathers.repository.implementations;
 
 import com.codefathers.model.entity.Employee;
+import com.codefathers.model.enums.EmployeeRole;
+import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.interfaces.EmployeeRepository;
 import com.codefathers.util.HibernateUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override
@@ -68,6 +73,24 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+    @Override
+    public List<Employee> findEmployeesRankedByOrderStatus(OrderStatus status, int limit) {
+        String hql = "SELECT o.seller FROM orders o " +
+                "WHERE o.orderStatus = :status AND o.seller.role = :role " +
+                "GROUP BY o.seller " +
+                "ORDER BY COUNT(o) DESC";
+
+        try (var session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(hql, Employee.class)
+                    .setParameter("status", status)
+                    .setParameter("role", EmployeeRole.SALES)
+                    .setMaxResults(limit)
+                    .getResultList();
+        } catch (Exception e) {
+            log.error("Error finding employees ranked by order status and role", e);
+            return Collections.emptyList();
         }
     }
 
