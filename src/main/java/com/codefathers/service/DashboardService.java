@@ -1,8 +1,10 @@
 package com.codefathers.service;
 
+import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Order;
 import com.codefathers.model.enums.OrderStatus;
 import com.codefathers.repository.dto.MostSoldProductDTO;
+import com.codefathers.util.GoalUtil;
 import com.codefathers.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -110,6 +112,18 @@ public class DashboardService {
 
     public SeriesData getSellersPerformanceChartData(LocalDate from, LocalDate to) {
         financialService.getTopPerformingSellers(from, to, 5);
-        return new SeriesData(new ArrayList<>(), new ArrayList<>());
+
+        Map<Employee, Double> topPerformerData = financialService.getTopPerformingSellers(from, to, 5);
+
+        List<String> sellerNames = new ArrayList<>();
+        List<Double> goalPerformance = new ArrayList<>();
+
+        topPerformerData.forEach(((employee, totalSales) -> {
+            sellerNames.add(employee.getFullName());
+            double percentage = (GoalUtil.getMonthlyGoalAmount() == 0) ?  0 : (totalSales / GoalUtil.getMonthlyGoalAmount());
+            goalPerformance.add(percentage);
+        }));
+
+        return new SeriesData(sellerNames, goalPerformance.stream().map(BigDecimal::valueOf).toList());
     }
 }

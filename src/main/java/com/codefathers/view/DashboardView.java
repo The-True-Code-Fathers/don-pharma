@@ -408,14 +408,16 @@ public class DashboardView extends FlexLayout {
                         .build()
         );
 
+        DashboardService.SeriesData data = dashboardService.getSellersPerformanceChartData(startDay, endDay);
+
         // Dummy data for employee performance
         chartBuilder.withSeries(
-                new Series<>("Sales (Goal %)", 80, 70, 60, 65, 75)
+                new Series<>("Sales (Goal %)", data.data().toArray(new BigDecimal[0]))
         );
 
         chartBuilder.withXaxis(
                 XAxisBuilder.get()
-                        .withCategories("João Silva", "Maria Santos", "Pedro Oliveira", "Ana Costa", "Carlos Lima")
+                        .withCategories(data.categories())
                         .build()
         );
 
