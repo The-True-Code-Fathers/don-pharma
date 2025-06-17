@@ -106,6 +106,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         var productLink = new SideNavItem("Products", ProductsView.class, VaadinIcon.STOCK.create());
         var orderLink = new SideNavItem("Sales Order", OrderView.class, VaadinIcon.CLIPBOARD.create());
         var shippingLink = new SideNavItem("Shipping");
+        var goalLink = new SideNavItem("Goals");
 
         shippingLink.setPrefixComponent(VaadinIcon.TRUCK.create());
         shippingLink.addItem(new SideNavItem("Shipping Area", ShippingAreaView.class,
@@ -124,6 +125,8 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
                 PurchaseOrderView.class, VaadinIcon.CART.create());
 
         var paymentLink = new SideNavItem("Payment", PaymentView.class, VaadinIcon.CASH.create());
+
+        goalLink = new SideNavItem("Goals", GoalsView.class, VaadinIcon.ANGLE_DOUBLE_UP.create());
         
         sideNav.addItem(
                 dashboardLink,
@@ -133,7 +136,8 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
                 paymentLink,
                 orderLink,
                 purchaseOrderLink,
-                storageLink
+                storageLink,
+                goalLink
         );
 
         Scroller scroller = new Scroller(sideNav);

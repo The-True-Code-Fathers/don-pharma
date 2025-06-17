@@ -55,6 +55,7 @@ public class ProductsView extends VerticalLayout {
     private OrderItemService orderItemService;
     private PurchaseOrderItemService purchaseOrderItemService;
     private PurchaseOrderService purchaseOrderService;
+
     private TextField createSku = new TextField("SKU", "A123");
     private TextField createName = new TextField("Name");
     private TextArea createDescription = new TextArea("Description", "Optional");
