@@ -59,7 +59,6 @@ public class OrderService {
                 .seller(employee)
                 .description(createOrderDTO.getDescription())
                 .productsPrice(BigDecimal.ZERO)
-                .totalAmount(BigDecimal.ZERO)
                 .orderStatus(OrderStatus.OPEN)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -88,11 +87,7 @@ public class OrderService {
                 .map(orderItem -> orderItem.getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal shippingPrice = productsPrice.multiply(new BigDecimal("0.05"));
-        BigDecimal totalPrice = productsPrice.add(shippingPrice);
-
         order.setProductsPrice(productsPrice);
-        order.setTotalAmount(totalPrice);
         order.setItems(orderItems);
 
         orderRepository.save(order);

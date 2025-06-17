@@ -11,7 +11,6 @@ import com.codefathers.model.entity.Product;
 import com.codefathers.repository.dto.MostSoldProductDTO;
 import com.codefathers.repository.interfaces.ProductRepository;
 
-import com.codefathers.util.JsonUtil;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;

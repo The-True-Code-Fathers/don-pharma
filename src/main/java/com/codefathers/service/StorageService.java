@@ -3,7 +3,6 @@ package com.codefathers.service;
 import java.util.List;
 import java.util.Optional;
 
-import com.codefathers.model.dto.CreateStorageDTO;
 import com.codefathers.model.entity.Product;
 import com.codefathers.model.entity.Storage;
 import com.codefathers.repository.interfaces.ProductRepository;
