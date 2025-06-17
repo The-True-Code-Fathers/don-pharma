@@ -1,5 +1,10 @@
 package com.codefathers.view;
 
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
+
 import com.codefathers.model.dto.CreateEmployeeDTO;
 import com.codefathers.model.dto.UpdateEmployeeDTO;
 import com.codefathers.model.entity.Employee;
@@ -9,6 +14,7 @@ import com.codefathers.repository.implementations.EmployeeRepositoryImpl;
 import com.codefathers.service.EmployeeService;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -23,13 +29,11 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.QuerySortOrder; // <<< IMPORT CORRETO ADICIONADO
+import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-
-import java.time.LocalDateTime; // Import necessário
-import java.time.format.DateTimeFormatter; // Import necessário
-import java.util.List;
 
 @PageTitle("Employee | Gestão de funcionários")
 @Route("employee")
@@ -37,16 +41,19 @@ public class EmployeeView extends VerticalLayout {
     private EmployeeService employeeService;
     private Employee currentEmployee;
 
+    // Componentes para o diálogo de criação
     private TextField createfullname = new TextField("Full Name");
     private DatePicker createBirthDate = new DatePicker("Birth Date");
     private ComboBox<EmployeeGender> createGender = new ComboBox<>("Gender");
     private ComboBox<EmployeeRole> createRole = new ComboBox<>("Role");
-    
+
+    // Componentes para o diálogo de atualização
     private TextField updatefullname = new TextField("Full Name");
     private DatePicker updateBirthDate = new DatePicker("Birth Date");
     private ComboBox<EmployeeGender> updateGender = new ComboBox<>("Gender");
     private ComboBox<EmployeeRole> updateRole = new ComboBox<>("Role");
 
+    // Botões
     private Button createEmployeeButton = new Button("Create Employee");
     private Button createSaveButton = new Button("Save");
     private Button createClearButton = new Button("Clear");
@@ -57,6 +64,7 @@ public class EmployeeView extends VerticalLayout {
     private Button updateCloseButton = new Button("Close");
     private Button setInactiveButton = new Button("Inactivate Employee");
 
+    // Grid e Diálogos
     private Grid<Employee> grid = new Grid<>(Employee.class, false);
     private Dialog createDialog = new Dialog();
     private Dialog updateDialog = new Dialog();
@@ -64,16 +72,15 @@ public class EmployeeView extends VerticalLayout {
     private GridLazyDataView<Employee> dataView;
     private Grid.Column<Employee> statusColumn;
 
+    // Utilitários e estado
     private String currentSearchTerm = "";
-    private com.vaadin.flow.component.checkbox.Checkbox showInactiveCheckbox =
-            new com.vaadin.flow.component.checkbox.Checkbox("Show inactive employees");
-
+    private Checkbox showInactiveCheckbox = new Checkbox("Show inactive employees");
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public EmployeeView() {
         var employeeRepository = new EmployeeRepositoryImpl();
         this.employeeService = new EmployeeService(employeeRepository, ValidatorUtil.getValidator());
-        
+
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -88,7 +95,7 @@ public class EmployeeView extends VerticalLayout {
         HorizontalLayout leftLayout = new HorizontalLayout(createEmployeeButton, searchField);
         leftLayout.setAlignItems(Alignment.CENTER);
         leftLayout.setSpacing(true);
-        
+
         HorizontalLayout rightLayout = new HorizontalLayout(showInactiveCheckbox);
         rightLayout.setAlignItems(Alignment.CENTER);
 
@@ -173,27 +180,32 @@ public class EmployeeView extends VerticalLayout {
         searchField.setClearButtonVisible(true);
 
         searchField.addValueChangeListener(e -> {
-            currentSearchTerm = e.getValue().trim();
+            currentSearchTerm = e.getValue() != null ? e.getValue().trim() : "";
             dataView.refreshAll();
         });
     }
 
+    // =================================================================================
+    // MÉTODO CORRIGIDO
+    // =================================================================================
     private void setupLazyDataProvider() {
         CallbackDataProvider<Employee, Void> dataProvider = DataProvider.fromCallbacks(
                 query -> {
                     List<Employee> allEmployees = employeeService.employeeList();
-                    return allEmployees.stream()
-                            .filter(this::matchesCurrentFilters)
-                            .skip(query.getOffset())
-                            .limit(query.getLimit());
+                    Stream<Employee> stream = allEmployees.stream().filter(this::matchesCurrentFilters);
+
+                    // Lógica de Ordenação corrigida para usar QuerySortOrder
+                    if (!query.getSortOrders().isEmpty()) {
+                        QuerySortOrder sortOrder = query.getSortOrders().get(0);
+                        stream = stream.sorted(getComparator(sortOrder));
+                    }
+
+                    return stream.skip(query.getOffset()).limit(query.getLimit());
                 },
                 query -> {
                     List<Employee> allEmployees = employeeService.employeeList();
-                    return (int) allEmployees.stream()
-                            .filter(this::matchesCurrentFilters)
-                            .count();
-                }
-        );
+                    return (int) allEmployees.stream().filter(this::matchesCurrentFilters).count();
+                });
         dataView = grid.setItems(dataProvider);
         showInactiveCheckbox.addValueChangeListener(e -> {
             statusColumn.setVisible(e.getValue());
@@ -201,18 +213,40 @@ public class EmployeeView extends VerticalLayout {
         });
     }
 
-    private void setupGrid() {
-        grid.addColumn(Employee::getFullName).setHeader("Full Name").setFlexGrow(2);
-        grid.addColumn(Employee::getBirthDate).setHeader("Birth Date").setFlexGrow(1);
-        grid.addColumn(employee -> employee.getGender().getLabel()).setHeader("Gender").setFlexGrow(1);
-        grid.addColumn(employee -> employee.getRole().getLabel()).setHeader("Role").setFlexGrow(1);
+    // =================================================================================
+    // MÉTODO AUXILIAR CORRIGIDO
+    // =================================================================================
+    private Comparator<Employee> getComparator(QuerySortOrder sortOrder) {
+        // Usa sortOrder.getSorted() que retorna a String (a chave da coluna) diretamente
+        Comparator<Employee> comparator = switch (sortOrder.getSorted()) {
+            case "id" -> Comparator.comparing(Employee::getId);
+            case "fullName" -> Comparator.comparing(Employee::getFullName);
+            case "birthDate" -> Comparator.comparing(Employee::getBirthDate);
+            case "gender" -> Comparator.comparing(e -> e.getGender().getLabel());
+            case "role" -> Comparator.comparing(e -> e.getRole().getLabel());
+            case "createdAt" -> Comparator.comparing(Employee::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "status" -> Comparator.comparing(Employee::isActive);
+            default -> (e1, e2) -> 0;
+        };
 
+        if (sortOrder.getDirection() == SortDirection.DESCENDING) {
+            return comparator.reversed();
+        }
+        return comparator;
+    }
+
+    private void setupGrid() {
+        grid.addColumn(Employee::getId).setHeader("ID").setSortable(true).setKey("id").setFlexGrow(2);
+        grid.addColumn(Employee::getFullName).setHeader("Full Name").setSortable(true).setKey("fullName").setFlexGrow(2);
+        grid.addColumn(Employee::getBirthDate).setHeader("Birth Date").setSortable(true).setKey("birthDate").setFlexGrow(1);
+        grid.addColumn(employee -> employee.getGender().getLabel()).setHeader("Gender").setSortable(true).setKey("gender").setFlexGrow(1);
+        grid.addColumn(employee -> employee.getRole().getLabel()).setHeader("Role").setSortable(true).setKey("role").setFlexGrow(1);
         grid.addColumn(employee -> employee.getCreatedAt() != null ? employee.getCreatedAt().format(dateFormatter) : "")
-            .setHeader("Created At").setSortable(true).setFlexGrow(1);
+                .setHeader("Created At").setSortable(true).setKey("createdAt").setFlexGrow(1);
 
         statusColumn = grid.addColumn(employee -> employee.isActive() ? "Active" : "Inactive")
-                .setHeader("Status")
-                .setFlexGrow(0).setWidth("100px");
+                .setHeader("Status").setSortable(true).setKey("status")
+                .setFlexGrow(0).setWidth("120px");
         statusColumn.setVisible(false);
 
         grid.addItemClickListener(event -> {
@@ -246,7 +280,7 @@ public class EmployeeView extends VerticalLayout {
         HorizontalLayout buttonsLayout = new HorizontalLayout(createSaveButton, createClearButton, createCloseButton);
         buttonsLayout.setJustifyContentMode(JustifyContentMode.END);
         buttonsLayout.setWidthFull();
-        
+
         createDialog.add(new VerticalLayout(formLayout, buttonsLayout));
     }
 
@@ -270,7 +304,7 @@ public class EmployeeView extends VerticalLayout {
 
         updateDialog.add(new VerticalLayout(formLayout, buttonsLayout));
     }
-    
+
     private void populateUpdateForm(Employee employee) {
         currentEmployee = employee;
         updatefullname.setValue(employee.getFullName());
@@ -306,7 +340,7 @@ public class EmployeeView extends VerticalLayout {
         }
         String searchTermLower = currentSearchTerm.toLowerCase();
         return matchesTerm(employee.getFullName(), searchTermLower)
-            || matchesTerm(employee.getRole().getLabel(), searchTermLower);
+                || matchesTerm(employee.getRole().getLabel(), searchTermLower);
     }
 
     private boolean matchesTerm(String value, String searchTerm) {
