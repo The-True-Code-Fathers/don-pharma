@@ -152,13 +152,13 @@ public class OrderView extends VerticalLayout {
                 .setFlexGrow(1);
 
         grid.addColumn(order -> {
-            BigDecimal totalAmount = order.getTotalAmount();
+            BigDecimal totalAmount = order.getProductsPrice();
             if (totalAmount != null) {
                 return "R$ " + String.format("%.2f", totalAmount);
             }
             return "R$ 0,00";
         })
-                .setHeader("Total Amount")
+                .setHeader("Products Price")
                 .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
@@ -176,17 +176,6 @@ public class OrderView extends VerticalLayout {
                 .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
-
-        // grid.addColumn(order -> {
-        //             if (order.getShippingProvider() != null) {
-        //                 return order.getShippingProvider().getName();
-        //             }
-        //             return "N/A";
-        //         })
-        //         .setHeader("Shipping Provider")
-        //         .setSortable(true)
-        //         .setAutoWidth(true)
-        //         .setFlexGrow(0);
 
         grid.addColumn(order -> {
             if (order.getCreatedAt() != null) {
@@ -451,7 +440,6 @@ public class OrderView extends VerticalLayout {
         createDialog.setResizable(true);
 
         ComboBox<Employee> sellerComboBox = new ComboBox<>("Seller");
-        ComboBox<ShippingProvider> shippingComboBox = new ComboBox<>("Shipping provider");
         TextField descriptionField = new TextField("Description");
 
         itemsGrid = new Grid<>();
@@ -467,7 +455,6 @@ public class OrderView extends VerticalLayout {
         Button addItemButton = new Button("Add item");
 
         setupSellerComboBox(sellerComboBox);
-        setupShippingComboBox(shippingComboBox);
         setupProductComboBox(productComboBox);
 
         descriptionField.setWidthFull();
@@ -529,11 +516,6 @@ public class OrderView extends VerticalLayout {
                     return;
                 }
 
-                if (shippingComboBox.getValue() == null) {
-                    Notification.show("Select a shipping provider", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
                 if (orderItems.isEmpty()) {
                     Notification.show("Add at least one item", 3000, Notification.Position.MIDDLE);
                     return;
@@ -541,7 +523,6 @@ public class OrderView extends VerticalLayout {
 
                 CreateOrderDTO createOrderDTO = buildCreateOrderDTO(
                         sellerComboBox.getValue(),
-                        shippingComboBox.getValue(),
                         descriptionField.getValue(),
                         orderItems);
 
@@ -571,7 +552,6 @@ public class OrderView extends VerticalLayout {
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.add(
                 sellerComboBox,
-                shippingComboBox,
                 descriptionField,
                 new com.vaadin.flow.component.html.H4("Order items"),
                 addItemLayout,
@@ -656,7 +636,7 @@ public class OrderView extends VerticalLayout {
         sellerComboBox.setPlaceholder("Select a seller");
     }
 
-    private CreateOrderDTO buildCreateOrderDTO(Employee seller, ShippingProvider shippingProvider,
+    private CreateOrderDTO buildCreateOrderDTO(Employee seller,
             String description, List<OrderItemRow> items) {
 
         List<CreateOrderItemDTO> itemDTOs = items.stream()

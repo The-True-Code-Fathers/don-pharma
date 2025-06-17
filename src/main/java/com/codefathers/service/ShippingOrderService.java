@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Collectors;
 
 import com.codefathers.model.dto.CreateShippingOrderDTO;
 import com.codefathers.model.entity.Order;
@@ -20,6 +19,8 @@ import com.codefathers.repository.interfaces.ShippingProviderRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
+import lombok.Getter;
+import lombok.Setter;
 
 public class ShippingOrderService {
     private final ShippingOrderRepository shippingOrderRepository;

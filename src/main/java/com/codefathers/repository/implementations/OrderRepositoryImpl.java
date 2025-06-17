@@ -147,11 +147,11 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
     public Map<Employee, Double> findSellersRankedByOrderStatus(LocalDate from, LocalDate to, OrderStatus status, int limit) {
         // HQL query to select seller and sum of their totalAmount
-        String hql = "SELECT o.seller, SUM(o.totalAmount) FROM orders o " + // 'orders' is the @Entity name
+        String hql = "SELECT o.seller, SUM(o.productsPrice) FROM orders o " + // 'orders' is the @Entity name
                 "WHERE o.orderStatus = :status AND o.seller.role = :role " +
                 "AND o.createdAt BETWEEN :startDate AND :endDate " +
                 "GROUP BY o.seller " +
-                "ORDER BY SUM(o.totalAmount) DESC"; // Order by the total sales amount
+                "ORDER BY SUM(o.productsPrice) DESC"; // Order by the total sales amount
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
 

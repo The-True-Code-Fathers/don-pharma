@@ -53,9 +53,6 @@ public class Order {
     @JoinColumn(name = "shipping_order_id")
     private ShippingOrder shippingOrder;
 
-    @Column(name = "total_amount", precision = 19, scale = 4, nullable = false)
-    private BigDecimal totalAmount;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus orderStatus;

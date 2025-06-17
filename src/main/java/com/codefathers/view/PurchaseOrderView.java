@@ -43,7 +43,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@PageTitle("Purchase order")
+@PageTitle("Purchase Order")
 @Route("purchaseOrder")
 public class PurchaseOrderView extends VerticalLayout {
     private final PurchaseOrderService purchaseOrderService;
