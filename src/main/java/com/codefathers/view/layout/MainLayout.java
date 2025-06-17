@@ -1,9 +1,16 @@
 package com.codefathers.view.layout;
 
-import com.codefathers.view.*;
-import com.codefathers.view.PurchaseOrderView;
-import com.codefathers.view.StorageView;
 import com.codefathers.view.DashboardView;
+import com.codefathers.view.EmployeeView;
+import com.codefathers.view.FinancialView;
+import com.codefathers.view.OrderView;
+import com.codefathers.view.PaymentView;
+import com.codefathers.view.ProductsView;
+import com.codefathers.view.PurchaseOrderView;
+import com.codefathers.view.ShippingAreaView;
+import com.codefathers.view.ShippingOrderView;
+import com.codefathers.view.ShippingProviderView;
+import com.codefathers.view.StorageView;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -21,8 +28,6 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
@@ -100,14 +105,17 @@ public class MainLayout extends AppLayout {
         var purchaseOrderLink = new SideNavItem("Purchase Order",
                 PurchaseOrderView.class, VaadinIcon.CART.create());
 
+        var financialLink = new SideNavItem("Financial", FinancialView.class, VaadinIcon.MONEY.create());
+
         var paymentLink = new SideNavItem("Payment", PaymentView.class, VaadinIcon.CASH.create());
         
         sideNav.addItem(
                 dashboardLink,
                 employeeLink,
+                paymentLink,
+                financialLink,
                 productLink,
                 shippingLink,
-                paymentLink,
                 orderLink,
                 purchaseOrderLink,
                 storageLink
