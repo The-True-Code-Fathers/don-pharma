@@ -1,16 +1,6 @@
 package com.codefathers.view.layout;
 
-import com.codefathers.view.DashboardView;
-import com.codefathers.view.EmployeeView;
-import com.codefathers.view.FinancialView;
-import com.codefathers.view.OrderView;
-import com.codefathers.view.PaymentView;
-import com.codefathers.view.ProductsView;
-import com.codefathers.view.PurchaseOrderView;
-import com.codefathers.view.ShippingAreaView;
-import com.codefathers.view.ShippingOrderView;
-import com.codefathers.view.ShippingProviderView;
-import com.codefathers.view.StorageView;
+import com.codefathers.view.*;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -88,6 +78,7 @@ public class MainLayout extends AppLayout {
         var productLink = new SideNavItem("Products", ProductsView.class, VaadinIcon.STOCK.create());
         var orderLink = new SideNavItem("Sales Order", OrderView.class, VaadinIcon.CLIPBOARD.create());
         var shippingLink = new SideNavItem("Shipping");
+        var goalLink = new SideNavItem("Goals");
 
         shippingLink.setPrefixComponent(VaadinIcon.TRUCK.create());
         shippingLink.addItem(new SideNavItem("Shipping Area", ShippingAreaView.class,
@@ -108,6 +99,8 @@ public class MainLayout extends AppLayout {
         var financialLink = new SideNavItem("Financial", FinancialView.class, VaadinIcon.MONEY.create());
 
         var paymentLink = new SideNavItem("Payment", PaymentView.class, VaadinIcon.CASH.create());
+
+        goalLink = new SideNavItem("Goals", GoalsView.class, VaadinIcon.ANGLE_DOUBLE_UP.create());
         
         sideNav.addItem(
                 dashboardLink,
@@ -118,7 +111,8 @@ public class MainLayout extends AppLayout {
                 shippingLink,
                 orderLink,
                 purchaseOrderLink,
-                storageLink
+                storageLink,
+                goalLink
         );
 
         Scroller scroller = new Scroller(sideNav);
