@@ -1,5 +1,6 @@
 package com.codefathers.repository.interfaces;
 
+import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.OrderItem;
 import com.codefathers.model.enums.OrderStatus;
@@ -22,4 +23,5 @@ public interface OrderRepository {
     List<Order> findOrdersByTimePeriod(LocalDate start, LocalDate end);
     List<Order> findOrdersByStatus(OrderStatus status);
     List<Order> findOrdersByStatusAndTimePeriod(OrderStatus status, LocalDate start, LocalDate end);
+    List<Employee> findSellersRankedByOrderStatus(LocalDate from, LocalDate to, OrderStatus status, int limit);
 }

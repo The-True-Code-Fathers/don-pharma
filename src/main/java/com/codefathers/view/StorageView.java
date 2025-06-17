@@ -32,33 +32,26 @@ public class StorageView extends VerticalLayout {
     private String currentSearchTerm = "";
 
     public StorageView() {
-        // Inicializa os serviços
         var productRepository = new ProductRepositoryImpl();
         var storageRepository = new StorageRepositoryImpl();
         this.storageService = new StorageService(storageRepository, productRepository);
 
-        // Configura a aparência e comportamento do layout principal
-        setSizeFull(); // 1. Faz o VerticalLayout ocupar toda a tela
+        setSizeFull();
 
-        // Configura os componentes da UI
         setupSearchField();
         setupGrid();
         setupRedirectButton();
 
-        // Monta o cabeçalho e adiciona os componentes ao layout
         HorizontalLayout header = new HorizontalLayout(openDialogButton, searchField);
         header.setWidthFull();
-        header.expand(searchField); // Faz o campo de busca expandir
 
         add(header, grid);
-        setFlexGrow(1, grid); // 1. Faz a grid expandir e ocupar o espaço restante
-
-        // Carrega os dados na grid
+        setFlexGrow(1, grid);
         refreshGrid();
     }
 
     private void setupSearchField() {
-        searchField.setPlaceholder("Search by SKU or Name..."); // 3. Placeholder atualizado
+        searchField.setPlaceholder("Search by SKU or Name...");
         searchField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
         searchField.setClearButtonVisible(true);
@@ -76,19 +69,16 @@ public class StorageView extends VerticalLayout {
     }
 
     private void setupGrid() {
-        // Configura as colunas da grid
         grid.addColumn(s -> s.getProduct().getSku()).setHeader("Product SKU")
-                .setSortable(true) // 2. Coluna classificável
+                .setSortable(true)
                 .setAutoWidth(true);
         grid.addColumn(s -> s.getProduct().getName()).setHeader("Product Name")
-                .setSortable(true) // 2. Coluna classificável
+                .setSortable(true)
                 .setAutoWidth(true);
         grid.addColumn(Storage::getProductQuantity).setHeader("Quantity")
-                .setSortable(true) // 2. Coluna classificável
+                .setSortable(true)
                 .setAutoWidth(true);
 
-        // Remove a altura fixa para permitir que a grid expanda
-        // grid.setHeight("400px"); // 1. Linha removida
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
     }
 
@@ -112,7 +102,6 @@ public class StorageView extends VerticalLayout {
             return false;
         }
 
-        // 3. Lógica de pesquisa atualizada para SKU e Nome
         boolean skuMatches = product.getSku() != null && product.getSku().toLowerCase().contains(currentSearchTerm);
         boolean nameMatches = product.getName() != null && product.getName().toLowerCase().contains(currentSearchTerm);
 

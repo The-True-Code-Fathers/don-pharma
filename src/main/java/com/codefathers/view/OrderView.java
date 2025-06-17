@@ -387,7 +387,7 @@ public class OrderView extends VerticalLayout {
                     System.out.println("Total de pedidos encontrados: " + allOrders.size());
                     return allOrders.stream()
                             .filter(this::matchesFilters)
-                            .sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt())) // Ordenação padrão
+                            .sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()))
                             .skip(query.getOffset())
                             .limit(query.getLimit());
                 },
@@ -444,7 +444,7 @@ public class OrderView extends VerticalLayout {
     private void openCreateOrderDialog() {
         Dialog createDialog = new Dialog();
         createDialog.setHeaderTitle("Create new order");
-        createDialog.setWidth("900px"); // Aumentado para acomodar melhor o grid
+        createDialog.setWidth("900px");
         createDialog.setHeight("800px");
         createDialog.setResizable(true);
 

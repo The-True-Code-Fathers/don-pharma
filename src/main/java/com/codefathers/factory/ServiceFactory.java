@@ -76,9 +76,19 @@ public class ServiceFactory {
             );
 
     @Getter
+    private static FinancialService financialService =
+            new FinancialService(RepositoryFactory.getPaymentRepository(),
+                        RepositoryFactory.getPurchaseOrderItemRepository(),
+                        RepositoryFactory.getOrderItemRepository(),
+                        RepositoryFactory.getShippingOrderRepository(),
+                        RepositoryFactory.getOrderRepository()
+                    );
+
+    @Getter
     private static DashboardService dashboardService =
             new DashboardService(
                 ServiceFactory.getOrderService(),
-                    ServiceFactory.getProductService()
+                    ServiceFactory.getProductService(),
+                    ServiceFactory.getFinancialService()
             );
 }

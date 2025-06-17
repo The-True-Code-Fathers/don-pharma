@@ -137,7 +137,7 @@ public class ShippingAreaView extends VerticalLayout {
                     CreateShippingAreaDTO dto = CreateShippingAreaDTO.builder()
                             .description(descriptionField.getValue())
                             .shippingProvider(selectedProvider)
-                            .states(states.toArray(new String[0])) // ainda passa como String[]
+                            .states(states.toArray(new String[0]))
                             .cep(cepField.getValue())
                             .build();
                     areaService.saveShippingArea(dto);
