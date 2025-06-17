@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -103,4 +104,14 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             return null;
         }
     }
+
+    @Override
+    public BigDecimal getTotalSalaries() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("select sum(e.salary) from Employee e", BigDecimal.class)
+                    .uniqueResultOptional()
+                    .orElse(BigDecimal.ZERO);
+        }
+    }
+
 }

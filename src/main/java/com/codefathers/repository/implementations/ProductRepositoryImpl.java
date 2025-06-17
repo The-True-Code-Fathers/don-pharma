@@ -1,5 +1,6 @@
 package com.codefathers.repository.implementations;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -98,5 +99,15 @@ public class ProductRepositoryImpl implements ProductRepository {
             return Collections.emptyList();
         }
     }
+
+    @Override
+    public BigDecimal getTotalBuyPrice() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("select sum(p.buyPrice) from Product p", BigDecimal.class)
+                    .uniqueResultOptional()
+                    .orElse(BigDecimal.ZERO);
+        }
+    }
+
 
 }

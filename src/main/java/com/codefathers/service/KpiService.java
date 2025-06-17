@@ -1,5 +1,6 @@
 package com.codefathers.service;
 
+import com.codefathers.model.entity.Order;
 import com.codefathers.model.entity.Storage;
 import com.codefathers.repository.dto.MostSoldProductDTO;
 import com.codefathers.repository.interfaces.OrderRepository;
@@ -9,6 +10,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -63,4 +65,23 @@ public class KpiService {
                 .mapToInt(Storage::getProductQuantity)
                 .sum();
     }
+
+    public long getTotalInvoicedOrders(LocalDate start, LocalDate end) {
+        return orderRepository.countInvoicedOrders(start, end);
+    }
+
+
+
+    public BigDecimal getAverageTicket(LocalDate start, LocalDate end) {
+        List<Order> invoicedOrders = orderRepository.findInvoicedOrders(start, end);
+        if (invoicedOrders.isEmpty()) return BigDecimal.ZERO;
+
+        BigDecimal total = invoicedOrders.stream()
+                .map(Order::getProductsPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return total.divide(BigDecimal.valueOf(invoicedOrders.size()), 2, RoundingMode.HALF_UP);
+    }
+
+
 }

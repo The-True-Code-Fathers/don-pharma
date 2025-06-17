@@ -3,6 +3,7 @@ package com.codefathers.repository.interfaces;
 import com.codefathers.model.entity.Employee;
 import com.codefathers.model.enums.OrderStatus;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,5 +15,7 @@ public interface EmployeeRepository {
     void delete(UUID id);
     long count();
     List<Employee> findEmployeesRankedByOrderStatus(OrderStatus status, int limit);
+    BigDecimal getTotalSalaries();
+
 }
 
