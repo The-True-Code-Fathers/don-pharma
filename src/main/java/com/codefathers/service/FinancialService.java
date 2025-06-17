@@ -1,15 +1,12 @@
 package com.codefathers.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
-import com.codefathers.model.entity.OrderItem;
-import com.codefathers.model.entity.Payment;
-import com.codefathers.model.entity.PurchaseOrderItem;
-import com.codefathers.model.entity.ShippingOrder;
-import com.codefathers.repository.interfaces.OrderItemRepository;
-import com.codefathers.repository.interfaces.PaymentRepository;
-import com.codefathers.repository.interfaces.PurchaseOrderItemRepository;
-import com.codefathers.repository.interfaces.ShippingOrderRepository;
+import com.codefathers.model.entity.*;
+import com.codefathers.model.enums.OrderStatus;
+import com.codefathers.repository.interfaces.*;
 
 public class FinancialService {
 
@@ -17,6 +14,7 @@ public class FinancialService {
     private final PurchaseOrderItemRepository purchaseOrderItemRepository;
     private final OrderItemRepository orderItemRepository;
     private final ShippingOrderRepository shippingOrderRepository;
+    private final OrderRepository orderRepository;
 
     private BigDecimal paymentsTotal;
     private BigDecimal purchaseTotal;
@@ -26,11 +24,13 @@ public class FinancialService {
     public FinancialService(PaymentRepository paymentRepository,
             PurchaseOrderItemRepository purchaseOrderItemRepository,
             OrderItemRepository orderItemRepository,
-            ShippingOrderRepository shippingOrderRepository) {
+            ShippingOrderRepository shippingOrderRepository,
+            OrderRepository orderRepository) {
         this.paymentRepository = paymentRepository;
         this.purchaseOrderItemRepository = purchaseOrderItemRepository;
         this.orderItemRepository = orderItemRepository;
         this.shippingOrderRepository = shippingOrderRepository;
+        this.orderRepository = orderRepository;
 
         calculateOutflows();
         calculateInflows();
@@ -54,6 +54,10 @@ public class FinancialService {
         orderTotal = orderItemRepository.listAll().stream()
                 .map(OrderItem::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public List<Employee> getTopPerformingSellers(LocalDate from, LocalDate to, int limit) {
+        return orderRepository.findSellersRankedByOrderStatus(from, to, OrderStatus.INVOICED, limit);
     }
 
     public BigDecimal getPaymentsTotal() {

@@ -50,7 +50,6 @@ public class PaymentView extends VerticalLayout {
     private final Dialog paymentDialog = new Dialog();
     private final Dialog editDialog = new Dialog();
 
-    // Form fields
     private final ComboBox<Employee> employeeComboBox = new ComboBox<>("Employee");
     private final NumberField grossIncomeField = new NumberField("Gross Income");
     private final NumberField amountInTaxesField = new NumberField("Amount in Taxes");
@@ -65,7 +64,6 @@ public class PaymentView extends VerticalLayout {
     private String currentSearchTerm = "";
     private Payment currentPaymentEditing = null;
 
-    // Edit dialog fields
     private final ComboBox<Employee> editEmployeeComboBox = new ComboBox<>("Employee");
     private final NumberField editGrossIncomeField = new NumberField("Gross Income");
     private final NumberField editAmountInTaxesField = new NumberField("Amount in Taxes");
@@ -77,9 +75,8 @@ public class PaymentView extends VerticalLayout {
     private final TextField editNetIncomeDisplay = new TextField("Net Income");
     private final TextField editTotalIncomeDisplay = new TextField("Total Income");
     private final Button toggleStatusButton = new Button();
-    private final Checkbox showInactiveCheckbox = new Checkbox("Show Inactive Status"); // NOVO
+    private final Checkbox showInactiveCheckbox = new Checkbox("Show Inactive Status");
 
-    // Date formatter
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public PaymentView() {
@@ -96,7 +93,7 @@ public class PaymentView extends VerticalLayout {
         setupGrid();
         setupPaymentDialog();
         setupEditDialog();
-        setupStatusFilterCheckbox(); // NOVO: Chama o método de configuração do checkbox
+        setupStatusFilterCheckbox();
 
         HorizontalLayout topLayout = new HorizontalLayout();
         topLayout.setWidthFull();
@@ -104,16 +101,12 @@ public class PaymentView extends VerticalLayout {
 
         searchField.setWidth("300px");
 
-        // Botão "Create Payment" à esquerda
         topLayout.add(openDialogButton);
 
-        // Campo de pesquisa também à esquerda, próximo ao botão
         topLayout.add(searchField);
 
-        // Espaço flexível no meio para separar esquerda da direita
         topLayout.addAndExpand(new Span());
 
-        // Checkbox à direita
         topLayout.add(showInactiveCheckbox);
 
         add(topLayout, grid, paymentDialog, editDialog);
@@ -135,9 +128,8 @@ public class PaymentView extends VerticalLayout {
                 .setSortable(true);
         grid.addColumn(payment -> payment.isActive() ? "Active" : "Inactive").setHeader("Status").setSortable(true);
 
-        // MODIFICAÇÃO: Faz a grid preencher a largura e altura disponíveis
-        grid.setWidth("100%"); // <--- Importante para a largura
-        grid.setHeightFull(); // <--- Importante para a altura
+        grid.setWidth("100%");
+        grid.setHeightFull();
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
 
         grid.addItemDoubleClickListener(event -> {
@@ -146,12 +138,10 @@ public class PaymentView extends VerticalLayout {
         });
     }
 
-    // Método para calcular Net Income (Salário - Impostos)
     private BigDecimal calculateNetIncome(Payment payment) {
         return payment.getGrossIncome().subtract(payment.getAmountInTaxes());
     }
 
-    // Método para calcular Total Income (Salário + Benefícios - Impostos)
     private BigDecimal calculateTotalIncome(Payment payment) {
         BigDecimal totalBenefits = payment.getMealVoucherAmount()
                 .add(payment.getFoodVoucherAmount())
@@ -185,7 +175,6 @@ public class PaymentView extends VerticalLayout {
             Employee selectedEmployee = e.getValue();
             if (selectedEmployee != null) {
                 populateDefaultValues(selectedEmployee);
-                // Recalcular taxes quando gross income mudar
                 if (grossIncomeField.getValue() != null) {
                     updateTaxesForCreation(selectedEmployee, grossIncomeField.getValue());
                 }
@@ -194,7 +183,6 @@ public class PaymentView extends VerticalLayout {
             }
             updateIncomeDisplays();
         });
-        // Setup number fields with R$ prefix
         setupNumberFieldWithCurrency(grossIncomeField, 0.01);
         setupNumberFieldWithCurrency(amountInTaxesField, 0.00);
         setupNumberFieldWithCurrency(mealVoucherField, 0.00);
@@ -218,7 +206,6 @@ public class PaymentView extends VerticalLayout {
             updateIncomeDisplays();
         });
 
-        // Add value change listeners to update income displays
         grossIncomeField.addValueChangeListener(e -> updateIncomeDisplays());
         amountInTaxesField.addValueChangeListener(e -> updateIncomeDisplays());
         mealVoucherField.addValueChangeListener(e -> updateIncomeDisplays());
@@ -346,7 +333,7 @@ public class PaymentView extends VerticalLayout {
             if (currentPaymentEditing != null) {
                 togglePaymentStatus(currentPaymentEditing);
                 updateToggleStatusButton(currentPaymentEditing.isActive());
-                setEditFieldsEnabled(currentPaymentEditing.isActive()); // Atualiza o estado dos campos
+                setEditFieldsEnabled(currentPaymentEditing.isActive());
             }
         });
 
@@ -382,10 +369,8 @@ public class PaymentView extends VerticalLayout {
         BigDecimal dentalInsurance = BigDecimal.valueOf(
                 editDentalInsuranceField.getValue() != null ? editDentalInsuranceField.getValue() : 0);
 
-        // Net Income = Gross Income - Taxes
         BigDecimal netIncome = grossIncome.subtract(amountInTaxes);
 
-        // Total Income = Gross Income + Benefits - Taxes
         BigDecimal totalBenefits = mealVoucher.add(foodVoucher)
                 .add(healthInsurance)
                 .add(dentalInsurance)
@@ -472,10 +457,8 @@ public class PaymentView extends VerticalLayout {
         BigDecimal profitSharing = BigDecimal
                 .valueOf(profitSharingField.getValue() != null ? profitSharingField.getValue() : 0);
 
-        // Net Income = Gross Income - Taxes
         BigDecimal netIncome = grossIncome.subtract(amountInTaxes);
 
-        // Total Income = Gross Income + Benefits - Taxes
         BigDecimal totalBenefits = mealVoucher.add(foodVoucher)
                 .add(healthInsurance).add(dentalInsurance).add(profitSharing);
         BigDecimal totalIncome = grossIncome.add(totalBenefits).subtract(amountInTaxes);
@@ -538,7 +521,6 @@ public class PaymentView extends VerticalLayout {
     private void openEditDialog(Payment payment) {
         currentPaymentEditing = payment;
 
-        // Populate fields with current payment data
         editEmployeeComboBox.setValue(payment.getEmployee());
         editGrossIncomeField.setValue(payment.getGrossIncome().doubleValue());
         editAmountInTaxesField.setValue(payment.getAmountInTaxes().doubleValue());
@@ -548,13 +530,11 @@ public class PaymentView extends VerticalLayout {
         editDentalInsuranceField.setValue(payment.getDentalInsuranceAmount().doubleValue());
         editProfitSharingField.setValue(payment.getProfitSharingAmount().doubleValue());
 
-        // Update income displays
         BigDecimal netIncome = calculateNetIncome(payment);
         BigDecimal totalIncome = calculateTotalIncome(payment);
         editNetIncomeDisplay.setValue("R$ " + netIncome.toString());
         editTotalIncomeDisplay.setValue("R$ " + totalIncome.toString());
 
-        // Set the initial state of the toggle button and fields
         updateToggleStatusButton(payment.isActive());
         setEditFieldsEnabled(payment.isActive());
 
@@ -572,7 +552,6 @@ public class PaymentView extends VerticalLayout {
         }
     }
 
-    // Helper method to update the toggle status button text and theme
     private void updateToggleStatusButton(boolean isActive) {
         if (isActive) {
             toggleStatusButton.setText("Deactivate");
@@ -585,17 +564,12 @@ public class PaymentView extends VerticalLayout {
         }
     }
 
-    // Deixa todos os campos editáveis "bloqueados" quando o pagamento está inativo
     private void setEditFieldsEnabled(boolean enabled) {
         editEmployeeComboBox.setEnabled(enabled);
         editGrossIncomeField.setEnabled(enabled);
         editMealVoucherField.setEnabled(enabled);
         editFoodVoucherField.setEnabled(enabled);
         editProfitSharingField.setEnabled(enabled);
-        // Os campos abaixo já são read-only, então não precisam ser controlados aqui
-        // editAmountInTaxesField.setEnabled(enabled);
-        // editHealthInsuranceField.setEnabled(enabled);
-        // editDentalInsuranceField.setEnabled(enabled);
     }
 
     private void showPaymentDetails(Payment payment) {
@@ -700,31 +674,22 @@ public class PaymentView extends VerticalLayout {
     }
 
     private void setupStatusFilterCheckbox() {
-        // Por padrão, mostra apenas os ativos (checkbox desmarcado)
         showInactiveCheckbox.setValue(false);
-        // Adiciona um listener que atualiza a grid sempre que o valor do checkbox mudar
         showInactiveCheckbox.addValueChangeListener(event -> refreshGrid());
     }
 
     private boolean matchesFilter(Payment payment) {
-        // 1. Filtro pelo status (ativo/inativo)
         boolean showInactive = showInactiveCheckbox.getValue();
-        // O pagamento passa no filtro de status se:
-        // - O checkbox "Show Inactive" estiver marcado (mostra todos)
-        // - OU o pagamento estiver ativo.
         boolean statusMatch = showInactive || payment.isActive();
 
-        // Se não passar no filtro de status, já pode retornar falso
         if (!statusMatch) {
             return false;
         }
 
-        // 2. Filtro pelo termo de busca (lógica existente)
         if (currentSearchTerm.isEmpty()) {
-            return true; // Se a busca estiver vazia, passa no filtro de busca
+            return true;
         }
 
-        // Lógica de busca (pode ser ajustada conforme necessário)
         boolean searchMatch = payment.getEmployee().getFullName().toLowerCase().contains(currentSearchTerm) ||
                 payment.getEmployee().getRole().toString().toLowerCase().contains(currentSearchTerm) ||
                 payment.getId().toString().toLowerCase().contains(currentSearchTerm);
@@ -735,7 +700,6 @@ public class PaymentView extends VerticalLayout {
     private void refreshGrid() {
         List<Payment> payments = paymentService.listAll();
 
-        // MODIFICADO: A lógica de filtro agora usa o método matchesFilter
         List<Payment> filteredPayments = payments.stream()
                 .filter(this::matchesFilter)
                 .collect(Collectors.toList());

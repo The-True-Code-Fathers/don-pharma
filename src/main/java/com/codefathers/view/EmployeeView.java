@@ -37,25 +37,21 @@ public class EmployeeView extends VerticalLayout {
     private EmployeeService employeeService;
     private Employee currentEmployee;
 
-    // --- Campos do formulário de Criação ---
     private TextField createfullname = new TextField("Full Name");
     private DatePicker createBirthDate = new DatePicker("Birth Date");
     private ComboBox<EmployeeGender> createGender = new ComboBox<>("Gender");
     private ComboBox<EmployeeRole> createRole = new ComboBox<>("Role");
     
-    // --- Campos do formulário de Atualização ---
     private TextField updatefullname = new TextField("Full Name");
     private DatePicker updateBirthDate = new DatePicker("Birth Date");
     private ComboBox<EmployeeGender> updateGender = new ComboBox<>("Gender");
     private ComboBox<EmployeeRole> updateRole = new ComboBox<>("Role");
 
-    // --- Botões do Diálogo de Criação ---
     private Button createEmployeeButton = new Button("Create Employee");
     private Button createSaveButton = new Button("Save");
     private Button createClearButton = new Button("Clear");
     private Button createCloseButton = new Button("Close");
 
-    // --- Botões do Diálogo de Atualização ---
     private Button updateSaveButton = new Button("Save");
     private Button updateClearButton = new Button("Clear");
     private Button updateCloseButton = new Button("Close");
@@ -72,14 +68,12 @@ public class EmployeeView extends VerticalLayout {
     private com.vaadin.flow.component.checkbox.Checkbox showInactiveCheckbox =
             new com.vaadin.flow.component.checkbox.Checkbox("Show inactive employees");
 
-    // MODIFICAÇÃO: Adicionado o formatador de data e hora
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public EmployeeView() {
         var employeeRepository = new EmployeeRepositoryImpl();
         this.employeeService = new EmployeeService(employeeRepository, ValidatorUtil.getValidator());
         
-        // MODIFICAÇÃO: Configura o layout principal para preencher a tela
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -101,7 +95,6 @@ public class EmployeeView extends VerticalLayout {
         HorizontalLayout headerLayout = new HorizontalLayout(leftLayout, rightLayout);
         headerLayout.setAlignItems(Alignment.CENTER);
         headerLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
-        // MODIFICAÇÃO: Ajusta o cabeçalho para preencher a largura
         headerLayout.setWidth("100%");
 
         add(headerLayout, grid);
@@ -109,7 +102,6 @@ public class EmployeeView extends VerticalLayout {
     }
 
     private void configureFormFields() {
-        // Configura as opções e labels dos ComboBoxes
         createGender.setItems(EmployeeGender.values());
         createGender.setItemLabelGenerator(EmployeeGender::getLabel);
         updateGender.setItems(EmployeeGender.values());
@@ -210,13 +202,11 @@ public class EmployeeView extends VerticalLayout {
     }
 
     private void setupGrid() {
-        // MODIFICAÇÃO: Usa setFlexGrow para melhor distribuição de espaço das colunas
         grid.addColumn(Employee::getFullName).setHeader("Full Name").setFlexGrow(2);
         grid.addColumn(Employee::getBirthDate).setHeader("Birth Date").setFlexGrow(1);
         grid.addColumn(employee -> employee.getGender().getLabel()).setHeader("Gender").setFlexGrow(1);
         grid.addColumn(employee -> employee.getRole().getLabel()).setHeader("Role").setFlexGrow(1);
 
-        // MODIFICAÇÃO: Adiciona a coluna de data de criação formatada
         grid.addColumn(employee -> employee.getCreatedAt() != null ? employee.getCreatedAt().format(dateFormatter) : "")
             .setHeader("Created At").setSortable(true).setFlexGrow(1);
 
@@ -235,7 +225,6 @@ public class EmployeeView extends VerticalLayout {
 
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
         grid.setPageSize(20);
-        // MODIFICAÇÃO: Ajusta a grade para preencher o espaço disponível
         grid.setWidth("100%");
         grid.setHeightFull();
     }
@@ -245,7 +234,6 @@ public class EmployeeView extends VerticalLayout {
         createDialog.setDraggable(true);
         createDialog.setWidth("450px");
 
-        // MODIFICAÇÃO: Ajusta os campos para preencherem a largura do formulário
         createfullname.setWidthFull();
         createBirthDate.setWidthFull();
         createGender.setWidthFull();
@@ -287,7 +275,7 @@ public class EmployeeView extends VerticalLayout {
         currentEmployee = employee;
         updatefullname.setValue(employee.getFullName());
         updateBirthDate.setValue(employee.getBirthDate());
-        updateBirthDate.setReadOnly(true); // Data de nascimento geralmente não é alterada
+        updateBirthDate.setReadOnly(true);
         updateGender.setValue(employee.getGender());
         updateRole.setValue(employee.getRole());
         setInactiveButton.setText(employee.isActive() ? "Set Inactive" : "Set Active");
@@ -344,7 +332,6 @@ public class EmployeeView extends VerticalLayout {
     private void toggleEmployeeActive() {
         if (currentEmployee != null) {
             currentEmployee.setActive(!currentEmployee.isActive());
-            // O DTO de atualização pegará o novo status de 'currentEmployee.isActive()'
             updateExistingEmployee();
         }
     }

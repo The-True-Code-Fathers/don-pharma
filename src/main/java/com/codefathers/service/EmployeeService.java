@@ -111,8 +111,6 @@ public class EmployeeService {
         }
     }
 
-
-
     private void validateAge(LocalDate birthDate) {
         int age = Period.between(birthDate, LocalDate.now()).getYears();
         if (age < 16) {
