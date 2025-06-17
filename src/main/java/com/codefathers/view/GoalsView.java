@@ -8,6 +8,7 @@ import com.codefathers.service.MetaPorVendedorService;
 import com.codefathers.service.OrderItemService;
 import com.codefathers.service.ProductService;
 import com.codefathers.service.PurchaseOrderItemService;
+import com.codefathers.util.AverageProductPriceUtil;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
@@ -29,6 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @PageTitle("Goals")
 @Route("goals")
@@ -37,8 +40,8 @@ public class GoalsView extends VerticalLayout {
 
     private MetaPorVendedorService metaPorVendedorService;
 
-    private TextField createGoal = new TextField("Goal");
-    private TextField createSeller = new TextField("Seller");
+    private TextField createGoal = new TextField("", "Goal");
+    private TextField createSeller = new TextField("", "Seller");
 
     private TextField searchField = new TextField();
     private String currentSearchTerm = "";
@@ -54,6 +57,7 @@ public class GoalsView extends VerticalLayout {
 
     private Grid<PlanoVendedorDTO> grid = new Grid<>(PlanoVendedorDTO.class, false);
     private Grid<ProdutoSugeridoDTO> grid2 = new Grid<>(ProdutoSugeridoDTO.class, false);
+    private List<PlanoVendedorDTO> cachePlanoVendedor = new ArrayList<>();
 
     private GridLazyDataView<MetaPorVendedorService> dataView;
 
@@ -61,9 +65,15 @@ public class GoalsView extends VerticalLayout {
 
     private Dialog createDialog = new Dialog();
 
+
     public GoalsView() {
 
-        this.metaPorVendedorService =  new MetaPorVendedorService();
+        this.metaPorVendedorService = new MetaPorVendedorService();
+
+        grid = new Grid<>(PlanoVendedorDTO.class, false);
+        setupGrid();
+
+        add(grid);
 
         setSizeFull();
         setPadding(true);
@@ -86,6 +96,7 @@ public class GoalsView extends VerticalLayout {
 
         add(headerLayout, grid);
     }
+
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
@@ -126,30 +137,58 @@ public class GoalsView extends VerticalLayout {
     private void setupCreateDialog() {
         createDialog.setHeaderTitle("Goal");
         createDialog.setDraggable(true);
-        createDialog.getElement().getStyle().set("width", "400px");
+        createDialog.setWidth("600px");
+        createDialog.setHeight("100%");
 
         getName.setWidthFull();
         getSales.setWidthFull();
         getGoal.setWidthFull();
 
-
         VerticalLayout formLayout = new VerticalLayout(getName, getSales, getGoal);
         formLayout.setSpacing(true);
         formLayout.setPadding(false);
+        formLayout.setMargin(false);
+        formLayout.setWidthFull();
+
 
         HorizontalLayout gridLayout = new HorizontalLayout(grid2);
-        gridLayout.setJustifyContentMode(JustifyContentMode.END);
         gridLayout.setWidthFull();
+        gridLayout.setJustifyContentMode(JustifyContentMode.START);
+
+        VerticalLayout dialogContent = new VerticalLayout(formLayout, gridLayout, createCloseButton);
+        dialogContent.setPadding(false);
+        dialogContent.setMargin(false);
+        dialogContent.setSpacing(false);
+        dialogContent.setSizeUndefined();
+
+        createDialog.removeAll();
+        createDialog.add(dialogContent);
 
         createDialog.add(new VerticalLayout(formLayout, gridLayout, createCloseButton));
     }
 
     private void setupGrid() {
 
-        grid.addColumn(PlanoVendedorDTO::getVendedorNome).setHeader("Name").setSortable(true).setFlexGrow(1);
-        grid.addColumn(PlanoVendedorDTO::getTotalVendido).setHeader("Total Sales").setSortable(true).setFlexGrow(2);
-        grid.addColumn(PlanoVendedorDTO::getMeta).setHeader("Goal").setSortable(true).setFlexGrow(3);
-        grid.addColumn(PlanoVendedorDTO::getProdutosSugeridos).setHeader("Products").setFlexGrow(4);
+        grid.addColumn(PlanoVendedorDTO::getVendedorNome)
+                .setHeader("Vendedor")
+                .setSortable(true)
+                .setFlexGrow(1);
+        grid.addColumn(plano -> plano.getTotalVendido() != null
+                        ? plano.getTotalVendido().toString()
+                        : "0.00")
+                .setHeader("Total Vendido")
+                .setSortable(true)
+                .setFlexGrow(1);
+        grid.addColumn(plano -> plano.getMeta() != null
+                        ? plano.getMeta().toString()
+                        : "0.00")
+                .setHeader("Meta")
+                .setSortable(true)
+                .setFlexGrow(1);
+        grid.addColumn(plano -> "Produtos Sugeridos")
+                .setHeader("Ações")
+                .setSortable(false)
+                .setFlexGrow(1);
 
         grid.addColumn(data -> {
             return data.getCreatedAt() != null ? data.getCreatedAt().format(dateFormatter) : "";
@@ -160,13 +199,21 @@ public class GoalsView extends VerticalLayout {
             if (event.getClickCount() == 2) {
                 currentPlan = event.getItem();
                 populateUpdateForm(currentPlan);
+
+                List<ProdutoSugeridoDTO> produtos = currentPlan.getProdutosSugeridos();
+                grid2.setItems(produtos);
+
                 createDialog.open();
             }
         });
 
+
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
         grid.setWidth("100%");
         grid.setHeightFull();
+        if (cachePlanoVendedor != null) {
+            grid.setItems(cachePlanoVendedor);
+        }
         refreshGrid();
     }
 
@@ -177,8 +224,14 @@ public class GoalsView extends VerticalLayout {
         grid2.addColumn(ProdutoSugeridoDTO::getQuantidadeSugerida).setHeader("Goal").setSortable(true).setFlexGrow(3);
 
         grid2.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
-        grid2.setWidth("100%");
-        grid2.setHeightFull();
+
+        VerticalLayout dialogLayout = new VerticalLayout(grid2);
+        dialogLayout.setSizeFull();
+        dialogLayout.setPadding(false);
+        dialogLayout.setMargin(false);
+        dialogLayout.setSpacing(false);
+        createDialog.add(dialogLayout);
+
     }
 
     private boolean matchesCurrentFilters(PlanoVendedorDTO plano) {
@@ -195,12 +248,16 @@ public class GoalsView extends VerticalLayout {
     private void setupEventListeners() {
         createRunService.addClickListener(e -> {
             MetaPorVendedorService metaPorVendedorService = new MetaPorVendedorService();
-            metaPorVendedorService.calcularPlanoPorVendedor(new BigDecimal(createGoal.getValue()));
-            refreshGrid();
+            List<PlanoVendedorDTO> planos = metaPorVendedorService.calcularPlanoPorVendedor(
+                    new BigDecimal(createGoal.getValue())
+            );
+
+            cachePlanoVendedor = planos;
+            grid.setItems(planos);
         });
 
         createCloseButton.addClickListener(e -> createDialog.close());
 
-
     }
+
 }
