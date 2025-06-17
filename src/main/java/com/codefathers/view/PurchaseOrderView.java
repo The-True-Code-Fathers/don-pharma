@@ -67,7 +67,7 @@ public class PurchaseOrderView extends VerticalLayout {
     private final Dialog editDialog = new Dialog();
     private final Dialog orderDialog = new Dialog();
     private final ComboBox<String> statusFilterComboBox = new ComboBox<>("");
-    private String currentStatusFilter = "TODOS";
+    private String currentStatusFilter = "ALL";
 
     private final List<CreatePurchaseOrderItemDTO> items = new ArrayList<>();
     private String currentSearchTerm = "";
@@ -104,16 +104,16 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     private void setupStatusFilterComboBox() {
-        statusFilterComboBox.setItems("TODOS",
+        statusFilterComboBox.setItems("ALL",
                 PurchaseOrderStatus.OPEN.toString(),
                 PurchaseOrderStatus.CANCELLED.toString(),
                 PurchaseOrderStatus.INVOICED.toString());
-        statusFilterComboBox.setValue("TODOS");
+        statusFilterComboBox.setValue("ALL");
         statusFilterComboBox.setPlaceholder("Select Status");
         statusFilterComboBox.setWidth("200px");
 
         statusFilterComboBox.addValueChangeListener(e -> {
-            currentStatusFilter = e.getValue() != null ? e.getValue() : "TODOS";
+            currentStatusFilter = e.getValue() != null ? e.getValue() : "ALL";
             refreshGrid();
         });
     }
@@ -382,7 +382,7 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     private boolean matchesStatusFilter(PurchaseOrder order) {
-        if (currentStatusFilter.equals("TODOS")) {
+        if (currentStatusFilter.equals("ALL")) {
             return true;
         }
         return order.getPurchaseOrderStatus().toString().equals(currentStatusFilter);
