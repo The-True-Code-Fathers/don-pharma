@@ -1,16 +1,6 @@
 package com.codefathers.view.layout;
 
-import com.codefathers.view.DashboardView;
-import com.codefathers.view.EmployeeView;
-import com.codefathers.view.FinancialView;
-import com.codefathers.view.OrderView;
-import com.codefathers.view.PaymentView;
-import com.codefathers.view.ProductsView;
-import com.codefathers.view.PurchaseOrderView;
-import com.codefathers.view.ShippingAreaView;
-import com.codefathers.view.ShippingOrderView;
-import com.codefathers.view.ShippingProviderView;
-import com.codefathers.view.StorageView;
+import com.codefathers.view.*;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;

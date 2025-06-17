@@ -70,10 +70,6 @@ public class GoalsView extends VerticalLayout {
 
         this.metaPorVendedorService = new MetaPorVendedorService();
 
-        grid = new Grid<>(PlanoVendedorDTO.class, false);
-        setupGrid();
-
-        add(grid);
 
         setSizeFull();
         setPadding(true);
@@ -211,9 +207,6 @@ public class GoalsView extends VerticalLayout {
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
         grid.setWidth("100%");
         grid.setHeightFull();
-        if (cachePlanoVendedor != null) {
-            grid.setItems(cachePlanoVendedor);
-        }
         refreshGrid();
     }
 
@@ -252,7 +245,7 @@ public class GoalsView extends VerticalLayout {
                     new BigDecimal(createGoal.getValue())
             );
 
-            cachePlanoVendedor = planos;
+//            cachePlanoVendedor = planos;
             grid.setItems(planos);
         });
 
