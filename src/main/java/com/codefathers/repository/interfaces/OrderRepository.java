@@ -25,4 +25,6 @@ public interface OrderRepository {
     List<Order> findOrdersByStatus(OrderStatus status);
     List<Order> findOrdersByStatusAndTimePeriod(OrderStatus status, LocalDate start, LocalDate end);
     Map<Employee, Double> findSellersRankedByOrderStatus(LocalDate from, LocalDate to, OrderStatus status, int limit);
+    List<Order> findInvoicedOrders(LocalDate start, LocalDate end);
+    long countInvoicedOrders(LocalDate start, LocalDate end);
 }
