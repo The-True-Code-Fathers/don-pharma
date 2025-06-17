@@ -2,7 +2,6 @@ package com.codefathers.view;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime; // Adicionado para setCreatedAt
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList; // Adicionado
 import java.util.Arrays;
@@ -34,7 +33,6 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -52,7 +50,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -77,9 +74,13 @@ public class ShippingOrderView extends VerticalLayout {
 
     public ShippingOrderView() {
         this.providerService = new ShippingProviderService(new ShippingProviderRepositoryImpl());
-        this.sellOrderService = new OrderService(new OrderRepositoryImpl(), new EmployeeRepositoryImpl(), new StorageRepositoryImpl(), ValidatorUtil.getValidator());
-        this.purchaseOrderService = new PurchaseOrderService(new PurchaseOrderRepositoryImpl(), new EmployeeRepositoryImpl(), new StorageRepositoryImpl(), ValidatorUtil.getValidator());
-        this.orderService = new ShippingOrderService(new ShippingOrderRepositoryImpl(), new ShippingProviderRepositoryImpl(), new OrderRepositoryImpl(), new PurchaseOrderRepositoryImpl(), ValidatorUtil.getValidator());
+        this.sellOrderService = new OrderService(new OrderRepositoryImpl(), new EmployeeRepositoryImpl(),
+                new StorageRepositoryImpl(), ValidatorUtil.getValidator());
+        this.purchaseOrderService = new PurchaseOrderService(new PurchaseOrderRepositoryImpl(),
+                new EmployeeRepositoryImpl(), new StorageRepositoryImpl(), ValidatorUtil.getValidator());
+        this.orderService = new ShippingOrderService(new ShippingOrderRepositoryImpl(),
+                new ShippingProviderRepositoryImpl(), new OrderRepositoryImpl(), new PurchaseOrderRepositoryImpl(),
+                ValidatorUtil.getValidator());
 
         setupSearchField();
         setupStatusFilter();
@@ -115,16 +116,25 @@ public class ShippingOrderView extends VerticalLayout {
 
     private void setupGrid() {
         grid.removeAllColumns();
-        grid.addColumn(order -> order.getShippingProvider().getName()).setHeader("Shipping Provider").setAutoWidth(true).setSortable(true);
-        grid.addColumn(ShippingOrder::getDestinationState).setHeader("Destination State").setAutoWidth(true).setSortable(true);
-        grid.addColumn(ShippingOrder::getDestinationCity).setHeader("Destination City").setAutoWidth(true).setSortable(true);
-        grid.addColumn(order -> String.format("%.2f kg", order.getWeight().doubleValue())).setHeader("Weight").setAutoWidth(true).setSortable(true);
+        grid.addColumn(order -> order.getShippingProvider().getName()).setHeader("Shipping Provider").setAutoWidth(true)
+                .setSortable(true);
+        grid.addColumn(ShippingOrder::getDestinationState).setHeader("Destination State").setAutoWidth(true)
+                .setSortable(true);
+        grid.addColumn(ShippingOrder::getDestinationCity).setHeader("Destination City").setAutoWidth(true)
+                .setSortable(true);
+        grid.addColumn(order -> String.format("%.2f kg", order.getWeight().doubleValue())).setHeader("Weight")
+                .setAutoWidth(true).setSortable(true);
         grid.addColumn(ShippingOrder::getStatus).setHeader("Status").setAutoWidth(true).setSortable(true);
-        grid.addColumn(ShippingOrder::getEstimatedDeliveryDays).setHeader("Estimated Days").setAutoWidth(true).setSortable(true);
-        grid.addColumn(order -> order.getShipmentDate() != null ? order.getShipmentDate().format(DATE_FORMATTER) : "-").setHeader("Shipment Date").setAutoWidth(true).setSortable(true);
-        grid.addColumn(order -> order.getDeliveryDate() != null ? order.getDeliveryDate().format(DATE_FORMATTER) : "-").setHeader("Delivery Date").setAutoWidth(true).setSortable(true);
-        grid.addColumn(order -> String.format("R$ %.2f", order.getShippingCost().doubleValue())).setHeader("Cost").setAutoWidth(true).setSortable(true);
-        grid.addColumn(order -> order.getCreatedAt() != null ? order.getCreatedAt().format(DATE_FORMATTER) : "-").setHeader("Created At").setAutoWidth(true).setSortable(true);
+        grid.addColumn(ShippingOrder::getEstimatedDeliveryDays).setHeader("Estimated Days").setAutoWidth(true)
+                .setSortable(true);
+        grid.addColumn(order -> order.getShipmentDate() != null ? order.getShipmentDate().format(DATE_FORMATTER) : "-")
+                .setHeader("Shipment Date").setAutoWidth(true).setSortable(true);
+        grid.addColumn(order -> order.getDeliveryDate() != null ? order.getDeliveryDate().format(DATE_FORMATTER) : "-")
+                .setHeader("Delivery Date").setAutoWidth(true).setSortable(true);
+        grid.addColumn(order -> String.format("R$ %.2f", order.getShippingCost().doubleValue())).setHeader("Cost")
+                .setAutoWidth(true).setSortable(true);
+        grid.addColumn(order -> order.getCreatedAt() != null ? order.getCreatedAt().format(DATE_FORMATTER) : "-")
+                .setHeader("Created At").setAutoWidth(true).setSortable(true);
 
         statusColumn = grid.addColumn(sp -> sp.isActive() ? "Active" : "Inactive")
                 .setHeader("Active Status")
@@ -168,8 +178,7 @@ public class ShippingOrderView extends VerticalLayout {
         statusFilter.setPlaceholder("Filter by Status");
         statusFilter.setItems(Stream.concat(
                 Stream.of("ALL"),
-                Arrays.stream(ShippingServiceStatus.values()).map(Enum::name)
-        ).toList());
+                Arrays.stream(ShippingServiceStatus.values()).map(Enum::name)).toList());
         statusFilter.setValue("ALL");
         statusFilter.setAllowCustomValue(false);
         statusFilter.addValueChangeListener(e -> refreshGrid()); // Re-aplica filtros
@@ -195,8 +204,11 @@ public class ShippingOrderView extends VerticalLayout {
         String currentSearchTerm = searchField.getValue().trim();
         if (!currentSearchTerm.isEmpty()) {
             String searchTermLower = currentSearchTerm.toLowerCase();
-            boolean matchesSearch = (order.getShippingProvider() != null && order.getShippingProvider().getName().toLowerCase().contains(searchTermLower)) ||
-                    (order.getDestinationCity() != null && order.getDestinationCity().toLowerCase().contains(searchTermLower)) ||
+            boolean matchesSearch = (order.getShippingProvider() != null
+                    && order.getShippingProvider().getName().toLowerCase().contains(searchTermLower)) ||
+                    (order.getDestinationCity() != null
+                            && order.getDestinationCity().toLowerCase().contains(searchTermLower))
+                    ||
                     (order.getStatus() != null && order.getStatus().name().toLowerCase().contains(searchTermLower));
             if (!matchesSearch) {
                 return false;
@@ -242,7 +254,8 @@ public class ShippingOrderView extends VerticalLayout {
             List<ShippingProvider> providers = providerService.listAllShippingProviders();
             orderCombo.setItems(providers != null ? providers : List.of());
         } catch (Exception ex) {
-            Notification.show("Error loading shipping providers: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            Notification.show("Error loading shipping providers: " + ex.getMessage(), 5000,
+                    Notification.Position.MIDDLE);
             orderCombo.setItems(List.of());
         }
         orderCombo.setItemLabelGenerator(ShippingProvider::getName);
@@ -284,7 +297,9 @@ public class ShippingOrderView extends VerticalLayout {
         statusLayout.getStyle().set("gap", "15px");
 
         ComboBox<ShippingServiceStatus> statusCombo = new ComboBox<>("Status");
-        List<ShippingServiceStatus> allowedStatuses = Arrays.stream(ShippingServiceStatus.values()).filter(status -> status != ShippingServiceStatus.ENTREGUE && status != ShippingServiceStatus.ATRASADO).toList();
+        List<ShippingServiceStatus> allowedStatuses = Arrays.stream(ShippingServiceStatus.values())
+                .filter(status -> status != ShippingServiceStatus.ENTREGUE && status != ShippingServiceStatus.ATRASADO)
+                .toList();
         statusCombo.setItems(order == null ? allowedStatuses : Arrays.asList(ShippingServiceStatus.values()));
         statusCombo.setWidth("60%");
 
@@ -317,24 +332,49 @@ public class ShippingOrderView extends VerticalLayout {
 
         MultiSelectComboBox<Order> sellOrdersCombo = new MultiSelectComboBox<>("Sell Orders");
         try {
-            List<Order> sellOrders = sellOrderService.findAll();
-            sellOrdersCombo.setItems(sellOrders != null ? sellOrders : List.of());
+            final List<Order> sellOrders = sellOrderService.findAll();
+            if (sellOrders != null && !sellOrders.isEmpty()) {
+                sellOrdersCombo.setItems(sellOrders);
+                
+                sellOrdersCombo.setItemLabelGenerator(sellOrder -> {
+                    int orderNumber = sellOrders.indexOf(sellOrder) + 1; // +1 para começar em 1
+                    String formattedDate = sellOrder.getCreatedAt() != null 
+                        ? sellOrder.getCreatedAt().format(DATE_FORMATTER) 
+                        : "N/A";
+                    String description = sellOrder.getDescription() != null 
+                        ? " - " + sellOrder.getDescription() 
+                        : "";
+                    return "Order #" + orderNumber + description + " (" + formattedDate + ")";
+                });
+            } else {
+                sellOrdersCombo.setItems(List.of());
+            }
         } catch (Exception ex) {
             Notification.show("Error loading sell orders: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
             sellOrdersCombo.setItems(List.of());
         }
-        sellOrdersCombo.setItemLabelGenerator(sellOrder -> "Order #" + sellOrder.getId());
         sellOrdersCombo.setWidthFull();
 
         MultiSelectComboBox<PurchaseOrder> purchaseOrdersCombo = new MultiSelectComboBox<>("Purchase Orders");
         try {
-            List<PurchaseOrder> purchaseOrders = purchaseOrderService.listAll();
-            purchaseOrdersCombo.setItems(purchaseOrders != null ? purchaseOrders : List.of());
+            final List<PurchaseOrder> purchaseOrders = purchaseOrderService.listAll();
+            if (purchaseOrders != null && !purchaseOrders.isEmpty()) {
+                purchaseOrdersCombo.setItems(purchaseOrders);
+                
+                purchaseOrdersCombo.setItemLabelGenerator(purchaseOrder -> {
+                    int orderNumber = purchaseOrders.indexOf(purchaseOrder) + 1;
+                    String formattedDate = purchaseOrder.getCreatedAt() != null 
+                        ? purchaseOrder.getCreatedAt().format(DATE_FORMATTER) 
+                        : "N/A";
+                    return "Purchase #" + orderNumber + " (" + formattedDate + ")";
+                });
+            } else {
+                purchaseOrdersCombo.setItems(List.of());
+            }
         } catch (Exception ex) {
             Notification.show("Error loading purchase orders: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
             purchaseOrdersCombo.setItems(List.of());
         }
-        purchaseOrdersCombo.setItemLabelGenerator(purchaseOrder -> "Purchase #" + purchaseOrder.getId());
         purchaseOrdersCombo.setWidthFull();
 
         rightColumn.add(sellOrdersCombo, purchaseOrdersCombo);
@@ -352,12 +392,11 @@ public class ShippingOrderView extends VerticalLayout {
             deliveryDatePicker.setValue(order.getDeliveryDate());
             costField.setValue(order.getShippingCost() != null ? order.getShippingCost().doubleValue() : null);
 
-
-            List<Order> currentSellOrders =  order.getOrders();
+            List<Order> currentSellOrders = order.getOrders();
             if (currentSellOrders != null) {
                 sellOrdersCombo.setValue(currentSellOrders);
             }
-            List<PurchaseOrder> currentPurchaseOrders =  order.getPurchaseOrder();
+            List<PurchaseOrder> currentPurchaseOrders = order.getPurchaseOrder();
             if (currentPurchaseOrders != null) {
                 purchaseOrdersCombo.setValue(currentPurchaseOrders);
             }
@@ -365,7 +404,11 @@ public class ShippingOrderView extends VerticalLayout {
 
         Button saveButton = new Button(order == null ? "Register" : "Update", e -> {
             try {
-                CreateShippingOrderDTO dto = buildOrderDTO(orderCombo.getValue(), stateField.getValue(), cityField.getValue(), weightField.getValue(), statusCombo.getValue(), estimatedDaysField.getValue(), shipmentDatePicker.getValue(), deliveryDatePicker.getValue(), costField.getValue(), sellOrdersCombo.getSelectedItems(), purchaseOrdersCombo.getSelectedItems());
+                CreateShippingOrderDTO dto = buildOrderDTO(orderCombo.getValue(), stateField.getValue(),
+                        cityField.getValue(), weightField.getValue(), statusCombo.getValue(),
+                        estimatedDaysField.getValue(), shipmentDatePicker.getValue(), deliveryDatePicker.getValue(),
+                        costField.getValue(), sellOrdersCombo.getSelectedItems(),
+                        purchaseOrdersCombo.getSelectedItems());
 
                 if (order != null) {
                     orderService.updateOrder(order.getId(), dto, order.isActive());
@@ -385,28 +428,31 @@ public class ShippingOrderView extends VerticalLayout {
 
         Button toggleStatusButton = new Button(order != null && order.isActive() ? "Deactivate" : "Activate", e -> {
             String action = order.isActive() ? "deactivate" : "activate";
-                try {
-                    CreateShippingOrderDTO dto = CreateShippingOrderDTO.builder()
-                            .shippingProviderId(order.getShippingProvider().getId())
-                            .destinationState(order.getDestinationState())
-                            .destinationCity(order.getDestinationCity())
-                            .weight(order.getWeight())
-                            .status(order.getStatus())
-                            .estimatedDeliveryDays(order.getEstimatedDeliveryDays())
-                            .shipmentDate(order.getShipmentDate())
-                            .deliveryDate(order.getDeliveryDate())
-                            .shippingCost(order.getShippingCost())
-                            .order(order.getOrders() != null ? order.getOrders().stream().map(Order::getId).collect(Collectors.toList()) : List.of())
-                            .purchaseOrder(order.getPurchaseOrder() != null ? order.getPurchaseOrder().stream().map(PurchaseOrder::getId).collect(Collectors.toList()) : List.of())
-                            .build();
+            try {
+                CreateShippingOrderDTO dto = CreateShippingOrderDTO.builder()
+                        .shippingProviderId(order.getShippingProvider().getId())
+                        .destinationState(order.getDestinationState())
+                        .destinationCity(order.getDestinationCity())
+                        .weight(order.getWeight())
+                        .status(order.getStatus())
+                        .estimatedDeliveryDays(order.getEstimatedDeliveryDays())
+                        .shipmentDate(order.getShipmentDate())
+                        .deliveryDate(order.getDeliveryDate())
+                        .shippingCost(order.getShippingCost())
+                        .order(order.getOrders() != null
+                                ? order.getOrders().stream().map(Order::getId).collect(Collectors.toList())
+                                : List.of())
+                        .purchaseOrder(order.getPurchaseOrder() != null ? order.getPurchaseOrder().stream()
+                                .map(PurchaseOrder::getId).collect(Collectors.toList()) : List.of())
+                        .build();
 
-                    orderService.updateOrder(order.getId(), dto, !order.isActive());
+                orderService.updateOrder(order.getId(), dto, !order.isActive());
 
-                    Notification.show("Order " + (!order.isActive() ? "activated" : "deactivated") + " successfully!");
-                    refreshGrid();
-                } catch (Exception ex) {
-                    showError(ex);
-                }
+                Notification.show("Order " + (!order.isActive() ? "activated" : "deactivated") + " successfully!");
+                refreshGrid();
+            } catch (Exception ex) {
+                showError(ex);
+            }
         });
         toggleStatusButton.setVisible(order != null);
         toggleStatusButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
@@ -430,19 +476,29 @@ public class ShippingOrderView extends VerticalLayout {
         dialog.open();
     }
 
-    private CreateShippingOrderDTO buildOrderDTO(ShippingProvider provider, String state, String city, Double weight, ShippingServiceStatus status, Integer estimatedDays, LocalDate shipmentDate, LocalDate deliveryDate, Double cost, Set<Order> sellOrders, Set<PurchaseOrder> purchaseOrders) {
+    private CreateShippingOrderDTO buildOrderDTO(ShippingProvider provider, String state, String city, Double weight,
+            ShippingServiceStatus status, Integer estimatedDays, LocalDate shipmentDate, LocalDate deliveryDate,
+            Double cost, Set<Order> sellOrders, Set<PurchaseOrder> purchaseOrders) {
 
-        if (provider == null) throw new IllegalArgumentException("Shipping provider is mandatory");
-        if (state == null || state.isBlank()) throw new IllegalArgumentException("State is mandatory");
-        if (city == null || city.isBlank()) throw new IllegalArgumentException("City is mandatory");
-        if (weight == null || weight <= 0) throw new IllegalArgumentException("Weight must be positive");
-        if (status == null) throw new IllegalArgumentException("Status is mandatory");
+        if (provider == null)
+            throw new IllegalArgumentException("Shipping provider is mandatory");
+        if (state == null || state.isBlank())
+            throw new IllegalArgumentException("State is mandatory");
+        if (city == null || city.isBlank())
+            throw new IllegalArgumentException("City is mandatory");
+        if (weight == null || weight <= 0)
+            throw new IllegalArgumentException("Weight must be positive");
+        if (status == null)
+            throw new IllegalArgumentException("Status is mandatory");
         if (estimatedDays == null || estimatedDays <= 0)
             throw new IllegalArgumentException("Estimated days must be positive");
-        if (cost == null || cost < 0) throw new IllegalArgumentException("Cost cannot be negative");
+        if (cost == null || cost < 0)
+            throw new IllegalArgumentException("Cost cannot be negative");
 
         List<UUID> orderIds = sellOrders != null ? sellOrders.stream().map(Order::getId).toList() : List.of();
-        List<UUID> purchaseOrderIds = purchaseOrders != null ? purchaseOrders.stream().map(PurchaseOrder::getId).toList() : List.of();
+        List<UUID> purchaseOrderIds = purchaseOrders != null
+                ? purchaseOrders.stream().map(PurchaseOrder::getId).toList()
+                : List.of();
 
         return CreateShippingOrderDTO.builder()
                 .shippingProviderId(provider.getId())

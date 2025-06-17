@@ -34,7 +34,7 @@ public class MetaPorVendedorService {
             for (Employee vendedor : vendedores) {
 
                 // 2. Total de vendas do vendedor
-                String hqlTotalVendas = "SELECT SUM(o.totalAmount) FROM orders o WHERE o.seller.id = :sellerId AND o.orderStatus = :status";
+                String hqlTotalVendas = "SELECT SUM(o.productsPrice) FROM orders o WHERE o.seller.id = :sellerId AND o.orderStatus = :status";
                 BigDecimal totalVendas = session.createQuery(hqlTotalVendas, BigDecimal.class)
                         .setParameter("sellerId", vendedor.getId())
                         .setParameter("status", OrderStatus.INVOICED)
