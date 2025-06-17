@@ -160,7 +160,7 @@ public class FinancialView extends VerticalLayout {
         
         // --- Grid de Saídas ---
         List<CategoryData> outflowData = new ArrayList<>();
-        outflowData.add(new CategoryData("Pagamentos Diversos", financialService.getPaymentsTotal()));
+        outflowData.add(new CategoryData("Pagamentos Diversos", financialService.getNetPayment()));
         outflowData.add(new CategoryData("Compras de Produtos", financialService.getPurchaseTotal()));
         outflowData.add(new CategoryData("Custos de Frete", financialService.getShippingTotal()));
         outflowsGrid.setItems(outflowData);
