@@ -1,15 +1,14 @@
 package com.codefathers.service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import com.codefathers.model.dto.AtualizarStatusShippingProviderDTO;
 import com.codefathers.model.dto.CreateShippingProviderDTO;
 import com.codefathers.model.entity.ShippingArea;
 import com.codefathers.model.entity.ShippingProvider;
-import com.codefathers.repository.implementations.ShippingProviderRepositoryImpl;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 public class ShippingProviderService {
 
@@ -28,14 +27,7 @@ public class ShippingProviderService {
                 .averageDeliveryDays(0)
                 .active(true)
                 .createdAt(java.time.LocalDateTime.now())
-                .shippingAreas(dto.getShippingAreas())
                 .build();
-
-        if (dto.getShippingAreas() != null) {
-            for (ShippingArea area : dto.getShippingAreas()) {
-                area.setShippingProvider(provider);
-            }
-        }
 
         repository.save(provider);
     }
@@ -49,14 +41,6 @@ public class ShippingProviderService {
         existing.setBasePrice(dto.getBasePrice());
         existing.setDailyCapacity(dto.getDailyCapacity());
         existing.setActive(dto.isActive());
-
-        existing.getShippingAreas().clear();
-        if (dto.getShippingAreas() != null) {
-            for (ShippingArea area : dto.getShippingAreas()) {
-                area.setShippingProvider(existing);
-                existing.getShippingAreas().add(area);
-            }
-        }
 
         repository.update(existing);
     }

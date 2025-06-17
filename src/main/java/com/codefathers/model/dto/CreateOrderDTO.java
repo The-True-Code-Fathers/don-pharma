@@ -30,10 +30,6 @@ public class CreateOrderDTO {
     @NotEmpty
     private List<@Valid CreateOrderItemDTO> item;
 
-    // Products price will be computed
-    @NotNull
-    private ShippingProvider shippingProvider;
-
     private LocalDateTime createdAt;
 
 

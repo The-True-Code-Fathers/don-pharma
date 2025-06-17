@@ -2,13 +2,25 @@ package com.codefathers.model.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
-import lombok.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @Entity(name = "shipping_provider")
@@ -38,23 +50,11 @@ public class ShippingProvider {
     @OneToMany(mappedBy = "shippingProvider", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     @JsonBackReference
-    private List<ShippingArea> shippingAreas;
-
+    private List<ShippingArea> shippingAreas = new ArrayList<>();
+    
     @Column(name = "active", nullable = false)
     private boolean active;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    // Retorna lista de estados distintos atendidos
-    public List<String> getServiceStates() {
-        if (shippingAreas == null || shippingAreas.isEmpty()) {
-            return List.of();
-        }
-        return shippingAreas.stream()
-                .filter(sa -> sa.getStates() != null)
-                .flatMap(sa -> sa.getStates().stream())
-                .distinct()
-                .collect(Collectors.toList());
-    }
 }

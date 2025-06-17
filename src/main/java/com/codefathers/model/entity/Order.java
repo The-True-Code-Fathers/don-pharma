@@ -2,13 +2,25 @@ package com.codefathers.model.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import com.codefathers.model.enums.OrderStatus;
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,11 +50,8 @@ public class Order {
     private BigDecimal productsPrice;
 
     @ManyToOne
-    @JoinColumn(name = "shipping_provider_id", nullable = false)
-    private ShippingProvider shippingProvider;
-
-    @Column(name = "shipping_price", precision = 19, scale = 4, nullable = false)
-    private BigDecimal shippingPrice;
+    @JoinColumn(name = "shipping_order_id")
+    private ShippingOrder shippingOrder;
 
     @Column(name = "total_amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal totalAmount;

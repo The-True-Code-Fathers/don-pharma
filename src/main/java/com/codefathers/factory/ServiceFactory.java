@@ -59,6 +59,8 @@ public class ServiceFactory {
             new ShippingOrderService(
                     RepositoryFactory.getShippingOrderRepository(),
                     RepositoryFactory.getShippingProviderRepository(),
+                    RepositoryFactory.getOrderRepository(),
+                    RepositoryFactory.getPurchaseOrderRepository(),
                     ValidatorUtil.getValidator()
             );
 

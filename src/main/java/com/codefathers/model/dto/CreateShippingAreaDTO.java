@@ -19,8 +19,5 @@ public class CreateShippingAreaDTO {
     private String description;
 
     @NotNull
-    private String[] states;
-
-    @NotNull
-    private String cep;
+    private String states;
 }

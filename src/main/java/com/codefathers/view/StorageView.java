@@ -25,7 +25,7 @@ public class StorageView extends VerticalLayout {
     private final StorageService storageService;
 
     private final TextField searchField = new TextField();
-    private final Button openDialogButton = new Button("Add to Storage");
+    private final Button openDialogButton = new Button("Add to Storage", new Icon(VaadinIcon.PLUS));
 
     private final Grid<Storage> grid = new Grid<>(Storage.class, false);
 

@@ -79,7 +79,7 @@ public class ProductsView extends VerticalLayout {
     private Button updateCloseButton = new Button("Close");
     private Button setInactiveButton = new Button("Inactivate Product");
 
-    private Button dialogButtonCreateProduct = new Button("Create Product");
+    private Button dialogButtonCreateProduct = new Button("Create Product", new Icon(VaadinIcon.PLUS));
 
     private Grid<Product> grid = new Grid<>(Product.class, false);
     private GridLazyDataView<Product> dataView;

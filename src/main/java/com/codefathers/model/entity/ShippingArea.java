@@ -27,11 +27,7 @@ public class ShippingArea {
     private String description;
 
     @Column(nullable = false)
-    @ElementCollection // Necessário para mapear arrays ou listas simples
-    private List<String> states; // alterado para List<String> para JPA mapear corretamente
-
-    @Column(nullable = false)
-    private String cep;
+    private String states;
 
     @Column(name = "active", nullable = false)
     private boolean active;

@@ -2,12 +2,15 @@ package com.codefathers.model.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
+import com.codefathers.model.entity.Order;
+import com.codefathers.model.entity.PurchaseOrder;
 import com.codefathers.model.entity.ShippingProvider;
 import com.codefathers.model.enums.ShippingServiceStatus;
-
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
+
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
@@ -27,6 +30,10 @@ import lombok.NoArgsConstructor;
 public class CreateShippingOrderDTO {
     @NotNull(message = "O ID do provedor de entrega não pode ser nulo")
     private UUID shippingProviderId;
+
+    private List<UUID> order;
+
+    private List<UUID> purchaseOrder;
 
     @NotBlank(message = "O estado de destino é obrigatório")
     @Size(min = 2, max = 2, message = "O estado deve ser o código com 2 letras (ex: SP)")

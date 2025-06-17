@@ -44,7 +44,7 @@ public class PaymentView extends VerticalLayout {
     private final EmployeeService employeeService;
 
     private final TextField searchField = new TextField();
-    private final Button openDialogButton = new Button("Create Payment");
+    private final Button openDialogButton = new Button("Create Payment", new Icon(VaadinIcon.PLUS));
 
     private final Grid<Payment> grid = new Grid<>(Payment.class, false);
     private final Dialog paymentDialog = new Dialog();
@@ -145,8 +145,6 @@ public class PaymentView extends VerticalLayout {
     private BigDecimal calculateTotalIncome(Payment payment) {
         BigDecimal totalBenefits = payment.getMealVoucherAmount()
                 .add(payment.getFoodVoucherAmount())
-                .add(payment.getHealthInsuranceAmount())
-                .add(payment.getDentalInsuranceAmount())
                 .add(payment.getProfitSharingAmount());
 
         return payment.getGrossIncome()
@@ -372,8 +370,6 @@ public class PaymentView extends VerticalLayout {
         BigDecimal netIncome = grossIncome.subtract(amountInTaxes);
 
         BigDecimal totalBenefits = mealVoucher.add(foodVoucher)
-                .add(healthInsurance)
-                .add(dentalInsurance)
                 .add(profitSharing);
         BigDecimal totalIncome = grossIncome.add(totalBenefits).subtract(amountInTaxes);
 
@@ -450,17 +446,13 @@ public class PaymentView extends VerticalLayout {
                 .valueOf(mealVoucherField.getValue() != null ? mealVoucherField.getValue() : 0);
         BigDecimal foodVoucher = BigDecimal
                 .valueOf(foodVoucherField.getValue() != null ? foodVoucherField.getValue() : 0);
-        BigDecimal healthInsurance = BigDecimal
-                .valueOf(healthInsuranceField.getValue() != null ? healthInsuranceField.getValue() : 0);
-        BigDecimal dentalInsurance = BigDecimal
-                .valueOf(dentalInsuranceField.getValue() != null ? dentalInsuranceField.getValue() : 0);
         BigDecimal profitSharing = BigDecimal
                 .valueOf(profitSharingField.getValue() != null ? profitSharingField.getValue() : 0);
 
         BigDecimal netIncome = grossIncome.subtract(amountInTaxes);
 
         BigDecimal totalBenefits = mealVoucher.add(foodVoucher)
-                .add(healthInsurance).add(dentalInsurance).add(profitSharing);
+                .add(profitSharing);
         BigDecimal totalIncome = grossIncome.add(totalBenefits).subtract(amountInTaxes);
 
         netIncomeDisplay.setValue("R$ " + netIncome.toString());

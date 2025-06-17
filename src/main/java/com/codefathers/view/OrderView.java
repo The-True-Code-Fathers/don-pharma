@@ -57,30 +57,32 @@ import com.vaadin.flow.router.Route;
 @PageTitle("Order")
 @Route("order")
 public class OrderView extends VerticalLayout {
-    private static final UUID ALL_EMPLOYEES_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
-    private ShippingProviderService shippingProviderService;
-    ProductRepositoryImpl productRepository = new ProductRepositoryImpl();
     ShippingProviderRepositoryImpl shippingProviderRepository = new ShippingProviderRepositoryImpl();
     OrderItemRepositoryImpl orderItemRepository = new OrderItemRepositoryImpl();
+    ProductRepositoryImpl productRepository = new ProductRepositoryImpl();
+    private ShippingProviderService shippingProviderService;
+    private static final UUID ALL_EMPLOYEES_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
     private ProductService productService;
     private EmployeeService employeeService;
     private OrderService orderService;
-    private Grid<Order> grid = new Grid<>(Order.class, false);
     private GridLazyDataView<Order> dataView;
     private OrderRepositoryImpl orderRepository;
     private TextField searchField = new TextField();
-    private Select<String> statusFilter = new Select<>();
     private Dialog dialog = new Dialog();
     private Dialog editDialog = new Dialog();
     private String currentSearchingTerm = "";
     private String currentStatus = "ALL";
     private Order currentOrderEditing = null;
     private Employee currentEmployeeFilter = null;
-    private ComboBox<Product> productComboBox;
     private IntegerField quantityField;
     private NumberField priceField;
+
+    private Select<String> statusFilter = new Select<>();
+    private Grid<Order> grid = new Grid<>(Order.class, false);
     private List<OrderItemRow> orderItems;
     private Grid<OrderItemRow> itemsGrid;
+    private ComboBox<Product> productComboBox;
 
     public OrderView() {
         productService = new ProductService(productRepository, ValidatorUtil.getValidator());
@@ -175,16 +177,16 @@ public class OrderView extends VerticalLayout {
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
-        grid.addColumn(order -> {
-            if (order.getShippingProvider() != null) {
-                return order.getShippingProvider().getName();
-            }
-            return "N/A";
-        })
-                .setHeader("Shipping Provider")
-                .setSortable(true)
-                .setAutoWidth(true)
-                .setFlexGrow(0);
+        // grid.addColumn(order -> {
+        //             if (order.getShippingProvider() != null) {
+        //                 return order.getShippingProvider().getName();
+        //             }
+        //             return "N/A";
+        //         })
+        //         .setHeader("Shipping Provider")
+        //         .setSortable(true)
+        //         .setAutoWidth(true)
+        //         .setFlexGrow(0);
 
         grid.addColumn(order -> {
             if (order.getCreatedAt() != null) {
@@ -668,7 +670,6 @@ public class OrderView extends VerticalLayout {
         return CreateOrderDTO.builder()
                 .sellerId(seller.getId())
                 .description(description)
-                .shippingProvider(shippingProvider)
                 .item(itemDTOs)
                 .createdAt(java.time.LocalDateTime.now())
                 .build();

@@ -53,8 +53,8 @@ public class EmployeeView extends VerticalLayout {
     private ComboBox<EmployeeGender> updateGender = new ComboBox<>("Gender");
     private ComboBox<EmployeeRole> updateRole = new ComboBox<>("Role");
 
-    // Botões
-    private Button createEmployeeButton = new Button("Create Employee");
+    // --- Botões do Diálogo de Criação ---
+    private Button createEmployeeButton = new Button("Create Employee", new Icon(VaadinIcon.PLUS));
     private Button createSaveButton = new Button("Save");
     private Button createClearButton = new Button("Clear");
     private Button createCloseButton = new Button("Close");
@@ -217,14 +217,16 @@ public class EmployeeView extends VerticalLayout {
     // MÉTODO AUXILIAR CORRIGIDO
     // =================================================================================
     private Comparator<Employee> getComparator(QuerySortOrder sortOrder) {
-        // Usa sortOrder.getSorted() que retorna a String (a chave da coluna) diretamente
+        // Usa sortOrder.getSorted() que retorna a String (a chave da coluna)
+        // diretamente
         Comparator<Employee> comparator = switch (sortOrder.getSorted()) {
             case "id" -> Comparator.comparing(Employee::getId);
             case "fullName" -> Comparator.comparing(Employee::getFullName);
             case "birthDate" -> Comparator.comparing(Employee::getBirthDate);
             case "gender" -> Comparator.comparing(e -> e.getGender().getLabel());
             case "role" -> Comparator.comparing(e -> e.getRole().getLabel());
-            case "createdAt" -> Comparator.comparing(Employee::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "createdAt" ->
+                Comparator.comparing(Employee::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
             case "status" -> Comparator.comparing(Employee::isActive);
             default -> (e1, e2) -> 0;
         };
@@ -237,10 +239,14 @@ public class EmployeeView extends VerticalLayout {
 
     private void setupGrid() {
         grid.addColumn(Employee::getId).setHeader("ID").setSortable(true).setKey("id").setFlexGrow(2);
-        grid.addColumn(Employee::getFullName).setHeader("Full Name").setSortable(true).setKey("fullName").setFlexGrow(2);
-        grid.addColumn(Employee::getBirthDate).setHeader("Birth Date").setSortable(true).setKey("birthDate").setFlexGrow(1);
-        grid.addColumn(employee -> employee.getGender().getLabel()).setHeader("Gender").setSortable(true).setKey("gender").setFlexGrow(1);
-        grid.addColumn(employee -> employee.getRole().getLabel()).setHeader("Role").setSortable(true).setKey("role").setFlexGrow(1);
+        grid.addColumn(Employee::getFullName).setHeader("Full Name").setSortable(true).setKey("fullName")
+                .setFlexGrow(2);
+        grid.addColumn(Employee::getBirthDate).setHeader("Birth Date").setSortable(true).setKey("birthDate")
+                .setFlexGrow(1);
+        grid.addColumn(employee -> employee.getGender().getLabel()).setHeader("Gender").setSortable(true)
+                .setKey("gender").setFlexGrow(1);
+        grid.addColumn(employee -> employee.getRole().getLabel()).setHeader("Role").setSortable(true).setKey("role")
+                .setFlexGrow(1);
         grid.addColumn(employee -> employee.getCreatedAt() != null ? employee.getCreatedAt().format(dateFormatter) : "")
                 .setHeader("Created At").setSortable(true).setKey("createdAt").setFlexGrow(1);
 
@@ -298,7 +304,8 @@ public class EmployeeView extends VerticalLayout {
         formLayout.setSpacing(true);
         formLayout.setPadding(false);
 
-        HorizontalLayout buttonsLayout = new HorizontalLayout(updateSaveButton, updateClearButton, updateCloseButton, setInactiveButton);
+        HorizontalLayout buttonsLayout = new HorizontalLayout(updateSaveButton, updateClearButton, updateCloseButton,
+                setInactiveButton);
         buttonsLayout.setJustifyContentMode(JustifyContentMode.END);
         buttonsLayout.setWidthFull();
 

@@ -1,6 +1,7 @@
 package com.codefathers.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -22,13 +23,6 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class OrderService {
@@ -64,8 +58,6 @@ public class OrderService {
         Order order = Order.builder()
                 .seller(employee)
                 .description(createOrderDTO.getDescription())
-                .shippingProvider(createOrderDTO.getShippingProvider())
-                .shippingPrice(BigDecimal.ZERO)
                 .productsPrice(BigDecimal.ZERO)
                 .totalAmount(BigDecimal.ZERO)
                 .orderStatus(OrderStatus.OPEN)
@@ -99,7 +91,6 @@ public class OrderService {
         BigDecimal shippingPrice = productsPrice.multiply(new BigDecimal("0.05"));
         BigDecimal totalPrice = productsPrice.add(shippingPrice);
 
-        order.setShippingPrice(shippingPrice);
         order.setProductsPrice(productsPrice);
         order.setTotalAmount(totalPrice);
         order.setItems(orderItems);
@@ -167,18 +158,14 @@ public class OrderService {
         orderRepository.update(order);
     }
 
-    // Adicione este método ao seu OrderService
-
     public void updateOrder(UUID orderId, OrderStatus newStatus, Employee newSeller, String newDescription) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found with id: " + orderId));
 
-        // Verificar se o pedido pode ser editado
         if (order.getOrderStatus() == OrderStatus.CANCELLED || order.getOrderStatus() == OrderStatus.INVOICED) {
             throw new BusinessRuleException("Cannot update order with status: " + order.getOrderStatus());
         }
 
-        // Verificar se o novo vendedor tem permissão
         if (newSeller != null) {
             boolean isSeller = newSeller.getRole().equals(EmployeeRole.SALES);
             boolean isManager = newSeller.getRole().equals(EmployeeRole.LOCAL_MANAGER);

@@ -1,70 +1,99 @@
 package com.codefathers.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 
 import com.codefathers.model.dto.CreateShippingOrderDTO;
+import com.codefathers.model.entity.Order;
+import com.codefathers.model.entity.PurchaseOrder;
 import com.codefathers.model.entity.ShippingOrder;
 import com.codefathers.model.entity.ShippingProvider;
+import com.codefathers.repository.interfaces.OrderRepository;
+import com.codefathers.repository.interfaces.PurchaseOrderRepository;
 import com.codefathers.repository.interfaces.ShippingOrderRepository;
 import com.codefathers.repository.interfaces.ShippingProviderRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
 public class ShippingOrderService {
     private final ShippingOrderRepository shippingOrderRepository;
     private final ShippingProviderRepository shippingProviderRepository;
+    private final OrderRepository orderRepository;
+    private final PurchaseOrderRepository purchaseOrderRepository;
     private final Validator validator;
 
     public ShippingOrderService(ShippingOrderRepository shippingOrderRepository,
                                 ShippingProviderRepository shippingProviderRepository,
+                                OrderRepository orderRepository,
+                                PurchaseOrderRepository purchaseOrderRepository,
                                 Validator validator) {
         this.shippingOrderRepository = shippingOrderRepository;
         this.shippingProviderRepository = shippingProviderRepository;
+        this.orderRepository = orderRepository;
+        this.purchaseOrderRepository = purchaseOrderRepository;
         this.validator = validator;
     }
 
     public void createOrder(CreateShippingOrderDTO dto) {
-        // Validação do DTO
-        var violations = validator.validate(dto);
-        if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(violations);
+        ShippingProvider provider = shippingProviderRepository.findById(dto.getShippingProviderId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "ShippingProvider não encontrado com ID: "
+                                + dto.getShippingProviderId()));
+
+        ShippingOrder newShippingOrder = new ShippingOrder();
+        newShippingOrder.setShippingProvider(provider);
+        newShippingOrder.setDestinationState(dto.getDestinationState());
+        newShippingOrder.setDestinationCity(dto.getDestinationCity());
+        newShippingOrder.setWeight(dto.getWeight());
+        newShippingOrder.setStatus(dto.getStatus());
+        newShippingOrder.setActive(true);
+        newShippingOrder.setCreatedAt(LocalDateTime.now());
+        newShippingOrder.setDeliveryDate(dto.getDeliveryDate());
+        newShippingOrder.setShipmentDate(dto.getShipmentDate());
+        newShippingOrder.setEstimatedDeliveryDays(dto.getEstimatedDeliveryDays());
+        newShippingOrder.setShippingCost(dto.getShippingCost());
+
+            if (dto.getOrder() != null && !dto.getOrder().isEmpty()) {
+            List<Order> managedSellOrders = dto.getOrder().stream()
+                    .map(orderId -> orderRepository.findById(orderId)
+                            .orElseThrow(() -> new EntityNotFoundException(
+                                    "Pedido de Venda não encontrado com ID: "
+                                            + orderId)))
+                    .collect(Collectors.toList());
+
+            managedSellOrders.forEach(order -> order.setShippingOrder(newShippingOrder));
+            newShippingOrder.setOrders(managedSellOrders);
         }
 
-        // Busca o provedor de entrega
-        ShippingProvider provider = shippingProviderRepository
-                .findById(dto.getShippingProviderId()).get();
+        if (dto.getPurchaseOrder() != null && !dto.getPurchaseOrder().isEmpty()) {
+            List<PurchaseOrder> managedPurchaseOrders = dto.getPurchaseOrder().stream()
+                    .map(purchaseOrderId -> purchaseOrderRepository.findById(purchaseOrderId)
+                            .orElseThrow(() -> new EntityNotFoundException(
+                                    "Pedido de Compra não encontrado com ID: "
+                                            + purchaseOrderId)))
+                    .collect(Collectors.toList());
 
-        if (provider == null) {
-            throw new IllegalArgumentException(
-                    "Provedor de entrega não encontrado para o id: " + dto.getShippingProviderId());
+            managedPurchaseOrders
+                    .forEach(purchaseOrder -> purchaseOrder.setShippingOrder(newShippingOrder));
+            newShippingOrder.setPurchaseOrder(managedPurchaseOrders);
         }
 
-        // Cria o novo pedido
-        ShippingOrder order = ShippingOrder.builder()
-                .shippingProvider(provider)
-                .destinationState(dto.getDestinationState())
-                .destinationCity(dto.getDestinationCity())
-                .weight(dto.getWeight())
-                .status(dto.getStatus())
-                .estimatedDeliveryDays(dto.getEstimatedDeliveryDays())
-                .deliveryDate(dto.getDeliveryDate())
-                .shipmentDate(dto.getShipmentDate())
-                .shippingCost(dto.getShippingCost())
-                .createdAt(LocalDateTime.now())
-                .active(true)
-                .build();
-
-        shippingOrderRepository.save(order);
+        shippingOrderRepository.save(newShippingOrder);
     }
 
     public ShippingOrder searchShippingOrder(UUID orderId) {
         if (orderId == null) {
             throw new IllegalArgumentException("ID do pedido não pode ser nulo");
         }
-        return shippingOrderRepository.findById(orderId).get();
+        return shippingOrderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Pedido não encontrado para o ID: " + orderId));
     }
 
     // Lista apenas as ordens ativas
@@ -80,43 +109,73 @@ public class ShippingOrderService {
     }
 
     public void removeShippingOrder(UUID orderId) {
-        if (orderId == null) {
-            throw new IllegalArgumentException("ID do pedido não pode ser nulo");
-        }
+        ShippingOrder order = searchShippingOrder(orderId);
 
-        var optionalOrder = shippingOrderRepository.findById(orderId);
+        CreateShippingOrderDTO dto = CreateShippingOrderDTO.builder()
+                .shippingProviderId(order.getShippingProvider().getId())
+                .destinationState(order.getDestinationState())
+                .destinationCity(order.getDestinationCity())
+                .weight(order.getWeight())
+                .status(order.getStatus())
+                .estimatedDeliveryDays(order.getEstimatedDeliveryDays())
+                .shipmentDate(order.getShipmentDate())
+                .deliveryDate(order.getDeliveryDate())
+                .shippingCost(order.getShippingCost())
+                .order(order.getOrders().stream().map(Order::getId).collect(Collectors.toList()))
+                .purchaseOrder(order.getPurchaseOrder().stream().map(PurchaseOrder::getId)
+                        .collect(Collectors.toList()))
+                .build();
 
-        if (optionalOrder.isEmpty()) {
-            throw new IllegalArgumentException("Pedido não encontrado para o ID: " + orderId);
-        }
-
-        ShippingOrder order = optionalOrder.get();
-        order.setActive(false); // Desativa logicamente
-        shippingOrderRepository.update(order); // Persiste a alteração
+        updateOrder(orderId, dto, false);
     }
 
     public void updateOrder(UUID orderId, CreateShippingOrderDTO dto) {
-        // Validação do DTO
+        ShippingOrder existingOrder = searchShippingOrder(orderId);
+        updateOrder(orderId, dto, existingOrder.isActive());
+    }
+
+    public void updateOrder(UUID id, CreateShippingOrderDTO dto, boolean active) {
         var violations = validator.validate(dto);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
 
-        var existingOrder = shippingOrderRepository.findById(orderId).get();
-        if (existingOrder == null) {
-            throw new IllegalArgumentException("Pedido não encontrado para o id: " + orderId);
+        List<Order> managedOrders = new ArrayList<>();
+        List<PurchaseOrder> managedPurchaseOrders = new ArrayList<>();
+        ShippingOrder existingOrder = searchShippingOrder(id);
+        ShippingProvider provider = shippingProviderRepository.findById(dto.getShippingProviderId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Provedor de entrega não encontrado para o ID: "
+                                + dto.getShippingProviderId()));
+
+        if (dto.getOrder() != null && !dto.getOrder().isEmpty()) {
+            managedOrders = dto.getOrder().stream()
+                    .map(orderId -> orderRepository.findById(orderId)
+                            .orElseThrow(() -> new EntityNotFoundException(
+                                    "Pedido de Venda não encontrado com ID: "
+                                            + orderId)))
+                    .collect(Collectors.toList());
+
+            managedOrders.forEach(order -> order.setShippingOrder(existingOrder));
+            existingOrder.setOrders(managedOrders);
         }
 
-        ShippingProvider provider = shippingProviderRepository
-                .findById(dto.getShippingProviderId()).get();
+        // Busca os Pedidos de Compra (PurchaseOrder) usando stream e findById
+        if (dto.getPurchaseOrder() != null && !dto.getPurchaseOrder().isEmpty()) {
+            managedPurchaseOrders = dto.getPurchaseOrder().stream()
+                    .map(purchaseOrderId -> purchaseOrderRepository.findById(purchaseOrderId)
+                            .orElseThrow(() -> new EntityNotFoundException(
+                                    "Pedido de Compra não encontrado com ID: "
+                                            + purchaseOrderId)))
+                    .collect(Collectors.toList());
 
-        if (provider == null) {
-            throw new IllegalArgumentException(
-                    "Provedor de entrega não encontrado para o id: " + dto.getShippingProviderId());
+            managedPurchaseOrders.forEach(purchaseOrder -> purchaseOrder.setShippingOrder(existingOrder));
+            existingOrder.setPurchaseOrder(managedPurchaseOrders);
         }
 
-        // Atualiza os campos do pedido
         existingOrder.setShippingProvider(provider);
+        existingOrder.setOrders(managedOrders);
+        existingOrder.setPurchaseOrder(managedPurchaseOrders);
         existingOrder.setDestinationState(dto.getDestinationState());
         existingOrder.setDestinationCity(dto.getDestinationCity());
         existingOrder.setWeight(dto.getWeight());
@@ -125,6 +184,7 @@ public class ShippingOrderService {
         existingOrder.setShipmentDate(dto.getShipmentDate());
         existingOrder.setDeliveryDate(dto.getDeliveryDate());
         existingOrder.setShippingCost(dto.getShippingCost());
+        existingOrder.setActive(active); // Define o status de ativo
 
         shippingOrderRepository.update(existingOrder);
     }
@@ -133,26 +193,8 @@ public class ShippingOrderService {
         shippingOrderRepository.update(shippingOrder);
     }
 
-    public void updateOrder(UUID id, CreateShippingOrderDTO dto, boolean active) throws Exception {
-        // Busca o pedido pelo ID
-        ShippingOrder existingOrder = shippingOrderRepository.findById(id)
-                .orElseThrow(() -> new Exception("Pedido não encontrado com ID: " + id));
-
-        ShippingProvider provider = shippingProviderRepository.findById(dto.getShippingProviderId())
-                .orElseThrow(
-                        () -> new Exception("Provedor de frete não encontrado com ID: " + dto.getShippingProviderId()));
-
-        existingOrder.setShippingProvider(provider);
-        existingOrder.setDestinationState(dto.getDestinationState());
-        existingOrder.setDestinationCity(dto.getDestinationCity());
-        existingOrder.setWeight(dto.getWeight());
-        existingOrder.setStatus(dto.getStatus());
-        existingOrder.setEstimatedDeliveryDays(dto.getEstimatedDeliveryDays());
-        existingOrder.setShipmentDate(dto.getShipmentDate());
-        existingOrder.setDeliveryDate(dto.getDeliveryDate());
-        existingOrder.setShippingCost(dto.getShippingCost());
-        existingOrder.setActive(active);
-
-        shippingOrderRepository.update(existingOrder);
+    public List<ShippingOrder> listAll() {
+        return shippingOrderRepository.listAll();
     }
+
 }

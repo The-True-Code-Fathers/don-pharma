@@ -1,17 +1,17 @@
 package com.codefathers.service;
 
-import com.codefathers.model.dto.CreateShippingAreaDTO;
-import com.codefathers.model.entity.ShippingArea;
-import com.codefathers.repository.interfaces.ShippingAreaRepository;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Valid;
-import jakarta.validation.Validator;
-
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.codefathers.model.dto.CreateShippingAreaDTO;
+import com.codefathers.model.entity.ShippingArea;
+import com.codefathers.repository.interfaces.ShippingAreaRepository;
+
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 
 public class ShippingAreaService {
     private final ShippingAreaRepository shippingAreaRepository;
@@ -31,10 +31,9 @@ public class ShippingAreaService {
         ShippingArea shippingArea = ShippingArea.builder()
                 .shippingProvider(createShippingAreaDTO.getShippingProvider())
                 .description(createShippingAreaDTO.getDescription())
-                .states(Arrays.asList(createShippingAreaDTO.getStates())) // ✅ Conversão adicionada
+                .states(createShippingAreaDTO.getStates())
                 .createdAt(LocalDateTime.now())
                 .active(true)
-                .cep(createShippingAreaDTO.getCep())
                 .build();
 
         shippingAreaRepository.save(shippingArea);
@@ -42,7 +41,8 @@ public class ShippingAreaService {
 
     public ShippingArea findShippingAreaById(UUID shippingAreaId) {
         return shippingAreaRepository.findById(shippingAreaId)
-                .orElseThrow(() -> new RuntimeException("Área de entrega com ID '" + shippingAreaId + "' não encontrada."));
+                .orElseThrow(
+                        () -> new RuntimeException("Área de entrega com ID '" + shippingAreaId + "' não encontrada."));
     }
 
     public void updateShippingArea(@Valid ShippingArea shippingArea) {

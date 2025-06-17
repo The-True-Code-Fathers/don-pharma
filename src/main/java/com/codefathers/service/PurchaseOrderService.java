@@ -161,4 +161,8 @@ public class PurchaseOrderService {
         purchaseOrderRepository.save(purchaseOrder);
     }
 
+    public List<PurchaseOrder> listAll() {
+        return purchaseOrderRepository.findAll();
+    }
+
 }

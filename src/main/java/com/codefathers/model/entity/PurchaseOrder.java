@@ -2,6 +2,7 @@ package com.codefathers.model.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,6 +42,10 @@ public class PurchaseOrder {
 
     @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<PurchaseOrderItem> purchaseItems;
+
+    @ManyToOne
+    @JoinColumn(name = "shipping_order_id", nullable = true)
+    private ShippingOrder shippingOrder;
 
     @Column(name = "purchase_total_price_amount", nullable = false)
     private BigDecimal purchaseTotalPriceAmount;

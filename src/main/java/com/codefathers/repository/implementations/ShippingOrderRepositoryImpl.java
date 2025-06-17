@@ -18,7 +18,7 @@ public class ShippingOrderRepositoryImpl implements ShippingOrderRepository {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.persist(shippingOrder);
+            session.merge(shippingOrder);
             transaction.commit();
         } catch (Exception e) {
             System.out.println("Erro: " + e.getMessage());
