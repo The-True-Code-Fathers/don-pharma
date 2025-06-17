@@ -84,8 +84,8 @@ public class ProductsView extends VerticalLayout {
     private GridLazyDataView<Product> dataView;
     private Column<Product> statusColumn;
 
-    private com.vaadin.flow.component.checkbox.Checkbox showInactiveCheckbox =
-            new com.vaadin.flow.component.checkbox.Checkbox("Show inactive products");
+    private com.vaadin.flow.component.checkbox.Checkbox showInactiveCheckbox = new com.vaadin.flow.component.checkbox.Checkbox(
+            "Show inactive products");
 
     private Dialog createDialog = new Dialog();
     private Dialog updateDialog = new Dialog();
@@ -104,8 +104,9 @@ public class ProductsView extends VerticalLayout {
         var purchaseOrderRepository = new PurchaseOrderRepositoryImpl();
         this.productService = new ProductService(productRepository, ValidatorUtil.getValidator());
         this.orderItemService = new OrderItemService(orderItemRepository, orderRepository);
-        this.purchaseOrderItemService = new PurchaseOrderItemService(purchaseOrderItemRepository, purchaseOrderRepository, ValidatorUtil.getValidator());
-        
+        this.purchaseOrderItemService = new PurchaseOrderItemService(purchaseOrderItemRepository,
+                purchaseOrderRepository, ValidatorUtil.getValidator());
+
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -195,7 +196,8 @@ public class ProductsView extends VerticalLayout {
         formLayout.setSpacing(true);
         formLayout.setPadding(false);
 
-        HorizontalLayout buttonsLayout = new HorizontalLayout(updateSaveButton, updateClearButton, updateCloseButton, setInactiveButton);
+        HorizontalLayout buttonsLayout = new HorizontalLayout(updateSaveButton, updateClearButton, updateCloseButton,
+                setInactiveButton);
         buttonsLayout.setJustifyContentMode(JustifyContentMode.END);
         buttonsLayout.setWidthFull();
 
@@ -225,17 +227,17 @@ public class ProductsView extends VerticalLayout {
         grid.addColumn(Product::getMeasurementUnit).setHeader("UM").setSortable(true).setFlexGrow(0).setWidth("80px");
         grid.addColumn(Product::getDescription).setHeader("Description").setFlexGrow(3);
 
+        grid.addColumn(this::calculateWeightedAverageBuyPrice)
+                .setHeader("Avg Buy Price")
+                .setFlexGrow(1).setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
+
+        grid.addColumn(this::calculateWeightedAverageSellPrice)
+                .setHeader("Avg Sell Price")
+                .setFlexGrow(1).setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
+
         grid.addColumn(product -> {
             return product.getCreatedAt() != null ? product.getCreatedAt().format(dateFormatter) : "";
         }).setHeader("Created At").setSortable(true).setFlexGrow(1);
-
-        grid.addColumn(this::calculateWeightedAverageBuyPrice)
-            .setHeader("Avg Buy Price")
-            .setFlexGrow(1).setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
-
-        grid.addColumn(this::calculateWeightedAverageSellPrice)
-            .setHeader("Avg Sell Price")
-            .setFlexGrow(1).setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
 
         statusColumn = grid.addColumn(product -> product.isActive() ? "Active" : "Inactive")
                 .setHeader("Status")
@@ -284,8 +286,7 @@ public class ProductsView extends VerticalLayout {
                     return (int) allProducts.stream()
                             .filter(this::matchesCurrentFilters)
                             .count();
-                }
-        );
+                });
 
         dataView = grid.setItems(dataProvider);
 
@@ -305,13 +306,13 @@ public class ProductsView extends VerticalLayout {
         }
         String searchTermLower = currentSearchTerm.toLowerCase();
         return matchesTerm(product.getSku(), searchTermLower)
-            || matchesTerm(product.getName(), searchTermLower)
-            || matchesTerm(product.getDescription(), searchTermLower);
+                || matchesTerm(product.getName(), searchTermLower)
+                || matchesTerm(product.getDescription(), searchTermLower);
     }
 
     private String calculateWeightedAverageBuyPrice(Product product) {
         return AverageProductPriceUtil.calculateWeightedAverageBuyPrice(product);
-        }
+    }
 
     private String calculateWeightedAverageSellPrice(Product product) {
         return AverageProductPriceUtil.calculateWeightedAverageSellPrice(product);

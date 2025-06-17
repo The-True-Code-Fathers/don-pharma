@@ -126,7 +126,7 @@ public class OrderView extends VerticalLayout {
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
         grid.addColumn(Order::getId)
-                .setHeader("Order ID")
+                .setHeader("ID")
                 .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
@@ -138,61 +138,61 @@ public class OrderView extends VerticalLayout {
                 .setFlexGrow(0);
 
         grid.addColumn(order -> {
-                    if (order.getCreatedAt() != null) {
-                        return order.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-                    }
-                    return "N/A";
-                })
-                .setHeader("Created At")
-                .setSortable(true)
-                .setAutoWidth(true)
-                .setFlexGrow(0);
-
-        grid.addColumn(order -> {
-                    String description = order.getDescription();
-                    if (description != null && !description.trim().isEmpty()) {
-                        return description.length() > 50 ? description.substring(0, 47) + "..." : description;
-                    }
-                    return "No description";
-                })
+            String description = order.getDescription();
+            if (description != null && !description.trim().isEmpty()) {
+                return description.length() > 50 ? description.substring(0, 47) + "..." : description;
+            }
+            return "No description";
+        })
                 .setHeader("Description")
                 .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(1);
 
         grid.addColumn(order -> {
-                    BigDecimal totalAmount = order.getTotalAmount();
-                    if (totalAmount != null) {
-                        return "R$ " + String.format("%.2f", totalAmount);
-                    }
-                    return "R$ 0,00";
-                })
+            BigDecimal totalAmount = order.getTotalAmount();
+            if (totalAmount != null) {
+                return "R$ " + String.format("%.2f", totalAmount);
+            }
+            return "R$ 0,00";
+        })
                 .setHeader("Total Amount")
                 .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
         grid.addColumn(order -> {
-                    if (order.getItems() != null && !order.getItems().isEmpty()) {
-                        int totalQuantity = order.getItems().stream()
-                                .mapToInt(OrderItem::getQuantity)
-                                .sum();
-                        return String.valueOf(totalQuantity);
-                    }
-                    return "0";
-                })
+            if (order.getItems() != null && !order.getItems().isEmpty()) {
+                int totalQuantity = order.getItems().stream()
+                        .mapToInt(OrderItem::getQuantity)
+                        .sum();
+                return String.valueOf(totalQuantity);
+            }
+            return "0";
+        })
                 .setHeader("Qty. Items")
                 .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
 
         grid.addColumn(order -> {
-                    if (order.getShippingProvider() != null) {
-                        return order.getShippingProvider().getName();
-                    }
-                    return "N/A";
-                })
+            if (order.getShippingProvider() != null) {
+                return order.getShippingProvider().getName();
+            }
+            return "N/A";
+        })
                 .setHeader("Shipping Provider")
+                .setSortable(true)
+                .setAutoWidth(true)
+                .setFlexGrow(0);
+
+        grid.addColumn(order -> {
+            if (order.getCreatedAt() != null) {
+                return order.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            }
+            return "N/A";
+        })
+                .setHeader("Created At")
                 .setSortable(true)
                 .setAutoWidth(true)
                 .setFlexGrow(0);
@@ -309,7 +309,7 @@ public class OrderView extends VerticalLayout {
     }
 
     private void saveOrderEdit(Select<OrderStatus> statusSelect, ComboBox<Employee> sellerComboBox,
-                               TextField descriptionField) {
+            TextField descriptionField) {
         try {
             if (currentOrderEditing == null) {
                 Notification.show("Error: No order selected for editing", 5000, Notification.Position.MIDDLE);
@@ -588,9 +588,9 @@ public class OrderView extends VerticalLayout {
         grid.setWidthFull();
 
         grid.addColumn(item -> {
-                    String productName = item.getProduct().getName();
-                    return productName.length() > 25 ? productName.substring(0, 22) + "..." : productName;
-                })
+            String productName = item.getProduct().getName();
+            return productName.length() > 25 ? productName.substring(0, 22) + "..." : productName;
+        })
                 .setHeader("Products")
                 .setWidth("130px")
                 .setFlexGrow(0);
@@ -611,31 +611,31 @@ public class OrderView extends VerticalLayout {
                 .setFlexGrow(0);
 
         grid.addColumn(
-                        item -> "R$ " + String.format("%.2f", item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
+                item -> "R$ " + String.format("%.2f", item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
                 .setHeader("Total")
                 .setWidth("130px")
                 .setFlexGrow(0);
 
         grid.addComponentColumn(item -> {
-                    HorizontalLayout actions = new HorizontalLayout();
-                    actions.setSpacing(true);
-                    actions.setAlignItems(Alignment.CENTER);
+            HorizontalLayout actions = new HorizontalLayout();
+            actions.setSpacing(true);
+            actions.setAlignItems(Alignment.CENTER);
 
-                    Button removeButton = new Button(new Icon(VaadinIcon.TRASH));
-                    removeButton.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
-                    removeButton.addClickListener(e -> {
-                        items.remove(item);
-                        grid.getDataProvider().refreshAll();
-                        Notification.show("Removed items.", 2000, Notification.Position.MIDDLE);
-                    });
+            Button removeButton = new Button(new Icon(VaadinIcon.TRASH));
+            removeButton.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
+            removeButton.addClickListener(e -> {
+                items.remove(item);
+                grid.getDataProvider().refreshAll();
+                Notification.show("Removed items.", 2000, Notification.Position.MIDDLE);
+            });
 
-                    Button editButton = new Button(new Icon(VaadinIcon.EDIT));
-                    editButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-                    editButton.addClickListener(e -> editItem(item));
+            Button editButton = new Button(new Icon(VaadinIcon.EDIT));
+            editButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+            editButton.addClickListener(e -> editItem(item));
 
-                    actions.add(editButton, removeButton);
-                    return actions;
-                })
+            actions.add(editButton, removeButton);
+            return actions;
+        })
                 .setHeader("Actions")
                 .setWidth("120px")
                 .setFlexGrow(0);
@@ -655,7 +655,7 @@ public class OrderView extends VerticalLayout {
     }
 
     private CreateOrderDTO buildCreateOrderDTO(Employee seller, ShippingProvider shippingProvider,
-                                               String description, List<OrderItemRow> items) {
+            String description, List<OrderItemRow> items) {
 
         List<CreateOrderItemDTO> itemDTOs = items.stream()
                 .map(item -> CreateOrderItemDTO.builder()
@@ -684,7 +684,7 @@ public class OrderView extends VerticalLayout {
         grid.addColumn(item -> "R$ " + String.format("%.2f", item.getPrice())).setHeader("Unit Price")
                 .setAutoWidth(true);
         grid.addColumn(
-                        item -> "R$ " + String.format("%.2f", item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
+                item -> "R$ " + String.format("%.2f", item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))))
                 .setHeader("Total").setAutoWidth(true);
 
         grid.addComponentColumn(item -> {
