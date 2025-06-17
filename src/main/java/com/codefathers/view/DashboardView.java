@@ -7,6 +7,7 @@ import com.codefathers.repository.implementations.ProductRepositoryImpl;
 import com.codefathers.repository.implementations.StorageRepositoryImpl;
 import com.codefathers.service.AuthService;
 import com.codefathers.service.DashboardService;
+import com.codefathers.service.FinancialService;
 import com.codefathers.service.KpiService;
 import com.codefathers.util.JsonUtil;
 import com.vaadin.flow.component.Component;
@@ -61,6 +62,7 @@ public class DashboardView extends FlexLayout {
     private KpiService kpiService;
     private final AuthService authService = ServiceFactory.getAuthService();
     private final DashboardService dashboardService = ServiceFactory.getDashboardService();
+    private final FinancialService financialService = ServiceFactory.getFinancialService();
 
     private LocalDate startDay = LocalDate.of(2024, 1, 1);
     private LocalDate endDay = LocalDate.of(2026, 1, 1);
@@ -438,7 +440,7 @@ public class DashboardView extends FlexLayout {
 
         chartBuilder.withTitle(
                 TitleSubtitleBuilder.get()
-                        .withText("Performance dos Vendedores (Goal %)")
+                        .withText("Seller performance (Goal %)")
                         .build()
         );
 
