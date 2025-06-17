@@ -1,480 +1,459 @@
--- =============================================================================
--- Comprehensive Mock Data Generation for a Pharmaceutical Company
--- Generated on: 2025-06-14
--- Target Schema: dondb_schema_dump.sql
---
--- v5 (FINAL): Script completo e corrigido, incluindo todos os vendedores,
---             60 produtos e o histórico de 50 pedidos com todos os seus itens.
---             Este script é idempotente (pode ser re-executado).
--- =============================================================================
+-- SQL Mock Data Generation Script
+-- Target: PostgreSQL
+-- Project: Demo Database Population
+-- Version: 2.0 (Column names aligned with schema dump)
 
--- =============================================================================
--- STEP 0: Clean existing data to allow for re-running the script
--- TRUNCATE is used to quickly delete all rows from tables.
--- RESTART IDENTITY resets sequences.
--- CASCADE automatically handles truncating dependent tables.
--- =============================================================================
-TRUNCATE TABLE
-    public.employee,
-    public.shipping_provider,
-    public.product,
-    public.storage,
-    public.shipping_area,
-    public.purchase_order,
-    public.orders,
-    public.payment,
-    public.purchase_order_item,
-    public.order_item,
-    public.shipping_order
-    RESTART IDENTITY CASCADE;
+-- Deletando todos os dados das tabelas na ordem correta para evitar violações de restrições
+DELETE FROM public.order_item;
+DELETE FROM public.payment;
+DELETE FROM public.storage;
+DELETE FROM public.purchase_order_item;
+DELETE FROM public.purchase_order;
+DELETE FROM public.orders;
+DELETE FROM public.shipping_area;
+DELETE FROM public.shipping_provider;
+DELETE FROM public.product;
+DELETE FROM public.employee;
 
--- =============================================================================
--- STEP 1: Populate Tables with No Foreign Key Dependencies
--- Tables: employee, shipping_provider, product
--- =============================================================================
+-- Resetando sequências para tabelas com IDs autoincrementais (se aplicável)
+-- Nota: A tabela banana_and_cream_cheese_2025 não está sendo populada conforme solicitado.
+ALTER SEQUENCE public.banana_and_cream_cheese_2025_id_seq RESTART WITH 1;
 
---
--- Populating 'employee' table with 13 records (including 5 sellers).
---
+
+-- ##################################################################
+-- ##                      Tabela employee                         ##
+-- ##################################################################
+-- Inserindo 15 funcionários com cargos, datas de nascimento e status variados.
 INSERT INTO public.employee (id, active, birthdate, created_at, fullname, gender, role) VALUES
-                                                                                            ('a1b2c3d4-e5f6-47b8-89d0-e1f2a3b4c5d6', true, '1988-05-21', '2023-01-15 09:30:00', 'Carlos Santana', 'MALE', 'LOCAL_MANAGER'),
-                                                                                            ('b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', true, '1995-02-10', '2023-02-20 10:00:00', 'Ana Julia', 'FEMALE', 'SALES'),
-                                                                                            ('c3d4e5f6-a7b8-49d0-a1f2-a3b4c5d6e7f8', true, '1992-11-30', '2023-03-10 11:45:00', 'Ricardo Gomes', 'MALE', 'SHIPPING'),
-                                                                                            ('d4e5f6a7-b8c9-40e1-b2a3-b4c5d6e7f8a9', true, '2000-07-07', '2023-04-01 14:00:00', 'Leticia Martins', 'FEMALE', 'SAC'),
-                                                                                            ('e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0', true, '1985-09-15', '2023-05-12 08:30:00', 'Fernando Oliveira', 'MALE', 'STORAGE'),
-                                                                                            ('f6a7b8c9-d0e1-42a3-d4b5-d6e7f8a9b0c1', true, '1998-03-25', '2023-06-22 16:00:00', 'Mariana Costa', 'FEMALE', 'FINANCIAL'),
-                                                                                            ('a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', true, '1993-08-19', '2023-07-18 10:20:00', 'Bruno Alves', 'MALE', 'SALES'),
-                                                                                            ('b8c9d0e1-f2a3-44b5-f6e7-f8a9b0c1d2e3', false, '1980-01-05', '2023-08-01 09:00:00', 'Sandra Pereira', 'FEMALE', 'HR'),
-                                                                                            ('c9d0e1f2-a3b4-45d6-a7f8-a9b0c1d2e3f4', true, '1999-12-12', '2023-09-05 13:15:00', 'Gabriel Souza', 'MALE', 'SHIPPING'),
-                                                                                            ('d0e1f2a3-b4c5-46e7-b8a9-b0c1d2e3f4a5', true, '1996-06-01', '2023-10-11 11:00:00', 'Camila Ribeiro', 'FEMALE', 'SAC'),
--- New Sellers
-                                                                                            ('101f3f7e-1254-471a-89a7-3e42d76ac51f', true, '1991-07-14', '2023-11-01 09:00:00', 'Vanessa Rocha', 'FEMALE', 'SALES'),
-                                                                                            ('202a4a8d-5678-4a2b-98b8-4f53e87bd62a', true, '1989-04-02', '2023-11-05 09:00:00', 'Tiago Mendes', 'MALE', 'SALES'),
-                                                                                            ('303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', true, '1997-10-18', '2023-11-10 09:00:00', 'Juliana Lima', 'FEMALE', 'SALES');
+                                                                                            (gen_random_uuid(), true, '1988-05-12', NOW() - interval '3 year', 'Carlos Santana', 'MALE', 'LOCAL_MANAGER'),
+                                                                                            (gen_random_uuid(), true, '1992-08-20', NOW() - interval '2 year', 'Fernanda Lima', 'FEMALE', 'FINANCIAL'),
+                                                                                            (gen_random_uuid(), true, '1995-01-30', NOW() - interval '1 year', 'Ricardo Souza', 'MALE', 'HR'),
+                                                                                            (gen_random_uuid(), true, '1998-11-10', NOW() - interval '6 month', 'Beatriz Costa', 'FEMALE', 'SAC'),
+                                                                                            (gen_random_uuid(), true, '2000-03-25', NOW() - interval '2 month', 'Lucas Martins', 'MALE', 'STORAGE'),
+                                                                                            (gen_random_uuid(), true, '1993-07-15', NOW() - interval '1 year', 'Juliana Alves', 'FEMALE', 'SHIPPING'),
+                                                                                            (gen_random_uuid(), true, '1990-09-05', NOW() - interval '4 year', 'Roberto Pereira', 'MALE', 'SALES'),
+                                                                                            (gen_random_uuid(), true, '1996-02-18', NOW() - interval '2 year', 'Aline Gomes', 'FEMALE', 'SALES'),
+                                                                                            (gen_random_uuid(), true, '1994-06-22', NOW() - interval '3 year', 'Marcos Rodrigues', 'MALE', 'SALES'),
+                                                                                            (gen_random_uuid(), true, '1999-04-12', NOW() - interval '1 year', 'Gabriela Ferreira', 'FEMALE', 'SALES'),
+                                                                                            (gen_random_uuid(), true, '1985-12-01', NOW() - interval '5 year', 'Thiago Oliveira', 'MALE', 'SALES'),
+                                                                                            (gen_random_uuid(), true, '2001-01-15', NOW() - interval '6 month', 'Larissa Santos', 'FEMALE', 'SALES'),
+                                                                                            (gen_random_uuid(), true, '1997-10-08', NOW() - interval '2 year', 'João Silva', 'MALE', 'SALES'),
+                                                                                            (gen_random_uuid(), false, '1989-03-14', NOW() - interval '5 year', 'Patrícia Andrade', 'FEMALE', 'STORAGE'),
+                                                                                            (gen_random_uuid(), false, '1991-08-25', NOW() - interval '4 year', 'Daniel Ribeiro', 'NON_BINARY', 'SHIPPING');
 
---
--- Populating 'shipping_provider' table with 4 records.
---
+
+-- ##################################################################
+-- ##           Tabelas shipping_provider e shipping_area          ##
+-- ##################################################################
+-- Inserindo 5 transportadoras fictícias.
 INSERT INTO public.shipping_provider (id, active, average_delivery_days, base_price, cnpj, created_at, daily_capacity, name) VALUES
-                                                                                                                                 ('e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6', true, 5, 12.50, '12.345.678/0001-99', '2022-01-10 00:00:00', 20000.00, 'PharmaLog Express'),
-                                                                                                                                 ('f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7', true, 3, 18.00, '23.456.789/0001-00', '2022-02-15 00:00:00', 35000.00, 'Saude Entrega Rápida'),
-                                                                                                                                 ('a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8', true, 7, 9.75, '34.567.890/0001-11', '2022-03-20 00:00:00', 15000.00, 'Brasil Farma Logistica'),
-                                                                                                                                 ('b4c5d6e7-f8a9-40c1-b2d3-f4a5b6c7d8e9', false, 10, 8.50, '45.678.901/0001-22', '2022-04-25 00:00:00', 10000.00, 'Med Cargas');
+                                                                                                                                 (gen_random_uuid(), true, 5, 15.50, '11.222.333/0001-44', NOW() - interval '3 year', 5000, 'RápidoLog'),
+                                                                                                                                 (gen_random_uuid(), true, 3, 18.00, '22.333.444/0001-55', NOW() - interval '2 year', 8000, 'ExpressBrasil'),
+                                                                                                                                 (gen_random_uuid(), true, 7, 12.75, '33.444.555/0001-66', NOW() - interval '5 year', 3000, 'LogiSul'),
+                                                                                                                                 (gen_random_uuid(), true, 4, 14.00, '44.555.666/0001-77', NOW() - interval '1 year', 10000, 'TransNorte'),
+                                                                                                                                 (gen_random_uuid(), false, 10, 10.50, '55.666.777/0001-88', NOW() - interval '6 year', 2000, 'CargaPesada');
 
---
--- Populating 'product' table with 60 pharmaceutical records.
---
+-- Inserindo áreas de entrega e associando-as às transportadoras.
+INSERT INTO public.shipping_area (id, active, created_at, description, states, shipping_provider_id) VALUES
+    (gen_random_uuid(), true, NOW() - interval '2 year', 'Região Sudeste', 'SP,RJ,ES,MG', (SELECT id FROM public.shipping_provider WHERE name = 'RápidoLog' LIMIT 1)),
+(gen_random_uuid(), true, NOW() - interval '1 year', 'Região Sul', 'PR,SC,RS', (SELECT id FROM public.shipping_provider WHERE name = 'ExpressBrasil' LIMIT 1)),
+(gen_random_uuid(), true, NOW() - interval '4 year', 'Todo o Brasil', 'TODOS', (SELECT id FROM public.shipping_provider WHERE name = 'LogiSul' LIMIT 1)),
+(gen_random_uuid(), true, NOW() - interval '6 months', 'Regiões Norte e Nordeste', 'AM,PA,MA,PI,CE,RN,PB,PE,AL,SE,BA', (SELECT id FROM public.shipping_provider WHERE name = 'TransNorte' LIMIT 1)),
+(gen_random_uuid(), false, NOW() - interval '5 year', 'Apenas Cargas Especiais para o Sudeste', 'SP,RJ', (SELECT id FROM public.shipping_provider WHERE name = 'CargaPesada' LIMIT 1));
+
+
+-- ##################################################################
+-- ##                       Tabela product                         ##
+-- ##################################################################
+-- Mapeamento: mg:0, g:1, Kg:2, Ml:3, l:4, Bl:5, Cx:6, Un:7, Gt:8
+
+-- Categoria: Analgésicos e Antitérmicos
 INSERT INTO public.product (sku, active, created_at, description, measurementunit, name) VALUES
-                                                                                                            ('MED-001', true, '2023-01-05 10:00:00', 'Paracetamol 750mg - Box with 20 tablets', 2, 'Doraliv 750mg'),
-                                                                                                            ('MED-002', true, '2023-01-06 11:00:00', 'Ibuprofen 400mg - Box with 10 tablets', 2, 'Alivium 400mg'),
-                                                                                                            ('MED-003', true, '2023-02-10 09:30:00', 'Amoxicillin 500mg - Box with 21 capsules', 2, 'Amoxil BD 500mg'),
-                                                                                                            ('MED-004', true, '2023-02-12 14:00:00', 'Dipyrone Sodium 500mg/ml - Bottle 20ml', 3, 'Novalgina Gotas 20ml'),
-                                                                                                            ('MED-005', true, '2023-03-01 10:20:00', 'Loratadine 10mg - Box with 12 tablets', 2, 'Claritin 10mg'),
-                                                                                                            ('MED-006', true, '2023-03-05 15:00:00', 'Losartan Potassium 50mg - Box with 30 tablets', 2, 'Aradois 50mg'),
-                                                                                                            ('SUP-001', true, '2023-04-10 16:00:00', 'Vitamin C 1g - Tube with 10 effervescent tablets', 4, 'Vitamina C Efervescente'),
-                                                                                                            ('SUP-002', true, '2023-04-11 17:00:00', 'Omega 3 - Bottle with 60 capsules', 3, 'Omega 3 Fish Oil'),
-                                                                                                            ('SUP-003', true, '2023-05-15 10:00:00', 'Calcium + Vitamin D - Bottle with 60 tablets', 3, 'Cal D-Mix'),
-                                                                                                            ('COS-001', true, '2023-06-01 11:00:00', 'SPF 50 Sunscreen - 120ml bottle', 3, 'Sun Protect FPS 50'),
-                                                                                                            ('COS-002', true, '2023-06-02 12:00:00', 'Moisturizing Cream for Dry Skin - 200g tube', 4, 'Hydra Derm 200g'),
-                                                                                                            ('MED-007', true, '2023-07-10 14:30:00', 'Simethicone 75mg/ml - Bottle 15ml', 3, 'Luftal Gotas 15ml'),
-                                                                                                            ('MED-008', true, '2023-07-11 15:00:00', 'Acetylsalicylic Acid 100mg - Box with 30 tablets', 2, 'AAS Infantil 100mg'),
-                                                                                                            ('HOSP-001', true, '2023-08-01 09:00:00', 'Disposable Syringe 5ml with Needle', 1, 'Syringe 5ml'),
-                                                                                                            ('HOSP-002', true, '2023-08-02 10:00:00', 'Box of 100 disposable latex gloves', 2, 'Latex Gloves (100 units)'),
-                                                                                                            ('MED-009', true, '2023-09-05 11:30:00', 'Sildenafil Citrate 50mg - Box with 4 tablets', 2, 'Viagra 50mg'),
-                                                                                                            ('MED-010', true, '2023-09-06 12:30:00', 'Tadalafil 20mg - Box with 2 tablets', 2, 'Cialis 20mg'),
-                                                                                                            ('FIT-001', true, '2023-10-01 14:00:00', 'Ginkgo Biloba 80mg - Box with 30 capsules', 2, 'Ginkgo Biloba 80mg'),
-                                                                                                            ('MED-011', true, '2023-10-02 15:00:00', 'Saline Solution 0.9% - Bottle 500ml', 3, 'Soro Fisiológico 500ml'),
-                                                                                                            ('PETS-001', false, '2023-11-01 10:00:00', 'Antiparasitic for dogs up to 10kg', 2, 'Simparic 10kg'),
-                                                                                                            ('MED-012', true, '2023-11-15 09:00:00', 'Nimesulide 100mg - Box with 12 tablets', 2, 'Nimesulida 100mg'),
-                                                                                                            ('MED-013', true, '2023-11-16 10:00:00', 'Diclofenac Sodium 50mg - Box with 20 tablets', 2, 'Voltaren 50mg'),
-                                                                                                            ('MED-014', true, '2023-11-17 11:00:00', 'Omeprazole 20mg - Box with 28 capsules', 2, 'Omeprazol 20mg'),
-                                                                                                            ('SUP-004', true, '2023-11-18 12:00:00', 'Whey Protein Isolate 900g - Vanilla', 3, 'Whey Protein 900g'),
-                                                                                                            ('SUP-005', true, '2023-11-19 13:00:00', 'Creatine Monohydrate 150g - Powder', 3, 'Creatina Hardcore 150g'),
-                                                                                                            ('COS-003', true, '2023-11-20 14:00:00', 'Antiseptic Mouthwash 250ml', 3, 'Listerine Cool Mint 250ml'),
-                                                                                                            ('HOSP-003', true, '2023-11-21 15:00:00', 'Sterile Gauze Pads - Pack of 10', 6, 'Gaze Estéril (10 uni)'),
-                                                                                                            ('HOSP-004', true, '2023-11-22 16:00:00', 'Micropore Adhesive Tape 25mm x 10m', 1, 'Fita Micropore'),
-                                                                                                            ('MED-015', true, '2023-11-23 17:00:00', 'Rosuvastatin 10mg - Box with 30 tablets', 2, 'Crestor 10mg'),
-                                                                                                            ('MED-016', true, '2023-11-24 18:00:00', 'Escitalopram 10mg - Box with 30 tablets', 2, 'Lexapro 10mg'),
-                                                                                                            ('MED-017', true, '2023-12-01 09:00:00', 'Insulin Syringe 1ml', 1, 'Seringa de Insulina 1ml'),
-                                                                                                            ('MED-018', true, '2023-12-02 10:00:00', 'Insulin Glargine 100UI/ml - Refill 3ml', 1, 'Lantus Solostar'),
-                                                                                                            ('MED-019', true, '2023-12-03 11:00:00', 'Metformin 850mg - Box with 30 tablets', 2, 'Glifage 850mg'),
-                                                                                                            ('DERM-001', true, '2023-12-04 12:00:00', 'Ketoconazole Shampoo 100ml', 3, 'Nizoral Shampoo'),
-                                                                                                            ('DERM-002', true, '2023-12-05 13:00:00', 'Miconazole Nitrate Cream 28g', 4, 'Vodol Creme'),
-                                                                                                            ('PED-001', true, '2023-12-06 14:00:00', 'Oral Rehydration Salts - Sachet', 5, 'Hidrafix Sachet'),
-                                                                                                            ('PED-002', true, '2023-12-07 15:00:00', 'Vitamin D Drops 200UI/drop - 10ml', 3, 'Ad-til Gotas'),
-                                                                                                            ('PETS-002', true, '2023-12-08 16:00:00', 'Fipronil Anti-Flea for Cats', 1, 'Frontline Gatos'),
-                                                                                                            ('PETS-003', true, '2023-12-09 17:00:00', 'Vermifuge for Dogs - 4 tablets', 2, 'Drontal Plus Cães'),
-                                                                                                            ('FIT-002', true, '2023-12-10 18:00:00', 'Valerian Root Extract 50mg - 20 tablets', 2, 'Valeriana 50mg'),
-                                                                                                            ('MED-020', true, '2024-01-10 09:00:00', 'Cough Syrup Honey & Lemon 150ml', 3, 'Xarope Vick Mel'),
-                                                                                                            ('MED-021', true, '2024-01-11 10:00:00', 'Nasal Decongestant Spray 30ml', 3, 'Neosoro Spray'),
-                                                                                                            ('MED-022', true, '2024-01-12 11:00:00', 'Sore Throat Lozenges - 12 count', 2, 'Pastilhas Benalet'),
-                                                                                                            ('SUP-006', true, '2024-01-13 12:00:00', 'Multivitamin A-Z - 60 tablets', 2, 'Centrum Homem'),
-                                                                                                            ('SUP-007', true, '2024-01-14 13:00:00', 'Multivitamin A-Z - 60 tablets', 2, 'Centrum Mulher'),
-                                                                                                            ('COS-004', true, '2024-01-15 14:00:00', 'Lip Balm with SPF 15', 1, 'Protetor Labial Nivea'),
-                                                                                                            ('HOSP-005', true, '2024-01-16 15:00:00', 'Alcohol Swabs - Box with 100', 2, 'Álcool Swab (100 uni)'),
-                                                                                                            ('MED-023', true, '2024-01-17 16:00:00', 'Pregabalin 75mg - 30 capsules', 2, 'Lyrica 75mg'),
-                                                                                                            ('MED-024', true, '2024-01-18 17:00:00', 'Ozempic 1mg', 1, 'Ozempic 1mg'),
-                                                                                                            ('MED-025', true, '2024-01-19 18:00:00', 'Dexamethasone Cream 10g', 4, 'Acetato de Dexametasona 10g'),
-                                                                                                            ('DERM-003', true, '2024-02-01 09:00:00', 'Anti-acne Gel 30g', 4, 'Epiduo Gel'),
-                                                                                                            ('PED-003', true, '2024-02-02 10:00:00', 'Diaper Rash Cream 60g', 4, 'Hipoglós Amêndoas 60g'),
-                                                                                                            ('PETS-004', true, '2024-02-03 11:00:00', 'Canine Ear Cleaner 100ml', 3, 'Otolin Limpador'),
-                                                                                                            ('FIT-003', true, '2024-02-04 12:00:00', 'Collagen Peptides 250g', 3, 'Colágeno Hidrolisado'),
-                                                                                                            ('MED-026', true, '2024-02-05 13:00:00', 'Alenia 6/100mcg - 60 doses', 1, 'Alenia Inalador'),
-                                                                                                            ('MED-027', true, '2024-02-06 14:00:00', 'Metoclopramide 10mg (anti-nausea) - 20 tablets', 2, 'Plasil 10mg'),
-                                                                                                            ('SUP-008', true, '2024-02-07 15:00:00', 'Melatonin 0.21mg - 30 tablets', 2, 'Melatonina Sublingual'),
-                                                                                                            ('COS-005', true, '2024-02-08 16:00:00', 'Dental Floss - 50m', 1, 'Fio Dental Oral-B'),
-                                                                                                            ('HOSP-006', true, '2024-02-09 17:00:00', 'Digital Thermometer', 1, 'Termômetro Digital G-Tech'),
-                                                                                                            ('MED-028', true, '2024-02-10 18:00:00', 'Venlafaxine 75mg - 30 capsules', 2, 'Venlift OD 75mg');
+                                                                                             ('PROD001', true, NOW() - interval '2 year', 'Dipirona Sódica 500mg/mL, 20mL', 3, 'Dipirona Gotas'),
+                                                                                             ('PROD002', true, NOW() - interval '2 year', 'Paracetamol 750mg, caixa com 20 comprimidos', 6, 'Paracetamol 750mg'),
+                                                                                             ('PROD003', true, NOW() - interval '1 year', 'Ibuprofeno 400mg, caixa com 10 cápsulas', 6, 'Ibuprofeno 400mg'),
+                                                                                             ('PROD004', true, NOW() - interval '3 year', 'Ácido Acetilsalicílico 100mg, caixa com 30 comprimidos', 6, 'AAS Infantil'),
+                                                                                             ('PROD005', true, NOW() - interval '6 months', 'Dorflex, caixa com 36 comprimidos', 6, 'Dorflex'),
+                                                                                             ('PROD006', true, NOW() - interval '1 year', 'Neosaldina, caixa com 20 drágeas', 6, 'Neosaldina');
 
--- =============================================================================
--- STEP 2: Populate Tables with One Level of Dependencies
--- =============================================================================
+-- Categoria: Vitaminas e Suplementos
+INSERT INTO public.product (sku, active, created_at, description, measurementunit, name) VALUES
+                                                                                             ('PROD010', true, NOW() - interval '1 year', 'Vitamina C 1g, tubo com 10 comprimidos efervescentes', 6, 'Vitamina C Efervescente'),
+                                                                                             ('PROD011', true, NOW() - interval '1 year', 'Complexo B, caixa com 30 comprimidos', 6, 'Complexo B'),
+                                                                                             ('PROD012', true, NOW() - interval '2 year', 'Suplemento de Vitamina D 2000UI, 30 cápsulas', 6, 'Vitamina D 2000UI'),
+                                                                                             ('PROD013', true, NOW() - interval '6 months', 'Lavitan A-Z, caixa com 60 comprimidos', 6, 'Lavitan A-Z'),
+                                                                                             ('PROD014', false, NOW() - interval '3 year', 'Ômega 3 1000mg, pote com 120 cápsulas', 6, 'Ômega 3');
 
---
--- Populating 'storage' table with 60 records.
---
-INSERT INTO public.storage (id, product_quantity, product_sku) VALUES
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000001', 5000, 'MED-001'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000002', 3500, 'MED-002'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000003', 1500, 'MED-003'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000004', 4000, 'MED-004'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000005', 2800, 'MED-005'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000006', 1800, 'MED-006'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000007', 3000, 'SUP-001'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000008', 2200, 'SUP-002'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000009', 2500, 'SUP-003'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000010', 1500, 'COS-001'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000011', 1800, 'COS-002'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000012', 3200, 'MED-007'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000013', 4500, 'MED-008'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000014', 10000, 'HOSP-001'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000015', 500, 'HOSP-002'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000016', 800, 'MED-009'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000017', 750, 'MED-010'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000018', 1200, 'FIT-001'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000019', 8000, 'MED-011'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000020', 0, 'PETS-001'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000021', 1000, 'MED-012'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000022', 1200, 'MED-013'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000023', 3000, 'MED-014'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000024', 800, 'SUP-004'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000025', 1500, 'SUP-005'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000026', 2500, 'COS-003'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000027', 4000, 'HOSP-003'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000028', 2000, 'HOSP-004'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000029', 600, 'MED-015'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000030', 900, 'MED-016'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000031', 5000, 'MED-017'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000032', 400, 'MED-018'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000033', 6000, 'MED-019'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000034', 700, 'DERM-001'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000035', 1300, 'DERM-002'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000036', 1800, 'PED-001'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000037', 2200, 'PED-002'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000038', 500, 'PETS-002'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000039', 800, 'PETS-003'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000040', 1600, 'FIT-002'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000041', 2800, 'MED-020'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000042', 3100, 'MED-021'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000043', 4000, 'MED-022'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000044', 1100, 'SUP-006'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000045', 1100, 'SUP-007'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000046', 5000, 'COS-004'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000047', 600, 'HOSP-005'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000048', 700, 'MED-023'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000049', 250, 'MED-024'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000050', 1400, 'MED-025'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000051', 950, 'DERM-003'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000052', 1800, 'PED-003'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000053', 650, 'PETS-004'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000054', 1000, 'FIT-003'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000055', 400, 'MED-026'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000056', 2500, 'MED-027'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000057', 1500, 'SUP-008'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000058', 3000, 'COS-005'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000059', 3500, 'HOSP-006'),
-                                                                   ('a1b2c3d4-1111-1111-1111-000000000060', 900, 'MED-028');
+-- Categoria: Dermocosméticos
+INSERT INTO public.product (sku, active, created_at, description, measurementunit, name) VALUES
+                                                                                             ('PROD020', true, NOW() - interval '1 year', 'Protetor Solar FPS 50, 120mL', 3, 'Protetor Solar Sundown FPS 50'),
+                                                                                             ('PROD021', true, NOW() - interval '2 year', 'Creme Hidratante Nivea, lata 56g', 1, 'Creme Nivea'),
+                                                                                             ('PROD022', true, NOW() - interval '8 months', 'Sabonete Líquido Facial Actine, 140mL', 3, 'Sabonete Actine'),
+                                                                                             ('PROD023', true, NOW() - interval '1 year', 'Água Micelar L''Oréal Paris, 200mL', 3, 'Água Micelar L''Oréal'),
+                                                                                             ('PROD024', true, NOW() - interval '3 year', 'Creme anti-idade Cicatricure, 30g', 1, 'Cicatricure Creme');
 
---
--- Populating 'shipping_area' table with 6 records.
---
-INSERT INTO public.shipping_area (id, active, cep, created_at, description, states, shipping_provider_id) VALUES
-                                                                                                              ('b2c3d4e5-2222-2222-2222-000000000001', true, '01000-000', '2023-01-20 10:00:00', 'Greater São Paulo', ARRAY['SP'], 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                              ('b2c3d4e5-2222-2222-2222-000000000002', true, '20000-000', '2023-02-25 11:00:00', 'Metropolitan Rio de Janeiro', ARRAY['RJ'], 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                              ('b2c3d4e5-2222-2222-2222-000000000003', true, '80000-000', '2023-03-15 12:00:00', 'South Region', ARRAY['PR', 'SC', 'RS'], 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                              ('b2c3d4e5-2222-2222-2222-000000000004', true, '30000-000', '2023-04-10 13:00:00', 'Minas Gerais State', ARRAY['MG'], 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                              ('b2c3d4e5-2222-2222-2222-000000000005', true, '40000-000', '2023-05-20 14:00:00', 'Bahia and Sergipe', ARRAY['BA', 'SE'], 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                              ('b2c3d4e5-2222-2222-2222-000000000006', false, '60000-000', '2023-06-30 15:00:00', 'Northeast coverage (inactive)', ARRAY['CE', 'PI', 'MA'], 'b4c5d6e7-f8a9-40c1-b2d3-f4a5b6c7d8e9');
+-- Categoria: Higiene Pessoal
+INSERT INTO public.product (sku, active, created_at, description, measurementunit, name) VALUES
+                                                                                             ('PROD030', true, NOW() - interval '2 year', 'Shampoo Pantene Restauração, 400mL', 3, 'Shampoo Pantene'),
+                                                                                             ('PROD031', true, NOW() - interval '2 year', 'Condicionador Dove Óleo Nutrição, 200mL', 3, 'Condicionador Dove'),
+                                                                                             ('PROD032', true, NOW() - interval '1 year', 'Pasta de Dente Colgate Total 12, 90g', 1, 'Colgate Total 12'),
+                                                                                             ('PROD033', true, NOW() - interval '3 year', 'Fio Dental Oral-B, 50m', 7, 'Fio Dental Oral-B'),
+                                                                                             ('PROD034', true, NOW() - interval '1 year', 'Desodorante Aerosol Rexona, 150mL', 3, 'Desodorante Rexona');
 
---
--- Populating 'purchase_order' table with 15 records.
---
-INSERT INTO public.purchase_order (id, created_at, purchaseorderstatus, purchase_total_price_amount, purchase_total_product_amount, purchaser_id) VALUES
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000001', '2024-05-02 10:00:00', 'INVOICED', 4250.00, 500, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000002', '2024-05-03 11:30:00', 'INVOICED', 6000.00, 500, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000003', '2024-05-10 09:00:00', 'OPEN', 12500.00, 500, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000004', '2024-05-15 14:20:00', 'OPEN', 5500.00, 1000, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000005', '2024-05-20 16:00:00', 'CANCELLED', 1800.00, 100, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000006', '2024-05-21 10:00:00', 'INVOICED', 3500.00, 100, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000007', '2024-05-22 11:30:00', 'INVOICED', 2200.00, 100, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000008', '2024-05-23 09:00:00', 'OPEN', 4000.00, 100, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000009', '2024-05-24 14:20:00', 'OPEN', 15000.00, 500, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000010', '2024-05-25 16:00:00', 'INVOICED', 4500.00, 100, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000011', '2024-05-28 10:00:00', 'INVOICED', 2800.00, 200, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000012', '2024-05-29 11:30:00', 'INVOICED', 900.00, 50, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000013', '2024-05-30 09:00:00', 'OPEN', 1500.00, 500, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000014', '2024-06-01 14:20:00', 'CANCELLED', 1000.00, 100, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                      ('c3d4e5f6-3333-3333-3333-000000000015', '2024-06-02 16:00:00', 'OPEN', 2000.00, 50, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0');
+-- Categoria: Primeiros Socorros
+INSERT INTO public.product (sku, active, created_at, description, measurementunit, name) VALUES
+                                                                                             ('PROD040', true, NOW() - interval '4 year', 'Band-Aid, caixa com 40 unidades', 6, 'Band-Aid'),
+                                                                                             ('PROD041', true, NOW() - interval '3 year', 'Mertiolate Antisséptico, 30mL', 3, 'Mertiolate'),
+                                                                                             ('PROD042', true, NOW() - interval '2 year', 'Gaze Estéril, pacote com 10 unidades', 6, 'Gaze Estéril'),
+                                                                                             ('PROD043', false, NOW() - interval '5 year', 'Água Oxigenada 10 volumes, 100mL', 3, 'Água Oxigenada');
 
---
--- Populating 'orders' table with historical data (50 records).
---
-INSERT INTO public.orders (id, created_at, description, orderstatus, products_price, shipping_price, total_amount, seller_id, shipping_provider_id) VALUES
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000001', '2024-01-15 10:30:00', 'Pedido de farmácia local', 'INVOICED', 38.40, 18.00, 56.40, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000002', '2024-01-22 11:45:00', 'Reposição de estoque de analgésicos', 'INVOICED', 145.50, 12.50, 158.00, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000003', '2024-02-05 09:00:00', 'Pedido de cliente regular', 'INVOICED', 79.90, 9.75, 89.65, '101f3f7e-1254-471a-89a7-3e42d76ac51f', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000004', '2024-02-18 14:00:00', 'Itens de primeiros socorros', 'INVOICED', 60.50, 12.50, 73.00, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000005', '2024-03-01 16:30:00', 'Pedido cancelado pelo cliente', 'CANCELLED', 28.50, 18.00, 46.50, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000006', '2024-03-10 10:00:00', 'Cosméticos e cuidados com a pele', 'INVOICED', 254.80, 9.75, 264.55, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000007', '2024-03-25 11:00:00', 'Medicamentos genéricos', 'INVOICED', 98.00, 18.00, 116.00, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000008', '2024-04-02 09:30:00', 'Suplementos para academia', 'INVOICED', 143.00, 12.50, 155.50, '101f3f7e-1254-471a-89a7-3e42d76ac51f', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000009', '2024-04-15 14:45:00', 'Pedido grande para hospital', 'INVOICED', 1250.00, 18.00, 1268.00, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000010', '2024-05-03 16:00:00', 'Vitaminas e fitoterápicos', 'INVOICED', 144.90, 9.75, 154.65, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000011', '2024-05-18 18:00:00', 'Medicação para pressão', 'INVOICED', 130.00, 12.50, 142.50, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000012', '2024-06-01 09:45:00', 'Pedido para clínica veterinária', 'INVOICED', 250.00, 18.00, 268.00, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000013', '2024-06-15 11:00:00', 'Medicamentos pediátricos', 'INVOICED', 94.00, 9.75, 103.75, '101f3f7e-1254-471a-89a7-3e42d76ac51f', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000014', '2024-07-02 14:00:00', 'Produtos dermatológicos', 'INVOICED', 330.00, 18.00, 348.00, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000015', '2024-07-17 15:30:00', 'Analgésicos e antitérmicos', 'INVOICED', 15.90, 12.50, 28.40, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000016', '2024-08-01 10:30:00', 'Pedido de farmácia de bairro', 'INVOICED', 38.40, 18.00, 56.40, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000017', '2024-08-15 11:45:00', 'Reposição de anti-inflamatórios', 'INVOICED', 135.00, 12.50, 147.50, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000018', '2024-09-03 09:00:00', 'Pedido de cliente VIP', 'INVOICED', 285.00, 9.75, 294.75, '101f3f7e-1254-471a-89a7-3e42d76ac51f', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000019', '2024-09-19 14:00:00', 'Itens de higiene pessoal', 'INVOICED', 81.00, 12.50, 93.50, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000020', '2024-10-01 16:30:00', 'Pedido cancelado - falta de pagamento', 'CANCELLED', 115.00, 18.00, 133.00, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000021', '2024-10-15 10:00:00', 'Medicamentos para diabetes', 'INVOICED', 178.00, 9.75, 187.75, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000022', '2024-11-02 11:00:00', 'Suplementos e vitaminas', 'INVOICED', 189.70, 18.00, 207.70, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000023', '2024-11-17 09:30:00', 'Pedido de material hospitalar', 'INVOICED', 32.50, 12.50, 45.00, '101f3f7e-1254-471a-89a7-3e42d76ac51f', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000024', '2024-12-01 14:45:00', 'Itens para gripe e resfriado', 'INVOICED', 95.00, 18.00, 113.00, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000025', '2024-12-15 15:00:00', 'Produtos de beleza', 'INVOICED', 144.90, 9.75, 154.65, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000026', '2025-01-05 10:30:00', 'Reposição de estoque', 'INVOICED', 320.00, 12.50, 332.50, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000027', '2025-01-20 11:45:00', 'Antialérgicos e corticoides', 'INVOICED', 80.00, 18.00, 98.00, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000028', '2025-02-03 09:00:00', 'Pedido para drogaria parceira', 'INVOICED', 850.00, 9.75, 859.75, '101f3f7e-1254-471a-89a7-3e42d76ac51f', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000029', '2025-02-17 14:00:00', 'Produtos de uso contínuo', 'INVOICED', 175.00, 12.50, 187.50, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000030', '2025-03-01 16:30:00', 'Pedido cancelado - item fora de estoque', 'CANCELLED', 48.00, 18.00, 66.00, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000031', '2025-03-15 10:00:00', 'Medicamentos para idosos', 'OPEN', 210.00, 9.75, 219.75, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000032', '2025-03-28 11:00:00', 'Suplementos vitamínicos', 'OPEN', 79.80, 18.00, 97.80, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000033', '2025-04-05 09:30:00', 'Pedido de material para curativos', 'OPEN', 31.50, 12.50, 44.00, '101f3f7e-1254-471a-89a7-3e42d76ac51f', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000034', '2025-04-20 14:45:00', 'Itens de uso veterinário', 'OPEN', 165.00, 18.00, 183.00, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000035', '2025-05-02 15:00:00', 'Pedido para cliente final', 'OPEN', 50.00, 9.75, 59.75, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000036', '2025-05-10 10:30:00', 'Reposição de estoque urgente', 'OPEN', 430.00, 12.50, 442.50, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000037', '2025-05-15 11:45:00', 'Medicamentos controlados', 'OPEN', 340.00, 18.00, 358.00, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000038', '2025-05-20 09:00:00', 'Itens para tratamento de pele', 'OPEN', 230.00, 9.75, 239.75, '101f3f7e-1254-471a-89a7-3e42d76ac51f', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000039', '2025-05-25 14:00:00', 'Pedido recorrente', 'OPEN', 65.00, 12.50, 77.50, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000040', '2025-06-01 16:30:00', 'Itens diversos', 'OPEN', 112.40, 18.00, 130.40, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000041', '2025-06-02 10:00:00', 'Pedido de suplementos alimentares', 'OPEN', 188.80, 9.75, 198.55, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000042', '2025-06-03 11:00:00', 'Produtos para cabelo e unhas', 'OPEN', 95.50, 12.50, 108.00, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000043', '2025-06-04 09:30:00', 'Inaladores e nebulizadores', 'OPEN', 140.00, 18.00, 158.00, '101f3f7e-1254-471a-89a7-3e42d76ac51f', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000044', '2025-06-05 14:45:00', 'Termômetros e medidores de pressão', 'OPEN', 170.00, 9.75, 179.75, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000045', '2025-06-06 15:00:00', 'Pedido pequeno', 'OPEN', 14.90, 12.50, 27.40, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000046', '2025-06-07 10:30:00', 'Estoque para farmácia popular', 'OPEN', 550.00, 18.00, 568.00, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000047', '2025-06-10 11:45:00', 'Medicamentos para colesterol', 'OPEN', 150.00, 9.75, 159.75, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2', 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000048', '2025-06-11 09:00:00', 'Antidepressivos e ansiolíticos', 'OPEN', 280.00, 12.50, 292.50, '101f3f7e-1254-471a-89a7-3e42d76ac51f', 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000049', '2025-06-12 14:00:00', 'Medicamentos para disfunção erétil', 'OPEN', 235.00, 18.00, 253.00, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                        ('d4e5f6a7-4444-4444-4444-000000000050', '2025-06-13 16:30:00', 'Pedido de última hora', 'OPEN', 32.00, 18.00, 50.00, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b', 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7');
+-- Adicionando mais 76 produtos para atingir o total de 100
+INSERT INTO public.product (sku, active, created_at, description, measurementunit, name) VALUES
+                                                                                             ('PROD044', true, NOW() - interval '1 year', 'Esparadrapo Impermeável, rolo', 7, 'Esparadrapo'),
+                                                                                             ('PROD045', true, NOW() - interval '2 year', 'Antisséptico Bucal Listerine, 500mL', 3, 'Listerine Cool Mint'),
+                                                                                             ('PROD046', true, NOW() - interval '1 year', 'Cotonetes, caixa com 150 unidades', 6, 'Cotonetes Johnson''s'),
+                                                                                             ('PROD047', true, NOW() - interval '3 year', 'Algodão em Bola, pacote 50g', 1, 'Algodão Apolo'),
+                                                                                             ('PROD048', true, NOW() - interval '1 year', 'Soro Fisiológico, 500mL', 3, 'Soro Fisiológico'),
+                                                                                             ('PROD049', true, NOW() - interval '6 months', 'Repelente de Insetos Exposis, 100mL', 3, 'Repelente Exposis'),
+                                                                                             ('PROD050', true, NOW() - interval '2 year', 'Termômetro Digital G-Tech', 7, 'Termômetro Digital'),
+                                                                                             ('PROD051', true, NOW() - interval '1 year', 'Xarope para Tosse Vick, 120mL', 3, 'Xarope Vick'),
+                                                                                             ('PROD052', true, NOW() - interval '4 year', 'Pastilhas para Garganta Benalet, 12 unidades', 6, 'Pastilhas Benalet'),
+                                                                                             ('PROD053', true, NOW() - interval '2 year', 'Antiácido Eno, sachê 5g', 1, 'Sal de Fruta Eno'),
+                                                                                             ('PROD054', true, NOW() - interval '1 year', 'Antialérgico Loratadina 10mg, 12 comprimidos', 6, 'Loratadina'),
+                                                                                             ('PROD055', true, NOW() - interval '3 year', 'Relaxante Muscular Torsilax, 30 comprimidos', 6, 'Torsilax'),
+                                                                                             ('PROD056', true, NOW() - interval '1 year', 'Creme para Assaduras Hipoglós, 45g', 1, 'Hipoglós'),
+                                                                                             ('PROD057', true, NOW() - interval '2 year', 'Fralda Descartável Pampers, pacote M', 6, 'Fralda Pampers M'),
+                                                                                             ('PROD058', true, NOW() - interval '1 year', 'Lenços Umedecidos Huggies, 48 unidades', 6, 'Lenços Umedecidos Huggies'),
+                                                                                             ('PROD059', true, NOW() - interval '6 months', 'Shampoo Infantil Johnson''s, 200mL', 3, 'Shampoo Johnson''s Baby'),
+                                                                                             ('PROD060', true, NOW() - interval '1 year', 'Protetor Labial Nivea, 4.8g', 1, 'Protetor Labial Med Repair'),
+                                                                                             ('PROD061', true, NOW() - interval '2 year', 'Gel para Cabelo Bozzano, 300g', 1, 'Gel Bozzano'),
+                                                                                             ('PROD062', true, NOW() - interval '1 year', 'Creme de Barbear Gillette, 65g', 1, 'Creme de Barbear Gillette'),
+                                                                                             ('PROD063', true, NOW() - interval '3 year', 'Loção Pós-Barba Nivea, 100mL', 3, 'Loção Pós-Barba Nivea'),
+                                                                                             ('PROD064', true, NOW() - interval '1 year', 'Sabonete Íntimo Dermacyd, 200mL', 3, 'Sabonete Íntimo Dermacyd'),
+                                                                                             ('PROD065', true, NOW() - interval '2 year', 'Absorvente Intimus Gel, pacote com 8', 6, 'Absorvente Intimus'),
+                                                                                             ('PROD066', true, NOW() - interval '1 year', 'Tintura de Cabelo Koleston, kit', 6, 'Koleston Cor 6.7'),
+                                                                                             ('PROD067', true, NOW() - interval '4 year', 'Adoçante Zero-Cal, 100mL', 3, 'Adoçante Zero-Cal'),
+                                                                                             ('PROD068', true, NOW() - interval '2 year', 'Barra de Cereal Nutry, unidade', 7, 'Barra de Cereal Nutry'),
+                                                                                             ('PROD069', true, NOW() - interval '1 year', 'Isotônico Gatorade, 500mL', 3, 'Gatorade Limão'),
+                                                                                             ('PROD070', true, NOW() - interval '3 year', 'Teste de Gravidez Confirme, unidade', 7, 'Teste de Gravidez Confirme'),
+                                                                                             ('PROD071', true, NOW() - interval '1 year', 'Preservativo Jontex, pacote com 3', 6, 'Preservativo Jontex'),
+                                                                                             ('PROD072', true, NOW() - interval '2 year', 'Lubrificante Íntimo K-Y, 50g', 1, 'Lubrificante K-Y'),
+                                                                                             ('PROD073', true, NOW() - interval '1 year', 'Analgésico Tylenol 500mg, 20 comprimidos', 6, 'Tylenol 500mg'),
+                                                                                             ('PROD074', true, NOW() - interval '6 months', 'Advil 400mg, 8 cápsulas', 6, 'Advil'),
+                                                                                             ('PROD075', true, NOW() - interval '1 year', 'Vitamina C Redoxon, 10 comprimidos', 6, 'Redoxon Gotas'),
+                                                                                             ('PROD076', true, NOW() - interval '2 year', 'Cálcio Osteo-Bi-Flex, 60 tabletes', 6, 'Osteo-Bi-Flex'),
+                                                                                             ('PROD077', true, NOW() - interval '1 year', 'Gel Massageador Doutorzinho, 120g', 1, 'Gel Doutorzinho'),
+                                                                                             ('PROD078', true, NOW() - interval '3 year', 'Creme para Varizes Venalot, 60g', 1, 'Venalot Creme'),
+                                                                                             ('PROD079', true, NOW() - interval '1 year', 'Salompas Adesivo, envelope com 2', 6, 'Salompas'),
+                                                                                             ('PROD080', true, NOW() - interval '2 year', 'Nebulizador G-Tech, aparelho', 7, 'Nebulizador G-Tech'),
+                                                                                             ('PROD081', true, NOW() - interval '1 year', 'Medidor de Pressão Digital Omron', 7, 'Medidor de Pressão Omron'),
+                                                                                             ('PROD082', true, NOW() - interval '4 year', 'Engov, envelope com 6 comprimidos', 6, 'Engov'),
+                                                                                             ('PROD083', true, NOW() - interval '2 year', 'Magnésia Bisurada, 20 pastilhas', 6, 'Magnésia Bisurada'),
+                                                                                             ('PROD084', true, NOW() - interval '1 year', 'Azia e Má Digestão Estomazil, 5g', 1, 'Estomazil'),
+                                                                                             ('PROD085', true, NOW() - interval '3 year', 'Colírio Moura Brasil, 20mL', 3, 'Colírio Moura Brasil'),
+                                                                                             ('PROD086', true, NOW() - interval '1 year', 'Descongestionante Nasal Neosoro, 30mL', 3, 'Neosoro Adulto'),
+                                                                                             ('PROD087', true, NOW() - interval '2 year', 'Creme Dental Sensodyne, 90g', 1, 'Sensodyne Branqueador'),
+                                                                                             ('PROD088', true, NOW() - interval '1 year', 'Escova de Dente Oral-B Indicator', 7, 'Escova Oral-B'),
+                                                                                             ('PROD089', true, NOW() - interval '6 months', 'Sabonete Protex Limpeza Profunda, 90g', 1, 'Sabonete Protex'),
+                                                                                             ('PROD090', true, NOW() - interval '1 year', 'Acetona, 100mL', 3, 'Removedor de Esmalte'),
+                                                                                             ('PROD091', true, NOW() - interval '2 year', 'Esmalte Risqué Renda, 8mL', 3, 'Esmalte Renda'),
+                                                                                             ('PROD092', true, NOW() - interval '1 year', 'Talco para Pés Tenys Pé, 100g', 1, 'Tenys Pé Baruel'),
+                                                                                             ('PROD093', true, NOW() - interval '3 year', 'Pomada para Assaduras Bepantol, 30g', 1, 'Bepantol Baby'),
+                                                                                             ('PROD094', true, NOW() - interval '1 year', 'Fralda Geriátrica Bigfral, pacote M', 6, 'Fralda Bigfral'),
+                                                                                             ('PROD095', true, NOW() - interval '2 year', 'Mamadeira Kuka, 240mL', 7, 'Mamadeira Kuka'),
+                                                                                             ('PROD096', true, NOW() - interval '1 year', 'Chupeta Lillo, unidade', 7, 'Chupeta Lillo'),
+                                                                                             ('PROD097', true, NOW() - interval '6 months', 'Leite em Pó Aptamil, 800g', 1, 'Fórmula Infantil Aptamil'),
+                                                                                             ('PROD098', true, NOW() - interval '1 year', 'Cereal Infantil Mucilon, 400g', 1, 'Mucilon Arroz e Aveia'),
+                                                                                             ('PROD099', true, NOW() - interval '2 year', 'Bico de Mamadeira de Silicone, tam 2', 7, 'Bico de Mamadeira Kuka'),
+                                                                                             ('PROD100', true, NOW() - interval '1 year', 'Aparelho de Barbear Gillette Mach3', 7, 'Gillette Mach3'),
+                                                                                             ('PROD101', true, NOW() - interval '3 year', 'Carga para Aparelho de Barbear, 2 un', 6, 'Carga Mach3'),
+                                                                                             ('PROD102', true, NOW() - interval '1 year', 'Tira-Leite Manual Lillo', 7, 'Bomba Tira-Leite'),
+                                                                                             ('PROD103', true, NOW() - interval '2 year', 'Almofada para Amamentação', 7, 'Almofada de Amamentação'),
+                                                                                             ('PROD104', true, NOW() - interval '1 year', 'Meia de Compressão Venosan, par', 7, 'Meia de Compressão'),
+                                                                                             ('PROD105', true, NOW() - interval '6 months', 'Joelheira Elástica, unidade', 7, 'Joelheira Needs'),
+                                                                                             ('PROD106', true, NOW() - interval '1 year', 'Bolsa Térmica Gel, unidade', 7, 'Bolsa Térmica'),
+                                                                                             ('PROD107', true, NOW() - interval '2 year', 'Melagrião Xarope, 150mL', 3, 'Melagrião Xarope'),
+                                                                                             ('PROD108', true, NOW() - interval '1 year', 'Decongex Plus, 20mL gotas', 8, 'Decongex Gotas'),
+                                                                                             ('PROD109', true, NOW() - interval '3 year', 'Allegra 120mg, 10 comprimidos', 6, 'Allegra'),
+                                                                                             ('PROD110', true, NOW() - interval '1 year', 'Dramin B6, 10 comprimidos', 6, 'Dramin'),
+                                                                                             ('PROD111', true, NOW() - interval '2 year', 'Plasil Gotas, 20mL', 8, 'Plasil Gotas'),
+                                                                                             ('PROD112', true, NOW() - interval '1 year', 'Luftal Gotas, 15mL', 8, 'Luftal Gotas'),
+                                                                                             ('PROD113', true, NOW() - interval '6 months', 'Imosec, 12 comprimidos', 6, 'Imosec'),
+                                                                                             ('PROD114', true, NOW() - interval '1 year', 'Cataflampro Emulgel, 60g', 1, 'Cataflampro'),
+                                                                                             ('PROD115', true, NOW() - interval '2 year', 'Gelo-Bio Aerossol, 120mL', 3, 'Gelo-Bio'),
+                                                                                             ('PROD116', true, NOW() - interval '1 year', 'Caladryl Creme, 28g', 1, 'Caladryl'),
+                                                                                             ('PROD117', true, NOW() - interval '3 year', 'Fungicid, 30mL', 3, 'Fungicid Solução'),
+                                                                                             ('PROD118', true, NOW() - interval '1 year', 'Minancora, lata 30g', 1, 'Pomada Minancora'),
+                                                                                             ('PROD119', true, NOW() - interval '2 year', 'Centrum Mulher, 30 comprimidos', 6, 'Centrum Mulher');
 
---
--- Populating 'payment' table with 13 records.
---
+
+-- ##################################################################
+-- ##                       Tabela storage                         ##
+-- ##################################################################
+-- Populando o estoque para cada produto criado.
+-- A quantidade é um número aleatório entre 20 e 250.
+-- Produtos inativos ou selecionados terão estoque 0.
+INSERT INTO public.storage (id, product_sku, product_quantity)
+SELECT gen_random_uuid(), sku,
+       CASE
+           WHEN not active THEN 0 -- Estoque zero para produtos inativos
+           WHEN sku IN ('PROD001', 'PROD022') THEN 0 -- Simula ruptura de estoque para produtos ativos
+           ELSE floor(random() * (250 - 20 + 1) + 20)::int
+END
+FROM public.product;
+
+-- ##################################################################
+-- ##                       Tabela payment                         ##
+-- ##################################################################
+-- Inserindo registros de pagamento para 7 funcionários de cargos variados.
+-- Os valores seguem regras de negócio específicas para cada cargo.
+-- O imposto (amount_in_taxes) é uma simulação progressiva.
+
+-- LOCAL_MANAGER
 INSERT INTO public.payment (id, active, amount_in_taxes, created_at, dental_insurance_amount, food_voucher_amount, gross_income, health_insurance_amount, meal_voucher_amount, profit_sharing_amount, employee_id) VALUES
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000001', true, 1800.75, '2024-05-31 09:00:00', 60.00, 450.00, 9500.00, 180.00, 650.00, 1800.00, 'a1b2c3d4-e5f6-47b8-89d0-e1f2a3b4c5d6'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000002', true, 950.50, '2024-05-31 09:00:00', 50.00, 400.00, 6000.00, 150.00, 600.00, 1100.00, 'b2c3d4e5-f6a7-48c9-90e1-f2a3b4c5d6e7'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000003', true, 600.25, '2024-05-31 09:00:00', 40.00, 350.00, 4500.00, 120.00, 550.00, 800.00, 'c3d4e5f6-a7b8-49d0-a1f2-a3b4c5d6e7f8'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000004', true, 550.00, '2024-05-31 09:00:00', 40.00, 350.00, 4200.00, 120.00, 550.00, 750.00, 'd4e5f6a7-b8c9-40e1-b2a3-b4c5d6e7f8a9'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000005', true, 620.00, '2024-05-31 09:00:00', 40.00, 350.00, 4600.00, 120.00, 550.00, 820.00, 'e5f6a7b8-c9d0-41f2-c3b4-c5d6e7f8a9b0'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000006', true, 750.80, '2024-05-31 09:00:00', 50.00, 400.00, 5200.00, 150.00, 600.00, 950.00, 'f6a7b8c9-d0e1-42a3-d4b5-d6e7f8a9b0c1'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000007', true, 960.00, '2024-05-31 09:00:00', 50.00, 400.00, 6100.00, 150.00, 600.00, 1150.00, 'a7b8c9d0-e1f2-43b4-e5d6-e7f8a9b0c1d2'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000008', false, 1500.00, '2024-04-30 09:00:00', 60.00, 450.00, 8500.00, 180.00, 650.00, 1600.00, 'b8c9d0e1-f2a3-44b5-f6e7-f8a9b0c1d2e3'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000009', true, 610.50, '2024-05-31 09:00:00', 40.00, 350.00, 4550.00, 120.00, 550.00, 810.00, 'c9d0e1f2-a3b4-45d6-a7f8-a9b0c1d2e3f4'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000010', true, 560.00, '2024-05-31 09:00:00', 40.00, 350.00, 4250.00, 120.00, 550.00, 760.00, 'd0e1f2a3-b4c5-46e7-b8a9-b0c1d2e3f4a5'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000011', true, 955.00, '2024-05-31 09:00:00', 50.00, 400.00, 6050.00, 150.00, 600.00, 1110.00, '101f3f7e-1254-471a-89a7-3e42d76ac51f'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000012', true, 945.00, '2024-05-31 09:00:00', 50.00, 400.00, 5950.00, 150.00, 600.00, 1090.00, '202a4a8d-5678-4a2b-98b8-4f53e87bd62a'),
-                                                                                                                                                                                                                       ('e5f6a7b8-5555-5555-5555-000000000013', true, 965.00, '2024-05-31 09:00:00', 50.00, 400.00, 6150.00, 150.00, 600.00, 1160.00, '303b5b9c-9012-4b3c-a7c9-5a64f98ce73b');
+    (gen_random_uuid(), true, 705.00, NOW() - interval '1 month', 50.00, 300.00, 6000.00, 400.00, 700.00, 1200.00, (SELECT id FROM public.employee WHERE role = 'LOCAL_MANAGER' LIMIT 1));
 
+-- FINANCIAL
+INSERT INTO public.payment (id, active, amount_in_taxes, created_at, dental_insurance_amount, food_voucher_amount, gross_income, health_insurance_amount, meal_voucher_amount, profit_sharing_amount, employee_id) VALUES
+    (gen_random_uuid(), true, 227.00, NOW() - interval '1 month', 40.00, 250.00, 4000.00, 300.00, 500.00, 800.00, (SELECT id FROM public.employee WHERE role = 'FINANCIAL' LIMIT 1));
 
--- =============================================================================
--- STEP 3: Populate Tables with Two Levels of Dependencies
--- =============================================================================
+-- SALES (Exemplo 1)
+INSERT INTO public.payment (id, active, amount_in_taxes, created_at, dental_insurance_amount, food_voucher_amount, gross_income, health_insurance_amount, meal_voucher_amount, profit_sharing_amount, employee_id) VALUES
+    (gen_random_uuid(), true, 302.00, NOW() - interval '1 month', 45.00, 280.00, 4500.00, 350.00, 600.00, 900.00, (SELECT id FROM public.employee WHERE role = 'SALES' and fullname = 'Roberto Pereira' LIMIT 1));
 
---
--- Populating 'purchase_order_item' table with 16 records.
---
-INSERT INTO public.purchase_order_item (id, created_at, purchase_price, purchase_quantity, purchase_product_sku, purchase_order_id) VALUES
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000001', '2024-05-02 10:00:00', 8.50, 500, 'MED-001', 'c3d4e5f6-3333-3333-3333-000000000001'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000002', '2024-05-03 11:30:00', 12.00, 500, 'MED-002', 'c3d4e5f6-3333-3333-3333-000000000002'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000003', '2024-05-10 09:00:00', 25.00, 500, 'MED-003', 'c3d4e5f6-3333-3333-3333-000000000003'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000004', '2024-05-15 14:20:00', 5.50, 1000, 'MED-004', 'c3d4e5f6-3333-3333-3333-000000000004'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000005', '2024-05-20 16:00:00', 18.00, 100, 'MED-005', 'c3d4e5f6-3333-3333-3333-000000000005'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000006', '2024-05-21 10:00:00', 35.00, 100, 'MED-006', 'c3d4e5f6-3333-3333-3333-000000000006'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000007', '2024-05-22 11:30:00', 22.00, 100, 'SUP-001', 'c3d4e5f6-3333-3333-3333-000000000007'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000008', '2024-05-23 09:00:00', 40.00, 100, 'SUP-002', 'c3d4e5f6-3333-3333-3333-000000000008'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000009', '2024-05-24 14:20:00', 30.00, 500, 'SUP-003', 'c3d4e5f6-3333-3333-3333-000000000009'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000010', '2024-05-25 16:00:00', 45.00, 100, 'COS-001', 'c3d4e5f6-3333-3333-3333-000000000010'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000011', '2024-05-28 10:00:00', 28.00, 100, 'COS-002', 'c3d4e5f6-3333-3333-3333-000000000011'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000012', '2024-05-28 10:00:00', 28.00, 100, 'COS-002', 'c3d4e5f6-3333-3333-3333-000000000011'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000013', '2024-05-29 11:30:00', 15.00, 60, 'MED-007', 'c3d4e5f6-3333-3333-3333-000000000012'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000014', '2024-05-30 09:00:00', 1.50, 1000, 'HOSP-001', 'c3d4e5f6-3333-3333-3333-000000000013'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000015', '2024-06-01 14:20:00', 10.00, 100, 'HOSP-002', 'c3d4e5f6-3333-3333-3333-000000000014'),
-                                                                                                                                        ('f6a7b8c9-6666-6666-6666-000000000016', '2024-06-02 16:00:00', 40.00, 50, 'PETS-001', 'c3d4e5f6-3333-3333-3333-000000000015');
+-- SALES (Exemplo 2)
+INSERT INTO public.payment (id, active, amount_in_taxes, created_at, dental_insurance_amount, food_voucher_amount, gross_income, health_insurance_amount, meal_voucher_amount, profit_sharing_amount, employee_id) VALUES
+    (gen_random_uuid(), true, 302.00, NOW() - interval '1 month', 45.00, 280.00, 4500.00, 350.00, 600.00, 900.00, (SELECT id FROM public.employee WHERE role = 'SALES' and fullname = 'Aline Gomes' LIMIT 1));
 
---
--- Populating 'order_item' table with full historical data
---
-INSERT INTO public.order_item (id, created_at, price, quantity, orders_id, product_sku) VALUES
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000001', '2024-01-15 10:30:00', 15.90, 1, 'd4e5f6a7-4444-4444-4444-000000000001', 'MED-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000002', '2024-01-15 10:30:00', 22.50, 1, 'd4e5f6a7-4444-4444-4444-000000000001', 'MED-002'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000003', '2024-01-22 11:45:00', 45.00, 1, 'd4e5f6a7-4444-4444-4444-000000000002', 'MED-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000004', '2024-01-22 11:45:00', 65.00, 1, 'd4e5f6a7-4444-4444-4444-000000000002', 'MED-006'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000005', '2024-01-22 11:45:00', 35.00, 1, 'd4e5f6a7-4444-4444-4444-000000000002', 'FIT-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000006', '2024-02-05 09:00:00', 79.90, 1, 'd4e5f6a7-4444-4444-4444-000000000003', 'SUP-002'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000007', '2024-02-18 14:00:00', 9.50, 2, 'd4e5f6a7-4444-4444-4444-000000000004', 'HOSP-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000008', '2024-02-18 14:00:00', 22.00, 1, 'd4e5f6a7-4444-4444-4444-000000000004', 'HOSP-004'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000009', '2024-02-18 14:00:00', 14.90, 1, 'd4e5f6a7-4444-4444-4444-000000000004', 'MED-011'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000010', '2024-03-10 10:00:00', 89.90, 2, 'd4e5f6a7-4444-4444-4444-000000000006', 'COS-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000011', '2024-03-10 10:00:00', 15.00, 5, 'd4e5f6a7-4444-4444-4444-000000000006', 'COS-004'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000012', '2024-03-25 11:00:00', 8.00, 5, 'd4e5f6a7-4444-4444-4444-000000000007', 'MED-019'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000013', '2024-03-25 11:00:00', 50.00, 1, 'd4e5f6a7-4444-4444-4444-000000000007', 'MED-014'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000014', '2024-03-25 11:00:00', 8.00, 1, 'd4e5f6a7-4444-4444-4444-000000000007', 'MED-019'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000015', '2024-04-02 09:30:00', 95.00, 1, 'd4e5f6a7-4444-4444-4444-000000000008', 'SUP-004'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000016', '2024-04-02 09:30:00', 48.00, 1, 'd4e5f6a7-4444-4444-4444-000000000008', 'SUP-005'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000017', '2024-04-15 14:45:00', 25.00, 50, 'd4e5f6a7-4444-4444-4444-000000000009', 'HOSP-002'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000018', '2024-05-03 16:00:00', 39.90, 1, 'd4e5f6a7-4444-4444-4444-000000000010', 'SUP-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000019', '2024-05-03 16:00:00', 35.00, 3, 'd4e5f6a7-4444-4444-4444-000000000010', 'FIT-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000020', '2024-05-18 18:00:00', 65.00, 2, 'd4e5f6a7-4444-4444-4444-000000000011', 'MED-006'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000021', '2024-06-01 09:45:00', 85.00, 2, 'd4e5f6a7-4444-4444-4444-000000000012', 'PETS-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000022', '2024-06-01 09:45:00', 55.00, 1, 'd4e5f6a7-4444-4444-4444-000000000012', 'PETS-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000023', '2024-06-15 11:00:00', 34.00, 1, 'd4e5f6a7-4444-4444-4444-000000000013', 'PED-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000024', '2024-06-15 11:00:00', 38.00, 1, 'd4e5f6a7-4444-4444-4444-000000000013', 'PED-002'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000025', '2024-06-15 11:00:00', 22.00, 1, 'd4e5f6a7-4444-4444-4444-000000000013', 'PED-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000026', '2024-07-02 14:00:00', 100.00, 3, 'd4e5f6a7-4444-4444-4444-000000000014', 'DERM-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000027', '2024-07-02 14:00:00', 65.00, 1, 'd4e5f6a7-4444-4444-4444-000000000014', 'DERM-002'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000028', '2024-07-17 15:30:00', 15.90, 1, 'd4e5f6a7-4444-4444-4444-000000000015', 'MED-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000029', '2024-08-01 10:30:00', 15.90, 1, 'd4e5f6a7-4444-4444-4444-000000000016', 'MED-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000030', '2024-08-01 10:30:00', 22.50, 1, 'd4e5f6a7-4444-4444-4444-000000000016', 'MED-002'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000031', '2024-08-15 11:45:00', 75.00, 1, 'd4e5f6a7-4444-4444-4444-000000000017', 'MED-012'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000032', '2024-08-15 11:45:00', 60.00, 1, 'd4e5f6a7-4444-4444-4444-000000000017', 'MED-013'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000033', '2024-09-03 09:00:00', 110.00, 1, 'd4e5f6a7-4444-4444-4444-000000000018', 'MED-009'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000034', '2024-09-03 09:00:00', 160.00, 1, 'd4e5f6a7-4444-4444-4444-000000000018', 'MED-028'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000035', '2024-09-03 09:00:00', 15.00, 1, 'd4e5f6a7-4444-4444-4444-000000000018', 'MED-027'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000036', '2024-09-19 14:00:00', 38.00, 1, 'd4e5f6a7-4444-4444-4444-000000000019', 'COS-005'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000037', '2024-09-19 14:00:00', 28.00, 1, 'd4e5f6a7-4444-4444-4444-000000000019', 'COS-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000038', '2024-09-19 14:00:00', 15.00, 1, 'd4e5f6a7-4444-4444-4444-000000000019', 'COS-004'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000039', '2024-10-15 10:00:00', 8.00, 10, 'd4e5f6a7-4444-4444-4444-000000000021', 'MED-019'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000040', '2024-10-15 10:00:00', 170.00, 1, 'd4e5f6a7-4444-4444-4444-000000000021', 'MED-018'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000041', '2024-11-02 11:00:00', 70.00, 2, 'd4e5f6a7-4444-4444-4444-000000000022', 'SUP-006'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000042', '2024-11-02 11:00:00', 48.00, 1, 'd4e5f6a7-4444-4444-4444-000000000022', 'SUP-005'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000043', '2024-11-17 09:30:00', 4.00, 1, 'd4e5f6a7-4444-4444-4444-000000000023', 'HOSP-005'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000044', '2024-11-17 09:30:00', 25.00, 1, 'd4e5f6a7-4444-4444-4444-000000000023', 'HOSP-002'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000045', '2024-11-17 09:30:00', 3.50, 1, 'd4e5f6a7-4444-4444-4444-000000000023', 'HOSP-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000046', '2024-12-01 14:45:00', 35.00, 1, 'd4e5f6a7-4444-4444-4444-000000000024', 'MED-020'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000047', '2024-12-01 14:45:00', 40.00, 1, 'd4e5f6a7-4444-4444-4444-000000000024', 'MED-021'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000048', '2024-12-01 14:45:00', 20.00, 1, 'd4e5f6a7-4444-4444-4444-000000000024', 'MED-022'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000049', '2024-12-15 15:00:00', 89.90, 1, 'd4e5f6a7-4444-4444-4444-000000000025', 'COS-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000050', '2024-12-15 15:00:00', 55.00, 1, 'd4e5f6a7-4444-4444-4444-000000000025', 'COS-002'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000051', '2025-01-05 10:30:00', 160.00, 2, 'd4e5f6a7-4444-4444-4444-000000000026', 'MED-028'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000052', '2025-01-20 11:45:00', 32.00, 1, 'd4e5f6a7-4444-4444-4444-000000000027', 'MED-005'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000053', '2025-01-20 11:45:00', 48.00, 1, 'd4e5f6a7-4444-4444-4444-000000000027', 'MED-025'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000054', '2025-02-03 09:00:00', 140.00, 5, 'd4e5f6a7-4444-4444-4444-000000000028', 'MED-026'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000055', '2025-02-03 09:00:00', 150.00, 1, 'd4e5f6a7-4444-4444-4444-000000000028', 'MED-015'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000056', '2025-02-17 14:00:00', 65.00, 1, 'd4e5f6a7-4444-4444-4444-000000000029', 'MED-006'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000057', '2025-02-17 14:00:00', 110.00, 1, 'd4e5f6a7-4444-4444-4444-000000000029', 'MED-009'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000058', '2025-03-15 10:00:00', 17.50, 2, 'd4e5f6a7-4444-4444-4444-000000000031', 'MED-008'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000059', '2025-03-15 10:00:00', 175.00, 1, 'd4e5f6a7-4444-4444-4444-000000000031', 'MED-015'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000060', '2025-03-28 11:00:00', 39.90, 2, 'd4e5f6a7-4444-4444-4444-000000000032', 'SUP-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000061', '2025-04-05 09:30:00', 9.50, 1, 'd4e5f6a7-4444-4444-4444-000000000033', 'HOSP-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000062', '2025-04-05 09:30:00', 22.00, 1, 'd4e5f6a7-4444-4444-4444-000000000033', 'HOSP-004'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000063', '2025-04-20 14:45:00', 55.00, 3, 'd4e5f6a7-4444-4444-4444-000000000034', 'PETS-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000064', '2025-05-02 15:00:00', 50.00, 1, 'd4e5f6a7-4444-4444-4444-000000000035', 'MED-014'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000065', '2025-05-10 10:30:00', 280.00, 1, 'd4e5f6a7-4444-4444-4444-000000000036', 'MED-024'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000066', '2025-05-10 10:30:00', 150.00, 1, 'd4e5f6a7-4444-4444-4444-000000000036', 'MED-015'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000067', '2025-05-15 11:45:00', 180.00, 1, 'd4e5f6a7-4444-4444-4444-000000000037', 'MED-023'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000068', '2025-05-15 11:45:00', 160.00, 1, 'd4e5f6a7-4444-4444-4444-000000000037', 'MED-028'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000069', '2025-05-20 09:00:00', 100.00, 1, 'd4e5f6a7-4444-4444-4444-000000000038', 'DERM-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000070', '2025-05-20 09:00:00', 130.00, 1, 'd4e5f6a7-4444-4444-4444-000000000038', 'DERM-001'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000071', '2025-05-25 14:00:00', 65.00, 1, 'd4e5f6a7-4444-4444-4444-000000000039', 'MED-006'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000072', '2025-06-01 16:30:00', 10.90, 2, 'd4e5f6a7-4444-4444-4444-000000000040', 'MED-004'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000073', '2025-06-01 16:30:00', 15.00, 6, 'd4e5f6a7-4444-4444-4444-000000000040', 'MED-027'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000074', '2025-06-02 10:00:00', 59.90, 2, 'd4e5f6a7-4444-4444-4444-000000000041', 'SUP-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000075', '2025-06-02 10:00:00', 70.00, 1, 'd4e5f6a7-4444-4444-4444-000000000041', 'SUP-007'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000076', '2025-06-03 11:00:00', 58.00, 1, 'd4e5f6a7-4444-4444-4444-000000000042', 'FIT-003'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000077', '2025-06-03 11:00:00', 38.00, 1, 'd4e5f6a7-4444-4444-4444-000000000042', 'COS-005'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000078', '2025-06-04 09:30:00', 140.00, 1, 'd4e5f6a7-4444-4444-4444-000000000043', 'MED-026'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000079', '2025-06-05 14:45:00', 29.00, 1, 'd4e5f6a7-4444-4444-4444-000000000044', 'HOSP-006'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000080', '2025-06-05 14:45:00', 125.00, 1, 'd4e5f6a7-4444-4444-4444-000000000044', 'MED-010'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000081', '2025-06-05 14:45:00', 17.50, 1, 'd4e5f6a7-4444-4444-4444-000000000044', 'MED-008'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000082', '2025-06-06 15:00:00', 14.90, 1, 'd4e5f6a7-4444-4444-4444-000000000045', 'MED-011'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000083', '2025-06-07 10:30:00', 110.00, 5, 'd4e5f6a7-4444-4444-4444-000000000046', 'MED-009'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000084', '2025-06-10 11:45:00', 150.00, 1, 'd4e5f6a7-4444-4444-4444-000000000047', 'MED-015'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000085', '2025-06-11 09:00:00', 120.00, 1, 'd4e5f6a7-4444-4444-4444-000000000048', 'MED-016'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000086', '2025-06-11 09:00:00', 160.00, 1, 'd4e5f6a7-4444-4444-4444-000000000048', 'MED-028'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000087', '2025-06-12 14:00:00', 110.00, 1, 'd4e5f6a7-4444-4444-4444-000000000049', 'MED-009'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000088', '2025-06-12 14:00:00', 125.00, 1, 'd4e5f6a7-4444-4444-4444-000000000049', 'MED-010'),
-                                                                                            ('a7b8c9d0-7777-7777-7777-000000000089', '2025-06-13 16:30:00', 32.00, 1, 'd4e5f6a7-4444-4444-4444-000000000050', 'MED-005');
+-- HR
+INSERT INTO public.payment (id, active, amount_in_taxes, created_at, dental_insurance_amount, food_voucher_amount, gross_income, health_insurance_amount, meal_voucher_amount, profit_sharing_amount, employee_id) VALUES
+    (gen_random_uuid(), true, 140.00, NOW() - interval '1 month', 35.00, 200.00, 3500.00, 250.00, 450.00, 700.00, (SELECT id FROM public.employee WHERE role = 'HR' LIMIT 1));
 
+-- SHIPPING
+INSERT INTO public.payment (id, active, amount_in_taxes, created_at, dental_insurance_amount, food_voucher_amount, gross_income, health_insurance_amount, meal_voucher_amount, profit_sharing_amount, employee_id) VALUES
+    (gen_random_uuid(), true, 35.00, NOW() - interval '1 month', 30.00, 180.00, 2500.00, 200.00, 350.00, 500.00, (SELECT id FROM public.employee WHERE role = 'SHIPPING' AND active = true LIMIT 1));
 
---
--- Populating 'shipping_order' table with historical data (50 records).
---
-INSERT INTO public.shipping_order (id, active, created_at, delivery_date, destinationcity, destinationstate, estimated_delivery_days, shipment_date, shipping_cost, status, weight, shipping_provider_id) VALUES
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000001', true, '2024-01-15 18:00:00', '2024-01-18', 'Belo Horizonte', 'MG', 3, '2024-01-15', 18.00, 'ENTREGUE', 1.5, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000002', true, '2024-01-22 19:00:00', '2024-01-27', 'São Paulo', 'SP', 5, '2024-01-22', 12.50, 'ENTREGUE', 0.8, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000003', true, '2024-02-05 17:00:00', '2024-02-12', 'Porto Alegre', 'RS', 7, '2024-02-05', 9.75, 'ENTREGUE', 1.2, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000004', true, '2024-02-18 18:00:00', '2024-02-23', 'São Paulo', 'SP', 5, '2024-02-18', 12.50, 'ENTREGUE', 1.0, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000005', true, '2024-03-10 18:00:00', '2024-03-17', 'Salvador', 'BA', 7, '2024-03-10', 9.75, 'ENTREGUE', 2.1, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000006', true, '2024-03-25 19:00:00', '2024-03-28', 'Rio de Janeiro', 'RJ', 3, '2024-03-25', 18.00, 'ENTREGUE', 0.9, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000007', true, '2024-04-02 17:00:00', '2024-04-07', 'São Paulo', 'SP', 5, '2024-04-02', 12.50, 'ENTREGUE', 1.1, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000008', true, '2024-04-15 18:00:00', '2024-04-19', 'Belo Horizonte', 'MG', 3, '2024-04-16', 18.00, 'ATRASADO', 5.0, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000009', true, '2024-05-03 19:00:00', '2024-05-10', 'Curitiba', 'PR', 7, '2024-05-03', 9.75, 'ENTREGUE', 2.0, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000010', true, '2024-05-18 20:00:00', '2024-05-23', 'São Paulo', 'SP', 5, '2024-05-18', 12.50, 'ENTREGUE', 0.4, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000011', true, '2024-06-01 17:00:00', '2024-06-04', 'Rio de Janeiro', 'RJ', 3, '2024-06-01', 18.00, 'ENTREGUE', 1.3, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000012', true, '2024-06-15 18:00:00', '2024-06-22', 'Florianopolis', 'SC', 7, '2024-06-15', 9.75, 'ENTREGUE', 1.5, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000013', true, '2024-07-02 19:00:00', '2024-07-07', 'São Paulo', 'SP', 5, '2024-07-02', 12.50, 'ENTREGUE', 0.7, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000014', true, '2024-07-17 20:00:00', '2024-07-20', 'Belo Horizonte', 'MG', 3, '2024-07-17', 18.00, 'ENTREGUE', 1.0, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000015', true, '2024-08-01 21:00:00', '2024-08-08', 'Salvador', 'BA', 7, '2024-08-01', 9.75, 'ENTREGUE', 0.5, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000016', true, '2024-08-15 18:00:00', '2024-08-18', 'Belo Horizonte', 'MG', 3, '2024-08-15', 18.00, 'ENTREGUE', 1.5, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000017', true, '2024-09-03 19:00:00', '2024-09-08', 'São Paulo', 'SP', 5, '2024-09-03', 12.50, 'ENTREGUE', 0.8, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000018', true, '2024-09-19 17:00:00', '2024-09-26', 'Porto Alegre', 'RS', 7, '2024-09-19', 9.75, 'ENTREGUE', 1.2, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000019', true, '2024-10-15 18:00:00', '2024-10-20', 'São Paulo', 'SP', 5, '2024-10-15', 12.50, 'ENTREGUE', 1.0, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000020', true, '2024-11-02 18:00:00', '2024-11-09', 'Salvador', 'BA', 7, '2024-11-02', 9.75, 'ENTREGUE', 2.1, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000021', true, '2024-11-17 19:00:00', '2024-11-20', 'Rio de Janeiro', 'RJ', 3, '2024-11-17', 18.00, 'ENTREGUE', 0.9, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000022', true, '2024-12-01 17:00:00', '2024-12-06', 'São Paulo', 'SP', 5, '2024-12-01', 12.50, 'ENTREGUE', 1.1, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000023', true, '2024-12-15 18:00:00', '2024-12-18', 'Belo Horizonte', 'MG', 3, '2024-12-15', 18.00, 'ENTREGUE', 5.0, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000024', true, '2025-01-05 19:00:00', '2025-01-12', 'Curitiba', 'PR', 7, '2025-01-05', 9.75, 'ENTREGUE', 2.0, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000025', true, '2025-01-20 20:00:00', '2025-01-25', 'São Paulo', 'SP', 5, '2025-01-20', 12.50, 'ENTREGUE', 0.4, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000026', true, '2025-02-03 17:00:00', '2025-02-06', 'Rio de Janeiro', 'RJ', 3, '2025-02-03', 18.00, 'ENTREGUE', 1.3, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000027', true, '2025-02-17 18:00:00', '2025-02-24', 'Florianopolis', 'SC', 7, '2025-02-17', 9.75, 'ENTREGUE', 1.5, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000028', true, '2025-03-01 19:00:00', '2025-03-06', 'São Paulo', 'SP', 5, '2025-03-01', 12.50, 'ENTREGUE', 0.7, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000029', true, '2025-03-15 20:00:00', '2025-03-18', 'Belo Horizonte', 'MG', 3, '2025-03-15', 18.00, 'ENTREGUE', 1.0, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000030', true, '2025-03-28 21:00:00', '2025-04-04', 'Salvador', 'BA', 7, '2025-03-28', 9.75, 'ENTREGUE', 0.5, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000031', true, '2025-04-05 17:00:00', null, 'São Paulo', 'SP', 5, '2025-04-05', 12.50, 'EM_TRANSPORTE', 1.0, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000032', true, '2025-04-20 18:00:00', null, 'Rio de Janeiro', 'RJ', 3, '2025-04-20', 18.00, 'EM_TRANSPORTE', 0.9, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000033', true, '2025-05-02 19:00:00', null, 'Curitiba', 'PR', 7, '2025-05-02', 9.75, 'EM_TRANSPORTE', 2.0, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000034', true, '2025-05-10 20:00:00', null, 'São Paulo', 'SP', 5, '2025-05-10', 12.50, 'PENDENTE', 0.4, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000035', true, '2025-05-15 17:00:00', null, 'Belo Horizonte', 'MG', 3, '2025-05-15', 18.00, 'PENDENTE', 1.3, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000036', true, '2025-05-20 18:00:00', null, 'Florianopolis', 'SC', 7, '2025-05-20', 9.75, 'PENDENTE', 1.5, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000037', true, '2025-05-25 19:00:00', null, 'São Paulo', 'SP', 5, '2025-05-25', 12.50, 'PENDENTE', 0.7, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000038', true, '2025-06-01 20:00:00', null, 'Rio de Janeiro', 'RJ', 3, '2025-06-01', 18.00, 'PENDENTE', 1.0, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000039', true, '2025-06-02 21:00:00', null, 'Salvador', 'BA', 7, '2025-06-02', 9.75, 'PENDENTE', 0.5, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000040', true, '2025-06-03 18:00:00', null, 'Belo Horizonte', 'MG', 3, '2025-06-03', 18.00, 'PENDENTE', 1.5, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000041', true, '2025-06-04 19:00:00', null, 'São Paulo', 'SP', 5, '2025-06-04', 12.50, 'PENDENTE', 0.8, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000042', true, '2025-06-05 17:00:00', null, 'Porto Alegre', 'RS', 7, '2025-06-05', 9.75, 'PENDENTE', 1.2, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000043', true, '2025-06-06 18:00:00', null, 'São Paulo', 'SP', 5, '2025-06-06', 12.50, 'PENDENTE', 1.0, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000044', true, '2025-06-07 18:00:00', null, 'Salvador', 'BA', 7, '2025-06-07', 9.75, 'PENDENTE', 2.1, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000045', true, '2025-06-10 19:00:00', null, 'Rio de Janeiro', 'RJ', 3, '2025-06-10', 18.00, 'PENDENTE', 0.9, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000046', true, '2025-06-11 17:00:00', null, 'São Paulo', 'SP', 5, '2025-06-11', 12.50, 'PENDENTE', 1.1, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000047', true, '2025-06-12 18:00:00', null, 'Belo Horizonte', 'MG', 3, '2025-06-12', 18.00, 'PENDENTE', 5.0, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000048', true, '2025-06-13 19:00:00', null, 'Curitiba', 'PR', 7, '2025-06-13', 9.75, 'PENDENTE', 2.0, 'a3b4c5d6-e7f8-49b0-a1d2-e3f4a5b6c7d8'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000049', true, '2025-06-14 20:00:00', null, 'São Paulo', 'SP', 5, '2025-06-14', 12.50, 'PENDENTE', 0.4, 'e1f2a3b4-c5d6-47f8-89b0-c1d2e3f4a5b6'),
-                                                                                                                                                                                                              ('b8c9d0e1-8888-8888-8888-000000000050', true, '2025-06-14 17:00:00', null, 'Rio de Janeiro', 'RJ', 3, '2025-06-14', 18.00, 'PENDENTE', 1.3, 'f2a3b4c5-d6e7-48a9-90c1-d2e3f4a5b6c7');
+-- STORAGE
+INSERT INTO public.payment (id, active, amount_in_taxes, created_at, dental_insurance_amount, food_voucher_amount, gross_income, health_insurance_amount, meal_voucher_amount, profit_sharing_amount, employee_id) VALUES
+    (gen_random_uuid(), true, 0.00, NOW() - interval '1 month', 25.00, 150.00, 2000.00, 180.00, 300.00, 400.00, (SELECT id FROM public.employee WHERE role = 'STORAGE' AND active = true LIMIT 1));
 
--- =============================================================================
--- End of Script
--- =============================================================================
+-- Fim do Script
+
+-- SQL Mock Data Generation Script - Part 2
+-- Target: PostgreSQL
+-- Project: Order History Population
+-- Description: Creates a realistic history for orders, order_items, and shipping_orders.
+--              This script is designed to be run AFTER the initial data population script.
+
+DO $$
+DECLARE
+    -- ### CONFIGURAÇÃO ###
+v_start_date DATE := '2025-04-01';
+    v_end_date DATE := '2025-06-17';
+
+    -- ### VARIÁVEIS DE CONTROLE ###
+    v_current_date DATE;
+    v_num_orders_per_day INT;
+    v_num_items_per_order INT;
+    v_created_at_timestamp TIMESTAMP;
+
+    -- ### ARRAYS PARA ARMAZENAR DADOS EXISTENTES (Melhora a performance) ###
+    v_seller_ids UUID[];
+    v_product_skus VARCHAR(50)[];
+    v_shipping_provider_ids UUID[];
+
+    -- ### VARIÁVEIS PARA ARMAZENAR IDs E VALORES GERADOS ###
+    v_order_id UUID;
+    v_shipping_order_id UUID;
+    v_seller_id UUID;
+    v_product_sku VARCHAR(50);
+    v_shipping_provider_id UUID;
+
+    v_item_price NUMERIC(19,4);
+    v_item_quantity INT;
+    v_order_products_price NUMERIC(19,4);
+    v_order_total_amount NUMERIC(19,4);
+
+    v_shipping_cost NUMERIC(38,2);
+    v_order_weight NUMERIC(38,2);
+    v_shipment_date DATE;
+    v_delivery_date DATE;
+    v_estimated_days INT;
+
+    v_order_status VARCHAR(255);
+    v_shipping_status VARCHAR(255);
+
+BEGIN
+    -- 1. Carrega os IDs e SKUs necessários em arrays para acesso rápido, evitando queries repetidas no loop.
+    RAISE NOTICE 'Carregando dados de apoio (vendedores, produtos, transportadoras)...';
+    v_seller_ids := ARRAY(SELECT id FROM public.employee WHERE role = 'SALES' AND active = true);
+    v_product_skus := ARRAY(SELECT sku FROM public.product WHERE active = true);
+    v_shipping_provider_ids := ARRAY(SELECT id FROM public.shipping_provider WHERE active = true);
+
+    -- Verifica se temos dados suficientes para continuar
+    IF array_length(v_seller_ids, 1) IS NULL OR array_length(v_product_skus, 1) IS NULL OR array_length(v_shipping_provider_ids, 1) IS NULL THEN
+        RAISE EXCEPTION 'Não há dados suficientes nas tabelas employee(SALES), product ou shipping_provider para gerar os pedidos. Execute o script inicial primeiro.';
+END IF;
+
+    RAISE NOTICE 'Iniciando a geração de pedidos de % até %...', v_start_date, v_end_date;
+
+    -- 2. Loop principal: Itera por cada dia desde a data de início até a data de fim.
+FOR v_current_date IN SELECT generate_series(v_start_date, v_end_date, '1 day'::interval) LOOP
+
+                             -- Gera um número aleatório de pedidos para o dia corrente (entre 3 e 10)
+                          v_num_orders_per_day := floor(random() * 8 + 3)::INT;
+
+-- Loop secundário: Cria cada pedido para o dia corrente.
+FOR i IN 1..v_num_orders_per_day LOOP
+
+            -- Zera os totalizadores do pedido
+            v_order_products_price := 0;
+            v_order_total_amount := 0;
+            v_order_weight := 0;
+
+            -- Gera um timestamp aleatório para o dia corrente
+            v_created_at_timestamp := v_current_date + (floor(random()*86400))::integer * '1 second'::interval;
+
+            -- ### ETAPA A: Criar o `shipping_order` ###
+            v_shipping_provider_id := v_shipping_provider_ids[floor(random() * array_length(v_shipping_provider_ids, 1) + 1)];
+            v_shipping_cost := round((random() * (40 - 12) + 12)::numeric, 2);
+            v_estimated_days := (SELECT average_delivery_days FROM public.shipping_provider WHERE id = v_shipping_provider_id LIMIT 1);
+            v_shipment_date := v_current_date + interval '1 day';
+            v_delivery_date := v_shipment_date + (v_estimated_days * interval '1 day');
+
+            -- Lógica para status do frete
+            IF v_delivery_date < v_end_date THEN
+                v_shipping_status := 'ENTREGUE';
+            ELSIF v_shipment_date < v_end_date THEN
+                v_shipping_status := 'EM_TRANSPORTE';
+ELSE
+                v_shipping_status := 'PENDENTE';
+END IF;
+
+INSERT INTO public.shipping_order (id, active, created_at, delivery_date, destinationcity, destinationstate, estimated_delivery_days, shipment_date, shipping_cost, status, weight, shippingprovider_id)
+VALUES (gen_random_uuid(), true, v_created_at_timestamp, v_delivery_date, 'Cidade Exemplo', 'SP', v_estimated_days, v_shipment_date, v_shipping_cost, v_shipping_status, 0, v_shipping_provider_id) -- Peso será atualizado depois
+    RETURNING id INTO v_shipping_order_id;
+
+-- ### ETAPA B: Criar o `orders` ###
+v_seller_id := v_seller_ids[floor(random() * array_length(v_seller_ids, 1) + 1)];
+
+            -- Lógica para status do pedido
+            IF v_current_date < (v_end_date - interval '3 days') THEN
+                v_order_status := 'INVOICED';
+ELSE
+                v_order_status := 'OPEN';
+END IF;
+
+INSERT INTO public.orders (id, created_at, description, orderstatus, products_price, total_amount, seller_id, shipping_order_id)
+VALUES (gen_random_uuid(), v_created_at_timestamp, 'Pedido de venda gerado via script', v_order_status, 0, 0, v_seller_id, v_shipping_order_id) -- Preços serão atualizados depois
+    RETURNING id INTO v_order_id;
+
+-- ### ETAPA C: Criar os `order_item` (de 1 a 5 itens por pedido) ###
+v_num_items_per_order := floor(random() * 5 + 1)::INT;
+FOR j IN 1..v_num_items_per_order LOOP
+                v_product_sku := v_product_skus[floor(random() * array_length(v_product_skus, 1) + 1)];
+                v_item_price := round((random() * (250 - 10) + 10)::numeric, 4);
+                v_item_quantity := floor(random() * 3 + 1)::INT;
+
+INSERT INTO public.order_item (id, created_at, price, quantity, orders_id, product_sku)
+VALUES (gen_random_uuid(), v_created_at_timestamp, v_item_price, v_item_quantity, v_order_id, v_product_sku);
+
+-- Acumula o preço e o peso dos produtos
+v_order_products_price := v_order_products_price + (v_item_price * v_item_quantity);
+                v_order_weight := v_order_weight + (0.5 * v_item_quantity); -- Simula um peso de 0.5 kg por item
+END LOOP;
+
+            -- ### ETAPA D: Atualizar o `orders` e `shipping_order` com os totais calculados ###
+            v_order_total_amount := v_order_products_price + v_shipping_cost;
+
+UPDATE public.orders
+SET products_price = round(v_order_products_price, 4),
+    total_amount = round(v_order_total_amount, 4)
+WHERE id = v_order_id;
+
+UPDATE public.shipping_order
+SET weight = round(v_order_weight, 2)
+WHERE id = v_shipping_order_id;
+
+END LOOP;
+END LOOP;
+
+    RAISE NOTICE 'Geração de histórico de pedidos concluída com sucesso!';
+END $$;
+
+-- SQL Mock Data Generation Script - Part 3
+-- Target: PostgreSQL
+-- Project: Purchase Order Generation for Stock Replenishment
+-- Description: Creates purchase_orders and purchase_order_items for products with low or zero stock.
+
+DO $$
+DECLARE
+    -- ### VARIÁVEIS DE CONTROLE ###
+v_product_to_restock RECORD;
+    v_purchaser_id UUID;
+    v_purchase_order_id UUID;
+    v_created_at_timestamp TIMESTAMP;
+    v_purchase_quantity INT;
+    v_purchase_price NUMERIC(19,4);
+    v_purchase_total_price NUMERIC(38,2);
+
+BEGIN
+    RAISE NOTICE 'Iniciando a geração de Ordens de Compra para reposição de estoque...';
+
+    -- 1. Seleciona um funcionário responsável pelas compras (não um vendedor).
+SELECT id INTO v_purchaser_id
+FROM public.employee
+WHERE role IN ('LOCAL_MANAGER', 'STORAGE') AND active = true
+    LIMIT 1;
+
+IF v_purchaser_id IS NULL THEN
+        RAISE EXCEPTION 'Nenhum funcionário com cargo de LOCAL_MANAGER ou STORAGE encontrado para ser o comprador.';
+END IF;
+
+    -- 2. Loop principal: Itera sobre cada produto que tem estoque zerado ou muito baixo (menor que 10).
+    --    Isso inclui os produtos que definimos como zerados inicialmente e aqueles que podem ter se esgotado com as vendas.
+FOR v_product_to_restock IN
+SELECT p.sku, s.product_quantity
+FROM public.product p
+         JOIN public.storage s ON p.sku = s.product_sku
+WHERE p.active = true AND s.product_quantity <= 10
+    LOOP
+        RAISE NOTICE 'Gerando Ordem de Compra para o produto: %', v_product_to_restock.sku;
+
+-- ### ETAPA A: Definir os detalhes da compra ###
+v_created_at_timestamp := NOW() - (floor(random() * 10) * '1 day'::interval); -- Ordem de compra criada nos últimos 10 dias
+        v_purchase_quantity := floor(random() * (300 - 150 + 1) + 150)::INT; -- Compra entre 150 e 300 unidades
+        v_purchase_price := round((random() * (100 - 5) + 5)::numeric, 4); -- Custo de compra simulado
+        v_purchase_total_price := v_purchase_price * v_purchase_quantity;
+
+        -- ### ETAPA B: Criar o `purchase_order` ###
+INSERT INTO public.purchase_order (id, created_at, purchaseorderstatus, purchase_total_price_amount, purchase_total_product_amount, purchaser_id, shipping_order_id)
+VALUES (
+           gen_random_uuid(),
+           v_created_at_timestamp,
+           'INVOICED', -- Assume que a compra já foi faturada pelo fornecedor
+           v_purchase_total_price,
+           v_purchase_quantity,
+           v_purchaser_id,
+           NULL -- Opcional: Poderia estar vinculado a um shipping_order de entrada
+       )
+    RETURNING id INTO v_purchase_order_id;
+
+-- ### ETAPA C: Criar o `purchase_order_item` correspondente ###
+INSERT INTO public.purchase_order_item (id, created_at, purchase_price, purchase_quantity, purchase_product_sku, purchase_order_id)
+VALUES (
+           gen_random_uuid(),
+           v_created_at_timestamp,
+           v_purchase_price,
+           v_purchase_quantity,
+           v_product_to_restock.sku,
+           v_purchase_order_id
+       );
+
+-- Opcional: Logicamente, o próximo passo em um sistema real seria um processo para receber
+-- esta mercadoria e atualizar a tabela `storage`. Para este script, apenas geramos o histórico de compra.
+
+END LOOP;
+
+    RAISE NOTICE 'Geração de Ordens de Compra concluída com sucesso!';
+END $$;
