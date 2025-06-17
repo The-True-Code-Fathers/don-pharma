@@ -190,4 +190,40 @@ public class OrderRepositoryImpl implements OrderRepository {
             return BigDecimal.ZERO;
         }
     }
+
+    @Override
+    public List<Order> findInvoicedOrders(LocalDate start, LocalDate end) {
+        String hql = "from orders o " +
+                "where o.orderStatus = :status " +
+                "and o.createdAt >= :start and o.createdAt < :end";
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            log.debug("Açguma coisa: {}", 1);
+            return session.createQuery(hql, Order.class)
+                    .setParameter("status", OrderStatus.INVOICED)
+                    .setParameter("start", start.atStartOfDay())
+                    .setParameter("end", end.plusDays(1).atStartOfDay())
+                    .getResultList();
+        }
+    }
+
+    public long countInvoicedOrders(LocalDate start, LocalDate end) {
+        String hql = "select count(o) from orders o " +
+                "where o.orderStatus = :status " +
+                "and o.createdAt >= :start and o.createdAt < :end";
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            long count = session.createQuery(hql, Long.class)
+                    .setParameter("status", OrderStatus.INVOICED)
+                    .setParameter("start", start.atStartOfDay())
+                    .setParameter("end", end.plusDays(1).atStartOfDay())
+                    .uniqueResult();
+
+            log.debug("Pedidos faturados entre {} e {}: {}", start, end, count);
+
+            return count;
+        }
+    }
+
+
+
+
 }

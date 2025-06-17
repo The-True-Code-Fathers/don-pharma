@@ -152,21 +152,21 @@ public class DashboardView extends FlexLayout {
             LocalDate start = startDate.getValue();
             LocalDate end = endDate.getValue();
 
-            String vendasHoje = formatCurrency(kpiService.getTotalRevenue(start, end));
-            String pedidosAtivos = String.valueOf(kpiService.getTotalOrders(start, end));
-            String produtosEmEstoque = String.valueOf(kpiService.getTotalStockQuantity());
-            // Para faturamento mensal, você pode usar a receita total no mês atual, exemplo:
-            String faturamentoMensal = formatCurrency(kpiService.getTotalRevenue(
-                    LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()),
-                    LocalDate.now().with(TemporalAdjusters.lastDayOfMonth())));
+            String pedidosFaturados = String.valueOf(kpiService.getTotalInvoicedOrders(start, end));
+            String totalFaturamento = formatCurrency(kpiService.getTotalRevenue(start, end));
+            String entreguesEFaturados = String.valueOf(kpiService.getTotalInvoicedOrders(start, end));
+            String ticketMedio = formatCurrency(kpiService.getAverageTicket(start, end));
+            String custosTotais = formatCurrency(kpiService.getTotalRevenue(start, end));
 
             kpiLayout.add(
-                    createKpiCard("Vendas Hoje", vendasHoje, "+12%", "⬆️", "success"),
-                    createKpiCard("Pedidos Ativos", pedidosAtivos, "+8", "📦", "primary"),
-                    createKpiCard("Produtos em Estoque", produtosEmEstoque, "-23", "📦", "warning"),
-                    createKpiCard("Faturamento Mensal", faturamentoMensal, "+18%", "💰", "success")
+                    createKpiCard("Pedidos Faturados", pedidosFaturados, "", "✅", "primary"),
+                    createKpiCard("Total de Faturamento", totalFaturamento, "", "💰", "success"),
+                    createKpiCard("Entregues e Faturados", entreguesEFaturados, "", "🚚", "primary"),
+                    createKpiCard("Ticket Médio", ticketMedio, "", "📊", "success"),
+                    createKpiCard("Custos Totais", custosTotais, "", "💸", "error")
             );
         };
+
 
         // Atualiza os KPIs ao mudar datas
         startDate.addValueChangeListener(e -> updateKpis.run());
