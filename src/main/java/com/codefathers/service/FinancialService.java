@@ -24,6 +24,7 @@ public class FinancialService {
     private final ShippingOrderRepository shippingOrderRepository;
     private final OrderRepository orderRepository;
 
+    private BigDecimal cashFlow = BigDecimal.valueOf(200000);
     private BigDecimal paymentsTotal;
     private BigDecimal purchaseTotal = BigDecimal.ZERO;
     private BigDecimal shippingTotal;
@@ -58,6 +59,7 @@ public class FinancialService {
         shippingTotal = shippingOrderRepository.listAll().stream()
                 .map(ShippingOrder::getShippingCost)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        cashFlow = cashFlow.subtract(purchaseTotal).subtract(shippingTotal).subtract(paymentsTotal);
     }
 
     private void calculateInflows() {
@@ -65,6 +67,9 @@ public class FinancialService {
             BigDecimal itemTotal = orderItem.getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()));
             orderTotal = orderTotal.add(itemTotal);
         }
+
+        cashFlow = cashFlow.add(orderTotal);
+
     }
 
     public Map<Employee, Double> getTopPerformingSellers(LocalDate from, LocalDate to, int limit) {
@@ -94,4 +99,9 @@ public class FinancialService {
     public BigDecimal getNetCashFlow() {
         return orderTotal.subtract(getTotalOutflows());
     }
+
+    public BigDecimal getCashFlow() {
+        return cashFlow;
+    }
+
 }

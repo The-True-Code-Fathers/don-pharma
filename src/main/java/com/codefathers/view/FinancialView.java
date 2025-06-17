@@ -1,5 +1,11 @@
 package com.codefathers.view;
 
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import com.codefathers.repository.implementations.OrderItemRepositoryImpl;
 import com.codefathers.repository.implementations.OrderRepositoryImpl;
 import com.codefathers.repository.implementations.PaymentRepositoryImpl;
@@ -16,17 +22,9 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 @PageTitle("Financial")
 @Route("financial")
@@ -133,7 +131,7 @@ public class FinancialView extends VerticalLayout {
     private void refreshData() {
         BigDecimal totalInflows = financialService.getTotalInflows();
         BigDecimal totalOutflows = financialService.getTotalOutflows();
-        BigDecimal netCashFlow = financialService.getNetCashFlow();
+        BigDecimal netCashFlow = financialService.getCashFlow();
 
         updateSummaryCards(totalInflows, totalOutflows, netCashFlow);
         updateTransactionDetailsGrids(totalInflows, totalOutflows);
