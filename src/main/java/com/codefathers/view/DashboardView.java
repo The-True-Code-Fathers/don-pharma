@@ -73,7 +73,6 @@ public class DashboardView extends FlexLayout {
         );
         setSizeFull();
         setFlexDirection(FlexDirection.COLUMN);
-        add(createKpiSection());
         addClassName("dashboard-view");
         // Header
         add(createHeader());
