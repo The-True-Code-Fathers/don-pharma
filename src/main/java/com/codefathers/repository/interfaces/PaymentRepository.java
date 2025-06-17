@@ -1,5 +1,6 @@
 package com.codefathers.repository.interfaces;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,4 +20,6 @@ public interface PaymentRepository {
     List<Payment> findByEmployee(Employee employee);
 
     List<Payment> listAll();
+
+    List<Payment> listByTimePeriod(LocalDate from, LocalDate to);
 }

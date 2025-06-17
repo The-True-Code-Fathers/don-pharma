@@ -1,9 +1,11 @@
 package com.codefathers.repository.implementations;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.codefathers.model.entity.Payment;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -61,6 +63,19 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
             List<PurchaseOrderItem> purchaseOrderItem = session.createQuery(hql, PurchaseOrderItem.class)
                     .setParameter("sku", productSku).list();
             return Optional.ofNullable(purchaseOrderItem);
+        }
+    }
+
+    @Override
+    public List<PurchaseOrderItem> listByTimePeriod(LocalDate from, LocalDate to) {
+        try (var session =  HibernateUtil.sessionFactory.openSession()) {
+            String hql = "select p from purchase_order p where createdAt between :from and :to";
+            return session.createQuery(hql, PurchaseOrderItem.class)
+                    .setParameter("from", from.atStartOfDay())
+                    .setParameter("to", to.plusDays(2).atStartOfDay()).getResultList();
+        } catch (Exception e) {
+            e.getMessage();
+            return List.of();
         }
     }
 

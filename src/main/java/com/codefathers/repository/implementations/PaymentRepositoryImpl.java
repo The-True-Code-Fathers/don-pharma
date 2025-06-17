@@ -1,10 +1,12 @@
 package com.codefathers.repository.implementations;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.codefathers.repository.interfaces.PaymentRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -12,6 +14,7 @@ import com.codefathers.model.entity.Employee;
 import com.codefathers.model.entity.Payment;
 import com.codefathers.util.HibernateUtil;
 
+@Slf4j
 public class PaymentRepositoryImpl implements PaymentRepository {
 
     @Override
@@ -62,6 +65,19 @@ public class PaymentRepositoryImpl implements PaymentRepository {
         try (Session session = HibernateUtil.sessionFactory.openSession()) {
             String hql = "select p from payment p";
             return session.createQuery(hql, Payment.class).list();
+        } catch (Exception e) {
+            e.getMessage();
+            return List.of();
+        }
+    }
+
+    @Override
+    public List<Payment> listByTimePeriod(LocalDate from, LocalDate to) {
+        try (var session =  HibernateUtil.sessionFactory.openSession()) {
+            String hql = "select p from payment p where createdAt between :from and :to";
+            return session.createQuery(hql, Payment.class)
+                    .setParameter("from", from.atStartOfDay())
+                    .setParameter("to", to.plusDays(2).atStartOfDay()).getResultList();
         } catch (Exception e) {
             e.getMessage();
             return List.of();

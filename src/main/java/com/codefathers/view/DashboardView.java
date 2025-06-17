@@ -2,9 +2,7 @@ package com.codefathers.view;
 
 import com.codefathers.factory.ServiceFactory;
 import com.codefathers.model.entity.SystemUser;
-import com.codefathers.repository.implementations.OrderRepositoryImpl;
-import com.codefathers.repository.implementations.ProductRepositoryImpl;
-import com.codefathers.repository.implementations.StorageRepositoryImpl;
+import com.codefathers.repository.implementations.*;
 import com.codefathers.service.AuthService;
 import com.codefathers.service.DashboardService;
 import com.codefathers.service.FinancialService;
@@ -63,7 +61,10 @@ public class DashboardView extends FlexLayout {
         this.kpiService = new KpiService(
                 new OrderRepositoryImpl(),
                 new ProductRepositoryImpl(),
-                new StorageRepositoryImpl()
+                new StorageRepositoryImpl(),
+                new PaymentRepositoryImpl(),
+                new PurchaseOrderItemRepositoryImpl(),
+                new ShippingOrderRepositoryImpl()
         );
 
         // Configure date pickers
@@ -154,7 +155,7 @@ public class DashboardView extends FlexLayout {
         String totalFaturamento = formatCurrency(kpiService.getTotalRevenue(start, end));
         String entreguesEFaturados = String.valueOf(kpiService.getTotalInvoicedOrders(start, end));
         String ticketMedio = formatCurrency(kpiService.getAverageTicket(start, end));
-        String custosTotais = formatCurrency(kpiService.getTotalRevenue(start, end));
+        String custosTotais = formatCurrency(kpiService.getTotalSpendings(start, end));
 
         Component[] cards = {
                 createKpiCard("Pedidos Faturados", pedidosFaturados, "", "✅", "primary"),

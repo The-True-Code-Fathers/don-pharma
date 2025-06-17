@@ -1,9 +1,12 @@
 package com.codefathers.repository.implementations;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.codefathers.model.entity.Payment;
+import com.codefathers.model.entity.PurchaseOrderItem;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -71,4 +74,16 @@ public class ShippingOrderRepositoryImpl implements ShippingOrderRepository {
         }
     }
 
+    @Override
+    public List<ShippingOrder> listByTimePeriod(LocalDate from, LocalDate to) {
+        try (var session =  HibernateUtil.sessionFactory.openSession()) {
+            String hql = "select p from shipping_order p where createdAt between :from and :to";
+            return session.createQuery(hql, ShippingOrder.class)
+                    .setParameter("from", from.atStartOfDay())
+                    .setParameter("to", to.plusDays(2).atStartOfDay()).getResultList();
+        } catch (Exception e) {
+            e.getMessage();
+            return List.of();
+        }
+    }
 }
