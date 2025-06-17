@@ -64,25 +64,16 @@ public class DashboardView extends FlexLayout {
         setSizeFull();
         setFlexDirection(FlexDirection.COLUMN);
         addClassName("dashboard-view");
-        // Header
         add(createHeader());
 
-        // KPI Cards
         add(createKpiSection());
 
-        // Charts Section
         FlexLayout chartContainer = new FlexLayout();
             chartContainer.setSizeFull();
             chartContainer.setAlignItems(Alignment.CENTER);
             chartContainer.setFlexDirection(FlexDirection.COLUMN);
             chartContainer.add(createMainChartsSection(), createWrapChartsSection());
         add(chartContainer);
-
-        // Tables Section
-        // add(createTablesSection());
-    }
-
-    private void datePickerListener() {
 
     }
 
@@ -130,10 +121,10 @@ public class DashboardView extends FlexLayout {
         subtitleLayout.setAlignItems(Alignment.CENTER);
 
         var kpiLayout = new FlexLayout();
-        kpiLayout.addClassName("kpi-layout"); // Add class to differentiate from other FlexLayouts
-        kpiLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP); // Allow cards to wrap
-        kpiLayout.setJustifyContentMode(JustifyContentMode.CENTER); // Center cards
-        kpiLayout.setAlignItems(FlexComponent.Alignment.END); // Align items to the start of the cross axis
+        kpiLayout.addClassName("kpi-layout");
+        kpiLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        kpiLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+        kpiLayout.setAlignItems(FlexComponent.Alignment.END);
         kpiLayout.setWidthFull();
         kpiLayout.getStyle().set("gap", "1rem");
 
@@ -153,8 +144,8 @@ public class DashboardView extends FlexLayout {
 
     private Component createKpiCard(String title, String value, String change, String iconString, String theme) {
         Span cardIcon = new Span(iconString);
-        cardIcon.addClassNames(LumoUtility.FontSize.XLARGE); // Make emoji larger
-        cardIcon.getStyle().set("color", getThemeColor(theme)); // Apply theme color
+        cardIcon.addClassNames(LumoUtility.FontSize.XLARGE);
+        cardIcon.getStyle().set("color", getThemeColor(theme));
 
         H3 cardValue = new H3(value);
         cardValue.addClassNames(LumoUtility.Margin.NONE, LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
@@ -178,12 +169,12 @@ public class DashboardView extends FlexLayout {
                 LumoUtility.BorderRadius.LARGE,
                 LumoUtility.Border.ALL,
                 LumoUtility.BorderColor.CONTRAST_10,
-                LumoUtility.Margin.End.MEDIUM, // Added right margin for spacing
-                LumoUtility.Margin.Bottom.MEDIUM // Added bottom margin for wrapping
+                LumoUtility.Margin.End.MEDIUM,
+                LumoUtility.Margin.Bottom.MEDIUM
         );
-        layout.setFlexGrow(1, content); // Make content grow
-        layout.setMinWidth("250px"); // Ensure cards don't get too small
-        layout.setMaxWidth("350px"); // Limit card width for better layout on large screens
+        layout.setFlexGrow(1, content);
+        layout.setMinWidth("250px");
+        layout.setMaxWidth("350px");
 
         return layout;
     }

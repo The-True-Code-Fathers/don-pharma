@@ -43,7 +43,7 @@ public class ShippingProviderView extends VerticalLayout {
 
         HorizontalLayout topBar = new HorizontalLayout(newButton, checkboxShowInactives);
         topBar.setWidthFull();
-        topBar.setJustifyContentMode(JustifyContentMode.BETWEEN); // botão à esquerda, checkbox à direita
+        topBar.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         setupGrid();
 

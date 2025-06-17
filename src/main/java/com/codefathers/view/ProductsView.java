@@ -3,7 +3,7 @@ package com.codefathers.view;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter; // O ano foi adicionado ao padrão
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import com.codefathers.model.dto.CreateProductDTO;
@@ -68,12 +68,10 @@ public class ProductsView extends VerticalLayout {
     private ComboBox<MeasurementUnit> createUnit = new ComboBox<>("Unit");
     private ComboBox<MeasurementUnit> updateUnit = new ComboBox<>("Unit");
 
-    // Buttons for create dialog
     private Button createSaveButton = new Button("Save");
     private Button createClearButton = new Button("Clear");
     private Button createCloseButton = new Button("Close");
 
-    // Buttons for update dialog
     private Button updateSaveButton = new Button("Update");
     private Button updateClearButton = new Button("Clear");
     private Button updateCloseButton = new Button("Close");
@@ -92,15 +90,12 @@ public class ProductsView extends VerticalLayout {
     private Dialog updateDialog = new Dialog();
     private Product currentProduct;
 
-    // Cache para evitar consultas desnecessárias
     private String currentSearchTerm = "";
     private Boolean currentShowInactive = false;
 
-    // DateTimeFormatter atualizado para incluir o ano
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public ProductsView() {
-        // Configurações do serviço
         var productRepository = new ProductRepositoryImpl();
         var orderItemRepository = new OrderItemRepositoryImpl();
         var orderRepository = new OrderRepositoryImpl();
@@ -110,7 +105,6 @@ public class ProductsView extends VerticalLayout {
         this.orderItemService = new OrderItemService(orderItemRepository, orderRepository);
         this.purchaseOrderItemService = new PurchaseOrderItemService(purchaseOrderItemRepository, purchaseOrderRepository, ValidatorUtil.getValidator());
         
-        // MODIFICAÇÃO: Configura o layout principal para ocupar todo o espaço
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -133,7 +127,6 @@ public class ProductsView extends VerticalLayout {
         HorizontalLayout headerLayout = new HorizontalLayout(leftLayout, rightLayout);
         headerLayout.setAlignItems(Alignment.CENTER);
         headerLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
-        // MODIFICAÇÃO: Faz o cabeçalho preencher a largura
         headerLayout.setWidth("100%");
 
         add(headerLayout, grid);
@@ -231,7 +224,6 @@ public class ProductsView extends VerticalLayout {
         grid.addColumn(Product::getMeasurementUnit).setHeader("UM").setSortable(true).setFlexGrow(0).setWidth("80px");
         grid.addColumn(Product::getDescription).setHeader("Description").setFlexGrow(3);
 
-        // A coluna de data agora usará o novo formato com ano
         grid.addColumn(product -> {
             return product.getCreatedAt() != null ? product.getCreatedAt().format(dateFormatter) : "";
         }).setHeader("Created At").setSortable(true).setFlexGrow(1);
@@ -259,9 +251,8 @@ public class ProductsView extends VerticalLayout {
 
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_NO_BORDER);
         grid.setPageSize(20);
-        // MODIFICAÇÃO: Faz a grade preencher a largura disponível
         grid.setWidth("100%");
-        grid.setHeightFull(); // Faz a grade ocupar a altura disponível
+        grid.setHeightFull();
     }
 
     private void setupCreateComboBox(ComboBox<MeasurementUnit> createUnit) {
@@ -281,7 +272,6 @@ public class ProductsView extends VerticalLayout {
                 query -> {
                     int offset = query.getOffset();
                     int limit = query.getLimit();
-                    // Idealmente, a filtragem e paginação seriam feitas no banco de dados
                     List<Product> allProducts = productService.findAllProducts();
                     return allProducts.stream()
                             .filter(this::matchesCurrentFilters)
@@ -289,7 +279,6 @@ public class ProductsView extends VerticalLayout {
                             .limit(limit);
                 },
                 query -> {
-                    // Idealmente, a contagem seria feita no banco de dados
                     List<Product> allProducts = productService.findAllProducts();
                     return (int) allProducts.stream()
                             .filter(this::matchesCurrentFilters)
@@ -440,7 +429,7 @@ public class ProductsView extends VerticalLayout {
     private void toggleProductActive() {
         if (currentProduct != null) {
             boolean newStatus = !currentProduct.isActive();
-            currentProduct.setActive(newStatus); // Atualiza o estado localmente para o DTO
+            currentProduct.setActive(newStatus);
             updateExistingProduct();
         }
     }
