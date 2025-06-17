@@ -50,7 +50,6 @@ public class ShippingProviderService {
         existing.setDailyCapacity(dto.getDailyCapacity());
         existing.setActive(dto.isActive());
 
-        // Remove e adiciona as novas áreas
         existing.getShippingAreas().clear();
         if (dto.getShippingAreas() != null) {
             for (ShippingArea area : dto.getShippingAreas()) {
@@ -74,7 +73,16 @@ public class ShippingProviderService {
         repository.update(provider);
     }
 
+    // Somente ativos
     public List<ShippingProvider> listAllShippingProviders() {
+        return repository.listAll()
+                .stream()
+                .filter(ShippingProvider::isActive)
+                .toList();
+    }
+
+    // Todos (ativos e inativos)
+    public List<ShippingProvider> listAllShippingProvidersIncludingInactive() {
         return repository.listAll();
     }
 
@@ -82,3 +90,4 @@ public class ShippingProviderService {
         return repository.findById(id);
     }
 }
+

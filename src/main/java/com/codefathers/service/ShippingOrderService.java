@@ -3,6 +3,7 @@ package com.codefathers.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.codefathers.model.dto.CreateShippingOrderDTO;
 import com.codefathers.model.entity.ShippingOrder;
@@ -18,8 +19,8 @@ public class ShippingOrderService {
     private final Validator validator;
 
     public ShippingOrderService(ShippingOrderRepository shippingOrderRepository,
-            ShippingProviderRepository shippingProviderRepository,
-            Validator validator) {
+                                ShippingProviderRepository shippingProviderRepository,
+                                Validator validator) {
         this.shippingOrderRepository = shippingOrderRepository;
         this.shippingProviderRepository = shippingProviderRepository;
         this.validator = validator;
@@ -66,7 +67,15 @@ public class ShippingOrderService {
         return shippingOrderRepository.findById(orderId).get();
     }
 
-    public List<ShippingOrder> listAllShippingOrders() {
+    // Lista apenas as ordens ativas
+    public List<ShippingOrder> listActiveShippingOrders() {
+        return shippingOrderRepository.listAll().stream()
+                .filter(ShippingOrder::isActive)
+                .collect(Collectors.toList());
+    }
+
+    // Lista todas as ordens, ativas e inativas
+    public List<ShippingOrder> listAllShippingOrdersIncludingInactive() {
         return shippingOrderRepository.listAll();
     }
 
@@ -85,7 +94,6 @@ public class ShippingOrderService {
         order.setActive(false); // Desativa logicamente
         shippingOrderRepository.update(order); // Persiste a alteração
     }
-
 
     public void updateOrder(UUID orderId, CreateShippingOrderDTO dto) {
         // Validação do DTO
@@ -147,5 +155,4 @@ public class ShippingOrderService {
 
         shippingOrderRepository.update(existingOrder);
     }
-
 }

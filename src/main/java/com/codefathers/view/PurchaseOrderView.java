@@ -105,21 +105,21 @@ public class PurchaseOrderView extends VerticalLayout {
     }
 
     // Novo método para configurar o ComboBox de status
-private void setupStatusFilterComboBox() {
-    statusFilterComboBox.setItems("TODOS",
-            PurchaseOrderStatus.OPEN.toString(),
-            PurchaseOrderStatus.CANCELLED.toString(),
-            PurchaseOrderStatus.INVOICED.toString());
-    statusFilterComboBox.setValue("TODOS"); // Valor inicial
-    statusFilterComboBox.setPlaceholder("Select Status");
-    // statusFilterComboBox.setClearButtonVisible(true); // Remova ou comente esta linha
-    statusFilterComboBox.setWidth("200px"); // Defina uma largura adequada
+    private void setupStatusFilterComboBox() {
+        statusFilterComboBox.setItems("TODOS",
+                PurchaseOrderStatus.OPEN.toString(),
+                PurchaseOrderStatus.CANCELLED.toString(),
+                PurchaseOrderStatus.INVOICED.toString());
+        statusFilterComboBox.setValue("TODOS"); // Valor inicial
+        statusFilterComboBox.setPlaceholder("Select Status");
+        // statusFilterComboBox.setClearButtonVisible(true); // Remova ou comente esta linha
+        statusFilterComboBox.setWidth("200px"); // Defina uma largura adequada
 
-    statusFilterComboBox.addValueChangeListener(e -> {
-        currentStatusFilter = e.getValue() != null ? e.getValue() : "TODOS";
-        refreshGrid(); // Atualiza a grid com o novo filtro
-    });
-}
+        statusFilterComboBox.addValueChangeListener(e -> {
+            currentStatusFilter = e.getValue() != null ? e.getValue() : "TODOS";
+            refreshGrid(); // Atualiza a grid com o novo filtro
+        });
+    }
 
     private void setupGrid() {
         grid.addColumn(po -> po.getId().toString()).setHeader("ID").setSortable(true);
@@ -436,7 +436,6 @@ private void setupStatusFilterComboBox() {
             actions.add(editButton, deleteButton);
             return actions;
         }).setHeader("Actions").setAutoWidth(true);
-
         itemGrid.setHeight("200px");
     }
 

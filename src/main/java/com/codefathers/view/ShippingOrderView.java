@@ -10,6 +10,7 @@ import com.codefathers.service.ShippingOrderService;
 import com.codefathers.service.ShippingProviderService;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -25,10 +26,12 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import java.math.BigDecimal;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @PageTitle("Shipping Orders")
@@ -38,68 +41,46 @@ public class ShippingOrderView extends VerticalLayout {
     private final ShippingOrderService orderService;
     private final ShippingProviderService providerService;
     private final Grid<ShippingOrder> grid = new Grid<>(ShippingOrder.class, false);
+    private final Checkbox showAllCheckbox = new Checkbox("Show all");
 
     public ShippingOrderView() {
         this.providerService = new ShippingProviderService(new ShippingProviderRepositoryImpl());
+
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+
         this.orderService = new ShippingOrderService(
                 new ShippingOrderRepositoryImpl(),
                 new ShippingProviderRepositoryImpl(),
-                null // Validator pode ser nulo ou ajustado conforme necessidade
+                validator
         );
 
-        Button newButton = new Button("Novo Pedido", e -> openFormDialog(null));
+        Button newButton = new Button("New Order", e -> openFormDialog(null));
+        showAllCheckbox.addValueChangeListener(e -> updateGrid(showAllCheckbox.getValue()));
+
+        HorizontalLayout topLayout = new HorizontalLayout(newButton, showAllCheckbox);
+        topLayout.setWidthFull();
+        topLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         setupGrid();
-        add(newButton, grid);
-        updateGrid();
+        add(topLayout, grid);
+        updateGrid(false);
     }
 
     private void setupGrid() {
         grid.removeAllColumns();
 
-        grid.addColumn(order -> order.getShippingProvider().getName())
-                .setHeader("Transportadora")
-                .setAutoWidth(true);
-
-        grid.addColumn(ShippingOrder::getDestinationState)
-                .setHeader("Estado Destino")
-                .setAutoWidth(true);
-
-        grid.addColumn(ShippingOrder::getDestinationCity)
-                .setHeader("Cidade Destino")
-                .setAutoWidth(true);
-
-        grid.addColumn(order -> String.format("%.2f kg", order.getWeight()))
-                .setHeader("Peso")
-                .setAutoWidth(true);
-
-        grid.addColumn(ShippingOrder::getStatus)
-                .setHeader("Status")
-                .setAutoWidth(true);
-
-        grid.addColumn(ShippingOrder::getEstimatedDeliveryDays)
-                .setHeader("Dias Estimados")
-                .setAutoWidth(true);
-
-        grid.addColumn(ShippingOrder::getShipmentDate)
-                .setHeader("Data Envio")
-                .setAutoWidth(true);
-
-        grid.addColumn(ShippingOrder::getDeliveryDate)
-                .setHeader("Data Entrega")
-                .setAutoWidth(true);
-
-        grid.addColumn(order -> String.format("R$ %.2f", order.getShippingCost()))
-                .setHeader("Custo")
-                .setAutoWidth(true);
-
-        grid.addColumn(order -> order.isActive() ? "Ativo" : "Inativo")
-                .setHeader("Status Ativo")
-                .setAutoWidth(true);
-
-        grid.addColumn(ShippingOrder::getCreatedAt)
-                .setHeader("Criado Em")
-                .setAutoWidth(true);
+        grid.addColumn(order -> order.getShippingProvider().getName()).setHeader("Provider").setAutoWidth(true);
+        grid.addColumn(ShippingOrder::getDestinationState).setHeader("Destination State").setAutoWidth(true);
+        grid.addColumn(ShippingOrder::getDestinationCity).setHeader("Destination City").setAutoWidth(true);
+        grid.addColumn(order -> String.format("%.2f kg", order.getWeight())).setHeader("Weight").setAutoWidth(true);
+        grid.addColumn(ShippingOrder::getStatus).setHeader("Status").setAutoWidth(true);
+        grid.addColumn(ShippingOrder::getEstimatedDeliveryDays).setHeader("Estimated Days").setAutoWidth(true);
+        grid.addColumn(ShippingOrder::getShipmentDate).setHeader("Shipment Date").setAutoWidth(true);
+        grid.addColumn(ShippingOrder::getDeliveryDate).setHeader("Delivery Date").setAutoWidth(true);
+        grid.addColumn(order -> String.format("R$ %.2f", order.getShippingCost())).setHeader("Shipping Cost").setAutoWidth(true);
+        grid.addColumn(order -> order.isActive() ? "Active" : "Inactive").setHeader("Active Status").setAutoWidth(true);
+        grid.addColumn(ShippingOrder::getCreatedAt).setHeader("Created At").setAutoWidth(true);
 
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_ROW_STRIPES);
         grid.setHeight("300px");
@@ -107,16 +88,11 @@ public class ShippingOrderView extends VerticalLayout {
         grid.getStyle().set("margin-top", "10px");
 
         grid.addItemDoubleClickListener(event -> {
-            try {
-                ShippingOrder item = event.getItem();
-                if (item != null) {
-                    openFormDialog(item);
-                } else {
-                    Notification.show("Selecione um item válido", 3000, Notification.Position.MIDDLE);
-                }
-            } catch (Exception e) {
-                Notification.show("Erro ao abrir editor: " + e.getMessage(), 5000, Notification.Position.MIDDLE);
-                e.printStackTrace();
+            ShippingOrder item = event.getItem();
+            if (item != null) {
+                openFormDialog(item);
+            } else {
+                Notification.show("Please select a valid item", 3000, Notification.Position.MIDDLE);
             }
         });
     }
@@ -124,56 +100,71 @@ public class ShippingOrderView extends VerticalLayout {
     private void openFormDialog(ShippingOrder order) {
         Dialog dialog = new Dialog();
         dialog.setWidth("480px");
-        dialog.setHeight("650px"); // Altura para garantir boa visualização
+        dialog.setHeight("650px");
 
-        // Seção de informações básicas
-        ComboBox<ShippingProvider> providerCombo = new ComboBox<>("Transportadora");
+        List<ShippingProvider> allProviders;
         try {
-            List<ShippingProvider> providers = providerService.listAllShippingProviders();
-            if (providers == null) {
-                providers = List.of(); // lista vazia para evitar null
-            }
-            providerCombo.setItems(providers);
+            allProviders = providerService.listAllShippingProviders();
         } catch (Exception ex) {
-            Notification.show("Erro ao carregar transportadoras: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
-            providerCombo.setItems(List.of());
+            Notification.show("Error loading providers: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            allProviders = List.of();
         }
+
+        ComboBox<ShippingProvider> providerCombo = new ComboBox<>("Provider");
+        providerCombo.setItems(allProviders);
         providerCombo.setItemLabelGenerator(ShippingProvider::getName);
         providerCombo.setWidthFull();
 
-        TextField stateField = new TextField("Estado Destino");
+        TextField stateField = new TextField("Destination State");
         stateField.setPlaceholder("Ex: SP");
         stateField.setWidthFull();
 
-        TextField cityField = new TextField("Cidade Destino");
+        TextField cityField = new TextField("Destination City");
         cityField.setPlaceholder("Ex: São Paulo");
         cityField.setWidthFull();
 
-        NumberField weightField = new NumberField("Peso (kg)");
+        NumberField weightField = new NumberField("Weight (kg)");
         weightField.setPlaceholder("Ex: 2.5");
         weightField.setWidthFull();
 
-        // Seção de status e datas
         ComboBox<ShippingServiceStatus> statusCombo = new ComboBox<>("Status");
         statusCombo.setItems(ShippingServiceStatus.values());
         statusCombo.setWidthFull();
 
-        IntegerField estimatedDaysField = new IntegerField("Dias Estimados");
+        IntegerField estimatedDaysField = new IntegerField("Estimated Delivery Days");
         estimatedDaysField.setPlaceholder("Ex: 5");
         estimatedDaysField.setWidthFull();
 
-        DatePicker shipmentDatePicker = new DatePicker("Data de Envio");
+        DatePicker shipmentDatePicker = new DatePicker("Shipment Date");
         shipmentDatePicker.setWidthFull();
 
-        DatePicker deliveryDatePicker = new DatePicker("Data de Entrega");
+        DatePicker deliveryDatePicker = new DatePicker("Delivery Date");
         deliveryDatePicker.setWidthFull();
 
-        // Seção financeira
-        NumberField costField = new NumberField("Custo");
-        costField.setPrefixComponent(new Span("R$"));  // CORREÇÃO: usar Span, não Text
+        NumberField costField = new NumberField("Cost");
+        costField.setPrefixComponent(new Span("R$"));
         costField.setWidthFull();
 
-        // Preencher valores se for edição
+        List<ShippingProvider> finalAllProviders = allProviders;
+        stateField.addValueChangeListener(event -> {
+            String estado = event.getValue();
+            if (estado == null || estado.isBlank()) {
+                providerCombo.setItems(finalAllProviders);
+            } else {
+                List<ShippingProvider> filtered = finalAllProviders.stream()
+                        .filter(p -> p.getServiceStates() != null &&
+                                p.getServiceStates().stream()
+                                        .anyMatch(s -> s.equalsIgnoreCase(estado.trim())))
+                        .toList();
+                providerCombo.setItems(filtered);
+
+                ShippingProvider selected = providerCombo.getValue();
+                if (selected != null && !filtered.contains(selected)) {
+                    providerCombo.clear();
+                }
+            }
+        });
+
         if (order != null) {
             providerCombo.setValue(order.getShippingProvider());
             stateField.setValue(order.getDestinationState());
@@ -186,7 +177,7 @@ public class ShippingOrderView extends VerticalLayout {
             costField.setValue(order.getShippingCost() != null ? order.getShippingCost().doubleValue() : null);
         }
 
-        Button saveButton = new Button(order == null ? "Cadastrar" : "Atualizar", e -> {
+        Button saveButton = new Button(order == null ? "Create" : "Update", e -> {
             try {
                 CreateShippingOrderDTO dto = buildOrderDTO(
                         providerCombo.getValue(),
@@ -202,56 +193,60 @@ public class ShippingOrderView extends VerticalLayout {
 
                 if (order != null) {
                     orderService.updateOrder(order.getId(), dto, order.isActive());
-                    Notification.show("Pedido atualizado com sucesso!");
+                    Notification.show("Order updated successfully!");
                 } else {
                     orderService.createOrder(dto);
-                    Notification.show("Pedido cadastrado com sucesso!");
+                    Notification.show("Order created successfully!");
                 }
 
-                updateGrid();
+                updateGrid(showAllCheckbox.getValue());
                 dialog.close();
             } catch (Exception ex) {
                 showError(ex);
             }
         });
 
-        Button toggleStatusButton = new Button(order != null && order.isActive() ? "Desativar" : "Ativar", e -> {
-            String action = order.isActive() ? "desativar" : "ativar";
-            ConfirmDialog confirm = new ConfirmDialog(
-                    "Confirmar " + (order.isActive() ? "Desativação" : "Ativação"),
-                    "Tem certeza que deseja " + action + " este pedido?",
-                    "Confirmar",
-                    confirmEvent -> {
-                        try {
-                            orderService.updateOrder(order.getId(),
-                                    CreateShippingOrderDTO.builder()
-                                            .shippingProviderId(order.getShippingProvider().getId())
-                                            .destinationState(order.getDestinationState())
-                                            .destinationCity(order.getDestinationCity())
-                                            .weight(order.getWeight())
-                                            .status(order.getStatus())
-                                            .estimatedDeliveryDays(order.getEstimatedDeliveryDays())
-                                            .shipmentDate(order.getShipmentDate())
-                                            .deliveryDate(order.getDeliveryDate())
-                                            .shippingCost(order.getShippingCost())
-                                            .build(),
-                                    !order.isActive());
+        Button toggleStatusButton = new Button(order != null && order.isActive() ? "Deactivate" : "Activate");
+        if (order != null) {
+            final ShippingOrder currentOrder = order;
+            toggleStatusButton.addClickListener(e -> {
+                final String actionStr = currentOrder.isActive() ? "deactivate" : "activate";
 
-                            Notification.show("Pedido " + (!order.isActive() ? "ativado" : "desativado") + " com sucesso!");
-                            updateGrid();
-                            dialog.close();
-                        } catch (Exception ex) {
-                            showError(ex);
-                        }
-                    },
-                    "Cancelar",
-                    cancelEvent -> {}
-            );
-            confirm.open();
-        });
-        toggleStatusButton.setVisible(order != null);
+                ConfirmDialog confirm = new ConfirmDialog(
+                        "Confirm " + (currentOrder.isActive() ? "Deactivation" : "Activation"),
+                        "Are you sure you want to " + actionStr + " this order?",
+                        "Confirm",
+                        confirmEvent -> {
+                            try {
+                                orderService.updateOrder(currentOrder.getId(),
+                                        CreateShippingOrderDTO.builder()
+                                                .shippingProviderId(currentOrder.getShippingProvider().getId())
+                                                .destinationState(currentOrder.getDestinationState())
+                                                .destinationCity(currentOrder.getDestinationCity())
+                                                .weight(currentOrder.getWeight())
+                                                .status(currentOrder.getStatus())
+                                                .estimatedDeliveryDays(currentOrder.getEstimatedDeliveryDays())
+                                                .shipmentDate(currentOrder.getShipmentDate())
+                                                .deliveryDate(currentOrder.getDeliveryDate())
+                                                .shippingCost(currentOrder.getShippingCost())
+                                                .build(),
+                                        !currentOrder.isActive());
 
-        Button cancelButton = new Button("Cancelar", e -> dialog.close());
+                                Notification.show("Order " + (!currentOrder.isActive() ? "activated" : "deactivated") + " successfully!");
+                                updateGrid(showAllCheckbox.getValue());
+                                dialog.close();
+                            } catch (Exception ex) {
+                                showError(ex);
+                            }
+                        },
+                        "Cancel",
+                        cancelEvent -> {}
+                );
+                confirm.open();
+            });
+        }
+
+        Button cancelButton = new Button("Cancel", e -> dialog.close());
 
         VerticalLayout formLayout = new VerticalLayout(
                 providerCombo,
@@ -274,8 +269,6 @@ public class ShippingOrderView extends VerticalLayout {
     }
 
 
-
-
     private CreateShippingOrderDTO buildOrderDTO(ShippingProvider provider,
                                                  String state,
                                                  String city,
@@ -285,13 +278,13 @@ public class ShippingOrderView extends VerticalLayout {
                                                  LocalDate shipmentDate,
                                                  LocalDate deliveryDate,
                                                  Double cost) {
-        if (provider == null) throw new IllegalArgumentException("Transportadora é obrigatória");
-        if (state == null || state.isBlank()) throw new IllegalArgumentException("Estado é obrigatório");
-        if (city == null || city.isBlank()) throw new IllegalArgumentException("Cidade é obrigatória");
-        if (weight == null || weight <= 0) throw new IllegalArgumentException("Peso deve ser positivo");
-        if (status == null) throw new IllegalArgumentException("Status é obrigatório");
-        if (estimatedDays == null || estimatedDays <= 0) throw new IllegalArgumentException("Dias estimados deve ser positivo");
-        if (cost == null || cost < 0) throw new IllegalArgumentException("Custo não pode ser negativo");
+        if (provider == null) throw new IllegalArgumentException("Provider is required");
+        if (state == null || state.isBlank()) throw new IllegalArgumentException("State is required");
+        if (city == null || city.isBlank()) throw new IllegalArgumentException("City is required");
+        if (weight == null || weight <= 0) throw new IllegalArgumentException("Weight must be positive");
+        if (status == null) throw new IllegalArgumentException("Status is required");
+        if (estimatedDays == null || estimatedDays <= 0) throw new IllegalArgumentException("Estimated days must be positive");
+        if (cost == null || cost < 0) throw new IllegalArgumentException("Cost cannot be negative");
 
         return CreateShippingOrderDTO.builder()
                 .shippingProviderId(provider.getId())
@@ -307,11 +300,22 @@ public class ShippingOrderView extends VerticalLayout {
     }
 
     private void showError(Exception e) {
-        Notification.show("Erro: " + e.getMessage(), 4000, Notification.Position.MIDDLE);
+        Notification.show("Error: " + e.getMessage(), 4000, Notification.Position.MIDDLE);
         e.printStackTrace();
     }
 
+    private void updateGrid(boolean showAll) {
+        if (showAll) {
+            grid.setItems(orderService.listAllShippingOrdersIncludingInactive());
+        } else {
+            grid.setItems(orderService.listActiveShippingOrders()
+                    .stream()
+                    .filter(ShippingOrder::isActive)
+                    .toList());
+        }
+    }
+
     private void updateGrid() {
-        grid.setItems(orderService.listAllShippingOrders());
+        updateGrid(false);
     }
 }
