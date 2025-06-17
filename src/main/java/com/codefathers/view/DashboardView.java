@@ -2,9 +2,13 @@ package com.codefathers.view;
 
 import com.codefathers.factory.ServiceFactory;
 import com.codefathers.model.entity.SystemUser;
+import com.codefathers.repository.implementations.OrderRepositoryImpl;
+import com.codefathers.repository.implementations.ProductRepositoryImpl;
+import com.codefathers.repository.implementations.StorageRepositoryImpl;
 import com.codefathers.service.AuthService;
 import com.codefathers.service.DashboardService;
 import com.codefathers.service.FinancialService;
+import com.codefathers.service.KpiService;
 import com.codefathers.util.JsonUtil;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI; // Import UI
@@ -55,6 +59,7 @@ import java.util.Map;
 @PageTitle("Dashboard | Don Pharma")
 public class DashboardView extends FlexLayout {
 
+    private KpiService kpiService;
     private final AuthService authService = ServiceFactory.getAuthService();
     private final DashboardService dashboardService = ServiceFactory.getDashboardService();
     private final FinancialService financialService = ServiceFactory.getFinancialService();
@@ -63,19 +68,31 @@ public class DashboardView extends FlexLayout {
     private LocalDate endDay = LocalDate.of(2026, 1, 1);
 
     public DashboardView() {
+        this.kpiService = new KpiService(
+                new OrderRepositoryImpl(),   // ou como for a implementação
+                new ProductRepositoryImpl(),
+                new StorageRepositoryImpl()
+        );
         setSizeFull();
         setFlexDirection(FlexDirection.COLUMN);
         addClassName("dashboard-view");
+        // Header
         add(createHeader());
 
+        // KPI Cards
         add(createKpiSection());
 
+        // Charts Section
         FlexLayout chartContainer = new FlexLayout();
             chartContainer.setSizeFull();
             chartContainer.setAlignItems(Alignment.CENTER);
             chartContainer.setFlexDirection(FlexDirection.COLUMN);
             chartContainer.add(createMainChartsSection(), createWrapChartsSection());
         add(chartContainer);
+
+    }
+
+    private void datePickerListener() {
 
     }
 
@@ -107,10 +124,8 @@ public class DashboardView extends FlexLayout {
 
         var startDate = new DatePicker("Start date", LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()));
         var endDate = new DatePicker("End date", LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()));
-        startDate
-                .addValueChangeListener(e -> endDate.setMin(e.getValue()));
-        endDate.addValueChangeListener(
-                e -> startDate.setMax(e.getValue()));
+        startDate.addValueChangeListener(e -> endDate.setMin(e.getValue()));
+        endDate.addValueChangeListener(e -> startDate.setMax(e.getValue()));
 
         var datePickerLayout = new FlexLayout(startDate, endDate);
         datePickerLayout.getStyle().set("gap", "1em");
@@ -130,13 +145,34 @@ public class DashboardView extends FlexLayout {
         kpiLayout.setWidthFull();
         kpiLayout.getStyle().set("gap", "1rem");
 
-        kpiLayout.add(
-                createKpiCard("Vendas Hoje", "R$ 45.230,00", "+12%", "⬆️", "success"),
-                createKpiCard("Pedidos Ativos", "127", "+8", "📦", "primary"),
-                createKpiCard("Produtos em Estoque", "1.847", "-23", "📦", "warning"),
-                createKpiCard("Faturamento Mensal", "R$ 890.450,00", "+18%", "💰", "success")
-        );
-        kpiLayout.addClassNames(LumoUtility.Margin.Top.MEDIUM, LumoUtility.Margin.Bottom.MEDIUM);
+        // Criar os cards, inicialmente com as datas padrões
+        Runnable updateKpis = () -> {
+            kpiLayout.removeAll();
+
+            LocalDate start = startDate.getValue();
+            LocalDate end = endDate.getValue();
+
+            String vendasHoje = formatCurrency(kpiService.getTotalRevenue(start, end));
+            String pedidosAtivos = String.valueOf(kpiService.getTotalOrders(start, end));
+            String produtosEmEstoque = String.valueOf(kpiService.getTotalStockQuantity());
+            // Para faturamento mensal, você pode usar a receita total no mês atual, exemplo:
+            String faturamentoMensal = formatCurrency(kpiService.getTotalRevenue(
+                    LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()),
+                    LocalDate.now().with(TemporalAdjusters.lastDayOfMonth())));
+
+            kpiLayout.add(
+                    createKpiCard("Vendas Hoje", vendasHoje, "+12%", "⬆️", "success"),
+                    createKpiCard("Pedidos Ativos", pedidosAtivos, "+8", "📦", "primary"),
+                    createKpiCard("Produtos em Estoque", produtosEmEstoque, "-23", "📦", "warning"),
+                    createKpiCard("Faturamento Mensal", faturamentoMensal, "+18%", "💰", "success")
+            );
+        };
+
+        // Atualiza os KPIs ao mudar datas
+        startDate.addValueChangeListener(e -> updateKpis.run());
+        endDate.addValueChangeListener(e -> updateKpis.run());
+
+        updateKpis.run(); // Atualiza na inicialização
 
         var finalLayout = new VerticalLayout(subtitleLayout, kpiLayout);
         finalLayout.setSpacing(true);
@@ -144,10 +180,17 @@ public class DashboardView extends FlexLayout {
         return finalLayout;
     }
 
+    // Método auxiliar para formatar BigDecimal em moeda BRL
+    private String formatCurrency(BigDecimal value) {
+        if (value == null) return "R$ 0,00";
+        return java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("pt", "BR")).format(value);
+    }
+
+
     private Component createKpiCard(String title, String value, String change, String iconString, String theme) {
         Span cardIcon = new Span(iconString);
-        cardIcon.addClassNames(LumoUtility.FontSize.XLARGE);
-        cardIcon.getStyle().set("color", getThemeColor(theme));
+        cardIcon.addClassNames(LumoUtility.FontSize.XLARGE); // Make emoji larger
+        cardIcon.getStyle().set("color", getThemeColor(theme)); // Apply theme color
 
         H3 cardValue = new H3(value);
         cardValue.addClassNames(LumoUtility.Margin.NONE, LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
@@ -171,12 +214,12 @@ public class DashboardView extends FlexLayout {
                 LumoUtility.BorderRadius.LARGE,
                 LumoUtility.Border.ALL,
                 LumoUtility.BorderColor.CONTRAST_10,
-                LumoUtility.Margin.End.MEDIUM,
-                LumoUtility.Margin.Bottom.MEDIUM
+                LumoUtility.Margin.End.MEDIUM, // Added right margin for spacing
+                LumoUtility.Margin.Bottom.MEDIUM // Added bottom margin for wrapping
         );
-        layout.setFlexGrow(1, content);
-        layout.setMinWidth("250px");
-        layout.setMaxWidth("350px");
+        layout.setFlexGrow(1, content); // Make content grow
+        layout.setMinWidth("250px"); // Ensure cards don't get too small
+        layout.setMaxWidth("350px"); // Limit card width for better layout on large screens
 
         return layout;
     }
@@ -399,14 +442,15 @@ public class DashboardView extends FlexLayout {
                         .build()
         );
 
-        // Dummy data for employee performance
+        DashboardService.SeriesData data = dashboardService.getSellersPerformanceChartData(startDay, endDay);
+
         chartBuilder.withSeries(
-                new Series<>("Sales (Goal %)", 80, 70, 60, 65, 75)
+                new Series<>("Sales (Goal %)", data.data().toArray(new BigDecimal[0]))
         );
 
         chartBuilder.withXaxis(
                 XAxisBuilder.get()
-                        .withCategories("João Silva", "Maria Santos", "Pedro Oliveira", "Ana Costa", "Carlos Lima")
+                        .withCategories(data.categories())
                         .build()
         );
 
@@ -428,8 +472,8 @@ public class DashboardView extends FlexLayout {
         VerticalLayout container = new VerticalLayout();
         container.addClassNames(
                 LumoUtility.Background.CONTRAST_5,
-                // LumoUtility.BorderRadius.LARGE,
-                // LumoUtility.Border.ALL,
+                LumoUtility.BorderRadius.LARGE,
+                LumoUtility.Border.ALL,
                 LumoUtility.BorderColor.CONTRAST_10,
                 LumoUtility.Margin.End.MEDIUM,
                 LumoUtility.Margin.Bottom.MEDIUM
@@ -437,191 +481,6 @@ public class DashboardView extends FlexLayout {
 
         container.add(chart);
         return container;
-    }
-
-
-    /**
-     * Creates a section containing tables, replacing the commercial 'Board' with a FlexLayout.
-     * Uses Vaadin Grid for tabular data display.
-     *
-     * @return A component representing the Tables section.
-     */
-    private Component createTablesSection() {
-        FlexLayout tablesLayout = new FlexLayout();
-        tablesLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
-        tablesLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        tablesLayout.setAlignItems(FlexComponent.Alignment.START);
-        // tablesLayout.setGap("1rem"); // Removed setGap as it might not be available
-
-        tablesLayout.add(createRecentOrdersTable(), createLowStockTable());
-        tablesLayout.add(createShippingStatusTable()); // Place shipping status table alone or adjust layout as needed
-
-        return tablesLayout;
-    }
-
-    /**
-     * Creates a table for recent orders using Vaadin Grid.
-     *
-     * @return A component displaying recent orders table.
-     */
-    private Component createRecentOrdersTable() {
-        VerticalLayout container = new VerticalLayout();
-        container.setPadding(true);
-        container.addClassNames(
-                LumoUtility.Background.CONTRAST_5,
-                LumoUtility.BorderRadius.LARGE,
-                LumoUtility.Border.ALL,
-                LumoUtility.BorderColor.CONTRAST_10,
-                LumoUtility.Margin.End.MEDIUM, // Added right margin for spacing
-                LumoUtility.Margin.Bottom.MEDIUM // Added bottom margin for wrapping
-        );
-        container.setMinWidth("400px"); // Minimum width for the table container
-        container.setFlexGrow(1);
-
-        H3 title = new H3("Pedidos Recentes");
-        title.addClassNames(LumoUtility.Margin.Top.NONE, LumoUtility.Margin.Bottom.SMALL);
-
-        Grid<Map<String, String>> grid = new Grid<>();
-        grid.addColumn(row -> row.get("id")).setHeader("ID");
-        grid.addColumn(row -> row.get("client")).setHeader("Cliente");
-        grid.addColumn(row -> row.get("value")).setHeader("Valor");
-        grid.addColumn(row -> row.get("status")).setHeader("Status");
-
-        // Simulate data
-        List<Map<String, String>> recentOrders = new ArrayList<>();
-        recentOrders.add(createOrderData("#12345", "João Silva", "R$ 1.250,00", "Processando"));
-        recentOrders.add(createOrderData("#12346", "Maria Santos", "R$ 890,50", "Enviado"));
-        recentOrders.add(createOrderData("#12347", "Pedro Oliveira", "R$ 2.100,00", "Entregue"));
-        recentOrders.add(createOrderData("#12348", "Ana Costa", "R$ 750,25", "Pendente"));
-        recentOrders.add(createOrderData("#12349", "Carlos Lima", "R$ 1.450,75", "Processando"));
-        grid.setItems(recentOrders);
-
-        grid.setHeight("250px"); // Fixed height for the grid
-        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS);
-
-        container.add(title, grid);
-        return container;
-    }
-
-    /**
-     * Helper to create order data for the Grid
-     */
-    private Map<String, String> createOrderData(String id, String client, String value, String status) {
-        Map<String, String> data = new HashMap<>();
-        data.put("id", id);
-        data.put("client", client);
-        data.put("value", value);
-        data.put("status", status);
-        return data;
-    }
-
-    /**
-     * Creates a table for low stock products using Vaadin Grid.
-     *
-     * @return A component displaying low stock products table.
-     */
-    private Component createLowStockTable() {
-        VerticalLayout container = new VerticalLayout();
-        container.setPadding(true);
-        container.addClassNames(
-                LumoUtility.Background.CONTRAST_5,
-                LumoUtility.BorderRadius.LARGE,
-                LumoUtility.Border.ALL,
-                LumoUtility.BorderColor.CONTRAST_10,
-                LumoUtility.Margin.End.MEDIUM, // Added right margin for spacing
-                LumoUtility.Margin.Bottom.MEDIUM // Added bottom margin for wrapping
-        );
-        container.setMinWidth("400px");
-        container.setFlexGrow(1);
-
-        H3 title = new H3("Produtos com Estoque Baixo");
-        title.addClassNames(LumoUtility.Margin.Top.NONE, LumoUtility.Margin.Bottom.SMALL);
-
-        Grid<Map<String, String>> grid = new Grid<>();
-        grid.addColumn(row -> row.get("product")).setHeader("Produto");
-        grid.addColumn(row -> row.get("sku")).setHeader("SKU");
-        grid.addColumn(row -> row.get("stock")).setHeader("Estoque");
-        grid.addColumn(row -> row.get("min")).setHeader("Mín.");
-
-        // Simulate data
-        List<Map<String, String>> lowStockProducts = new ArrayList<>();
-        lowStockProducts.add(createProductData("Produto A", "PRD001", "5", "10"));
-        lowStockProducts.add(createProductData("Produto B", "PRD002", "3", "15"));
-        lowStockProducts.add(createProductData("Produto C", "PRD003", "8", "20"));
-        lowStockProducts.add(createProductData("Produto D", "PRD004", "2", "10"));
-        grid.setItems(lowStockProducts);
-
-        grid.setHeight("250px"); // Fixed height for the grid
-        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS);
-
-        container.add(title, grid);
-        return container;
-    }
-
-    /**
-     * Helper to create product data for the Grid
-     */
-    private Map<String, String> createProductData(String product, String sku, String stock, String min) {
-        Map<String, String> data = new HashMap<>();
-        data.put("product", product);
-        data.put("sku", sku);
-        data.put("stock", stock);
-        data.put("min", min);
-        return data;
-    }
-
-    /**
-     * Creates a table for shipping status using Vaadin Grid.
-     *
-     * @return A component displaying shipping status table.
-     */
-    private Component createShippingStatusTable() {
-        VerticalLayout container = new VerticalLayout();
-        container.setPadding(true);
-        container.addClassNames(
-                LumoUtility.Background.CONTRAST_5,
-                LumoUtility.BorderRadius.LARGE,
-                LumoUtility.Border.ALL,
-                LumoUtility.BorderColor.CONTRAST_10,
-                LumoUtility.Margin.End.MEDIUM, // Added right margin for spacing
-                LumoUtility.Margin.Bottom.MEDIUM // Added bottom margin for wrapping
-        );
-        container.setMinWidth("400px");
-        container.setFlexGrow(1);
-
-        H3 title = new H3("Status de Entregas");
-        title.addClassNames(LumoUtility.Margin.Top.NONE, LumoUtility.Margin.Bottom.SMALL);
-
-        Grid<Map<String, String>> grid = new Grid<>();
-        grid.addColumn(row -> row.get("carrier")).setHeader("Transportadora");
-        grid.addColumn(row -> row.get("deliveries")).setHeader("Entregas");
-        grid.addColumn(row -> row.get("avgTime")).setHeader("Prazo Médio");
-        grid.addColumn(row -> row.get("status")).setHeader("Status");
-
-        // Simulate data
-        List<Map<String, String>> shippingStatus = new ArrayList<>();
-        shippingStatus.add(createShippingData("Correios", "45", "5 dias", "Normal"));
-        shippingStatus.add(createShippingData("Transportadora X", "32", "3 dias", "Rápido"));
-        shippingStatus.add(createShippingData("Express Y", "28", "2 dias", "Expresso"));
-        grid.setItems(shippingStatus);
-
-        grid.setHeight("250px"); // Fixed height for the grid
-        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COLUMN_BORDERS);
-
-        container.add(title, grid);
-        return container;
-    }
-
-    /**
-     * Helper to create shipping data for the Grid
-     */
-    private Map<String, String> createShippingData(String carrier, String deliveries, String avgTime, String status) {
-        Map<String, String> data = new HashMap<>();
-        data.put("carrier", carrier);
-        data.put("deliveries", deliveries);
-        data.put("avgTime", avgTime);
-        data.put("status", status);
-        return data;
     }
 
     private String getThemeColor(String theme) {

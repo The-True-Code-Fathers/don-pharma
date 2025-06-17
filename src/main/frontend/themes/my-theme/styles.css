@@ -526,8 +526,85 @@ html[theme~="dark"] {
     /* Superfícies elevadas */
     --lumo-elevated-surface: hsl(220, 15%, 12%);
     --lumo-clickable-surface: hsl(220, 15%, 14%);
+}
 
-    /* Campos de entrada */
+html[theme~="dark"] .v-chart svg text,
+html[theme~="dark"] .v-chart svg tspan {
+    fill: #d1d5db !important;
+    color: #d1d5db !important;
+}
+
+html[theme~="dark"] .highcharts-container svg text,
+html[theme~="dark"] .highcharts-container svg tspan {
+    fill: #d1d5db !important;
+}
+
+html[theme~="dark"] .highcharts-axis-labels text,
+html[theme~="dark"] .highcharts-axis-labels tspan {
+    fill: #d1d5db !important;
+}
+
+html[theme~="dark"] .highcharts-axis-title text,
+html[theme~="dark"] .highcharts-axis-title tspan {
+    fill: #e5e7eb !important;
+}
+
+html[theme~="dark"] .highcharts-legend text,
+html[theme~="dark"] .highcharts-legend tspan {
+    fill: #d1d5db !important;
+}
+
+html[theme~="dark"] .highcharts-title text,
+html[theme~="dark"] .highcharts-subtitle text {
+    fill: #f9fafb !important;
+}
+
+html[theme~="dark"] .highcharts-tooltip text,
+html[theme~="dark"] .highcharts-tooltip tspan {
+    fill: #374151 !important;
+}
+
+html[theme~="dark"] .highcharts-grid-line {
+    stroke: #374151 !important;
+}
+
+html[theme~="dark"] .highcharts-axis-line {
+    stroke: #6b7280 !important;
+}
+
+html[theme~="dark"] svg text {
+    fill: #d1d5db !important;
+}
+
+html[theme~="dark"] svg tspan {
+    fill: #d1d5db !important;
+}
+
+html[theme~="dark"] span.apexcharts-legend-text {
+    fill: white !important;
+    color: white;
+}
+
+html[theme~="dark"] vaadin-chart svg text,
+html[theme~="dark"] vaadin-chart svg tspan {
+    fill: #d1d5db !important;
+}
+
+html[theme~="dark"] [style*="fill: rgb(51, 51, 51)"] {
+    fill: #d1d5db !important;
+}
+
+html[theme~="dark"] [style*="fill: rgb(68, 68, 68)"] {
+    fill: #d1d5db !important;
+}
+
+html[theme~="dark"] text[style*="color: rgb(51, 51, 51)"] {
+    color: #d1d5db !important;
+    fill: #d1d5db !important;
+}
+
+html[theme~="dark"] * {
+    --text-color: #d1d5db;
 }
 
 :host([theme~="dark"]) {
