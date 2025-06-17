@@ -580,6 +580,11 @@ html[theme~="dark"] svg tspan {
     fill: #d1d5db !important;
 }
 
+html[theme~="dark"] span.apexcharts-legend-text {
+    fill: white !important;
+    color: white;
+}
+
 html[theme~="dark"] vaadin-chart svg text,
 html[theme~="dark"] vaadin-chart svg tspan {
     fill: #d1d5db !important;
