@@ -21,6 +21,7 @@ import com.codefathers.service.OrderItemService;
 import com.codefathers.service.ProductService;
 import com.codefathers.service.PurchaseOrderItemService;
 import com.codefathers.service.PurchaseOrderService;
+import com.codefathers.util.AverageProductPriceUtil;
 import com.codefathers.util.ValidatorUtil;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
@@ -309,49 +310,11 @@ public class ProductsView extends VerticalLayout {
     }
 
     private String calculateWeightedAverageBuyPrice(Product product) {
-        try {
-            List<PurchaseOrderItem> purchaseOrdersItems = purchaseOrderItemService.findByProductSku(product.getSku());
-            if (purchaseOrdersItems.isEmpty()) return "R$ 0.00";
-
-            BigDecimal totalValue = BigDecimal.ZERO;
-            BigDecimal totalQuantity = BigDecimal.ZERO;
-
-            for (PurchaseOrderItem order : purchaseOrdersItems) {
-                BigDecimal orderValue = order.getPrice().multiply(BigDecimal.valueOf(order.getQuantity()));
-                totalValue = totalValue.add(orderValue);
-                totalQuantity = totalQuantity.add(BigDecimal.valueOf(order.getQuantity()));
-            }
-
-            if (totalQuantity.compareTo(BigDecimal.ZERO) == 0) return "R$ 0.00";
-
-            BigDecimal weightedAverage = totalValue.divide(totalQuantity, 2, RoundingMode.HALF_UP);
-            return "R$ " + String.format("%.2f", weightedAverage);
-        } catch (Exception e) {
-            return "Error";
+        return AverageProductPriceUtil.calculateWeightedAverageBuyPrice(product);
         }
-    }
 
     private String calculateWeightedAverageSellPrice(Product product) {
-        try {
-            List<OrderItem> saleOrdersItems = orderItemService.findByProductSku(product.getSku()).orElse(List.of());
-            if (saleOrdersItems.isEmpty()) return "R$ 0.00";
-
-            BigDecimal totalValue = BigDecimal.ZERO;
-            BigDecimal totalQuantity = BigDecimal.ZERO;
-
-            for (OrderItem orderItem : saleOrdersItems) {
-                BigDecimal orderItemValue = orderItem.getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()));
-                totalValue = totalValue.add(orderItemValue);
-                totalQuantity = totalQuantity.add(BigDecimal.valueOf(orderItem.getQuantity()));
-            }
-
-            if (totalQuantity.compareTo(BigDecimal.ZERO) == 0) return "R$ 0.00";
-
-            BigDecimal weightedAverage = totalValue.divide(totalQuantity, 2, RoundingMode.HALF_UP);
-            return "R$ " + String.format("%.2f", weightedAverage);
-        } catch (Exception e) {
-            return "Error";
-        }
+        return AverageProductPriceUtil.calculateWeightedAverageSellPrice(product);
     }
 
     private void populateUpdateForm(Product product) {
