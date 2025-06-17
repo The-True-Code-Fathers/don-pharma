@@ -10,11 +10,12 @@ import com.codefathers.service.DashboardService;
 import com.codefathers.service.FinancialService;
 import com.codefathers.service.KpiService;
 import com.codefathers.util.JsonUtil;
+import com.github.appreciated.apexcharts.ApexCharts;
+import com.github.appreciated.apexcharts.config.XAxis;
+import com.github.appreciated.apexcharts.config.locale.builder.OptionsBuilder;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI; // Import UI
 import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
@@ -49,10 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Route("")
@@ -94,10 +92,6 @@ public class DashboardView extends FlexLayout {
         // add(createTablesSection());
     }
 
-    private void datePickerListener() {
-
-    }
-
     private Component createHeader() {
         H2 title = new H2("\uD83D\uDC4B Welcome to Don Pharma");
 
@@ -118,6 +112,10 @@ public class DashboardView extends FlexLayout {
         headerLayout.setAlignItems(Alignment.CENTER);
 
         return headerLayout;
+    }
+
+    private void recreateCharts() {
+
     }
 
     private Component createKpiSection() {
@@ -170,9 +168,19 @@ public class DashboardView extends FlexLayout {
             );
         };
 
+        Runnable updateCharts = () -> {
+            startDay = startDate.getValue();
+            endDay = endDate.getValue();
+
+            recreateCharts();
+        };
+
         // Atualiza os KPIs ao mudar datas
         startDate.addValueChangeListener(e -> updateKpis.run());
         endDate.addValueChangeListener(e -> updateKpis.run());
+
+        startDate.addValueChangeListener(e -> updateCharts.run());
+        endDate.addValueChangeListener(e -> updateCharts.run());
 
         updateKpis.run(); // Atualiza na inicialização
 
@@ -187,7 +195,6 @@ public class DashboardView extends FlexLayout {
         if (value == null) return "R$ 0,00";
         return java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("pt", "BR")).format(value);
     }
-
 
     private Component createKpiCard(String title, String value, String change, String iconString, String theme) {
         Span cardIcon = new Span(iconString);
@@ -226,6 +233,10 @@ public class DashboardView extends FlexLayout {
         return layout;
     }
 
+    private void updateKpiCards(LocalDate from, LocalDate to) {
+
+    }
+
     private Component createMainChartsSection() {
         FlexLayout layout = new FlexLayout();
 
@@ -257,12 +268,6 @@ public class DashboardView extends FlexLayout {
         return horizontalWrapChartsLayout;
     }
 
-    /**
-     * Helper to configure ApexCharts for Lumo theme integration, especially dark mode.
-     * This will set the chart's internal theme mode and try to use Lumo CSS variables for colors.
-     *
-     * @param builder The ApexChartsBuilder instance.
-     */
     private void configureChartForLumoTheme(ApexChartsBuilder builder, boolean isDarkMode) {
 
         // Set ApexCharts theme mode based on the current Vaadin UI's theme.
@@ -281,7 +286,6 @@ public class DashboardView extends FlexLayout {
      * @return An ApexCharts component displaying sales trend.
      */
     private Component createSalesSummaryChart() {
-        // A more concise and safe way to check the theme
         boolean isDarkTheme = Lumo.DARK.equals(UI.getCurrent().getElement().getAttribute("theme"));
 
         DashboardService.SeriesData chartData = dashboardService.getSalesChartData(startDay, endDay);
@@ -302,10 +306,22 @@ public class DashboardView extends FlexLayout {
                         .withTitle(TitleBuilder.get().withText("Amount (R$)").build())
                         .build());
 
-
-        // 3. Apply theme and wrap
         configureChartForLumoTheme(chartBuilder, isDarkTheme);
-        return wrapChartInContainer(chartBuilder.build());
+        ApexCharts chart =  chartBuilder.build();
+        this.salesSummaryChart = chart;
+        return wrapChartInContainer(chart);
+    }
+
+    private void updateSalesSummaryChart(LocalDate from, LocalDate to) {
+        DashboardService.SeriesData chartData = dashboardService.getSalesChartData(from, to);
+
+        // 1. Set new properties
+        XAxis newXAxis = XAxisBuilder.get().withCategories(chartData.categories()).build();
+        salesSummaryChart.setXaxis(newXAxis);
+        salesSummaryChart.setSeries(new Series<>("Sales", chartData.data().toArray()));
+
+        // 2. Render the changes
+        salesSummaryChart.render();
     }
 
     /**
@@ -350,9 +366,19 @@ public class DashboardView extends FlexLayout {
 
         configureChartForLumoTheme(chartBuilder, isDarkTheme); // Apply theme configuration
         com.github.appreciated.apexcharts.ApexCharts apexChart = chartBuilder.build();
+        this.orderStatusChart = apexChart;
         return wrapChartInContainer(apexChart);
     }
 
+    private void updateOrderStatusChart(LocalDate start, LocalDate end) {
+        DashboardService.SeriesData seriesData = dashboardService.getOrderStatusChartData(start, end);
+        Double[] seriesValues = seriesData.data().stream().map(BigDecimal::doubleValue).toArray(Double[]::new);
+
+        orderStatusChart.setSeries(seriesValues);
+        orderStatusChart.setLabels(seriesData.categories().toArray(String[]::new));
+
+        orderStatusChart.render();
+    }
     /**
      * Creates an ApexCharts Bar Chart for top products sold.
      *
@@ -407,7 +433,18 @@ public class DashboardView extends FlexLayout {
 
         configureChartForLumoTheme(chartBuilder, isDarkTheme); // Apply theme configuration
         com.github.appreciated.apexcharts.ApexCharts apexChart = chartBuilder.build();
+        this.topProductsChart = apexChart;
         return wrapChartInContainer(apexChart);
+    }
+
+    private void updateTopProductsChart(LocalDate start, LocalDate end) {
+        DashboardService.SeriesData seriesData = dashboardService.getTopProductChartData(start, end, 5);
+
+        XAxis newXAxis = XAxisBuilder.get().withCategories(seriesData.categories()).build();
+        topProductsChart.setXaxis(newXAxis);
+        topProductsChart.setSeries(new Series<>("Units Sold", seriesData.data().toArray()));
+
+        topProductsChart.render();
     }
 
     /**
@@ -464,9 +501,21 @@ public class DashboardView extends FlexLayout {
 
         configureChartForLumoTheme(chartBuilder, isDarkTheme); // Apply theme configuration
         com.github.appreciated.apexcharts.ApexCharts apexChart = chartBuilder.build();
+        this.employeePerformanceChart = apexChart;
         return wrapChartInContainer(apexChart);
     }
 
+    private void updateEmployeePerformanceChart(LocalDate start, LocalDate end) {
+        DashboardService.SeriesData data = dashboardService.getSellersPerformanceChartData(start, end);
+
+        // 1. Set new properties
+        XAxis newXAxis = XAxisBuilder.get().withCategories(data.categories()).build();
+        employeePerformanceChart.setXaxis(newXAxis);
+        employeePerformanceChart.setSeries(new Series<>("Sales (Goal %)", data.data().toArray()));
+
+        // 2. Render the changes
+        employeePerformanceChart.render();
+    }
     /**
      * Helper method to wrap an ApexCharts component in a styled container for consistent layout.
      */
