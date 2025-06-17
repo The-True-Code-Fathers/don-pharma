@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,7 +31,7 @@ public class ShippingAreaService {
         ShippingArea shippingArea = ShippingArea.builder()
                 .shippingProvider(createShippingAreaDTO.getShippingProvider())
                 .description(createShippingAreaDTO.getDescription())
-                .states(createShippingAreaDTO.getStates())
+                .states(Arrays.asList(createShippingAreaDTO.getStates())) // ✅ Conversão adicionada
                 .createdAt(LocalDateTime.now())
                 .active(true)
                 .cep(createShippingAreaDTO.getCep())
@@ -64,11 +65,16 @@ public class ShippingAreaService {
         shippingAreaRepository.update(area);
     }
 
+    public List<ShippingArea> findActiveShippingAreas() {
+        return shippingAreaRepository.listAll().stream()
+                .filter(ShippingArea::isActive)
+                .toList();
+    }
+
     public List<ShippingArea> findAllShippingAreas() {
         try {
             List<ShippingArea> areas = shippingAreaRepository.listAll();
 
-            // Log para diagnóstico
             System.out.println("Total de áreas encontradas: " + areas.size());
             areas.forEach(area -> {
                 System.out.println("Área ID: " + area.getId());

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -35,14 +36,25 @@ public class ShippingProvider {
     private int averageDeliveryDays;
 
     @OneToMany(mappedBy = "shippingProvider", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude // Prevent recursive calls when doing something with parent entity
+    @ToString.Exclude
     @JsonBackReference
     private List<ShippingArea> shippingAreas;
-    
+
     @Column(name = "active", nullable = false)
     private boolean active;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    // Retorna lista de estados distintos atendidos
+    public List<String> getServiceStates() {
+        if (shippingAreas == null || shippingAreas.isEmpty()) {
+            return List.of();
+        }
+        return shippingAreas.stream()
+                .filter(sa -> sa.getStates() != null)
+                .flatMap(sa -> sa.getStates().stream())
+                .distinct()
+                .collect(Collectors.toList());
+    }
 }

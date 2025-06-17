@@ -1,6 +1,7 @@
 package com.codefathers.model.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -26,7 +27,8 @@ public class ShippingArea {
     private String description;
 
     @Column(nullable = false)
-    private String[] states;
+    @ElementCollection // Necessário para mapear arrays ou listas simples
+    private List<String> states; // alterado para List<String> para JPA mapear corretamente
 
     @Column(nullable = false)
     private String cep;
@@ -36,5 +38,4 @@ public class ShippingArea {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
 }
