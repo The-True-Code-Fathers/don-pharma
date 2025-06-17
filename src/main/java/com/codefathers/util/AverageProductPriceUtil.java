@@ -20,6 +20,7 @@ import com.codefathers.repository.interfaces.PurchaseOrderRepository;
 import com.codefathers.service.OrderItemService;
 import com.codefathers.service.ProductService;
 import com.codefathers.service.PurchaseOrderItemService;
+import lombok.Getter;
 
 public class AverageProductPriceUtil {
 
@@ -32,6 +33,9 @@ public class AverageProductPriceUtil {
     static OrderItemService orderItemService = new OrderItemService(orderItemRepository, orderRepository);
     static PurchaseOrderItemService purchaseOrderItemService = new PurchaseOrderItemService(purchaseOrderItemRepository,
             purchaseOrderRepository, ValidatorUtil.getValidator());
+
+    @Getter
+    static BigDecimal weightedAverage = BigDecimal.ZERO;
 
     public static String calculateWeightedAverageSellPrice(Product product) {
         try {
@@ -51,7 +55,7 @@ public class AverageProductPriceUtil {
             if (totalQuantity.compareTo(BigDecimal.ZERO) == 0)
                 return "R$ 0.00";
 
-            BigDecimal weightedAverage = totalValue.divide(totalQuantity, 2, RoundingMode.HALF_UP);
+            weightedAverage = totalValue.divide(totalQuantity, 2, RoundingMode.HALF_UP);
             return "R$ " + String.format("%.2f", weightedAverage);
         } catch (Exception e) {
             return "Error";
@@ -76,7 +80,7 @@ public class AverageProductPriceUtil {
             if (totalQuantity.compareTo(BigDecimal.ZERO) == 0)
                 return "R$ 0.00";
 
-            BigDecimal weightedAverage = totalValue.divide(totalQuantity, 2, RoundingMode.HALF_UP);
+            weightedAverage = totalValue.divide(totalQuantity, 2, RoundingMode.HALF_UP);
             return "R$ " + String.format("%.2f", weightedAverage);
         } catch (Exception e) {
             return "Error";

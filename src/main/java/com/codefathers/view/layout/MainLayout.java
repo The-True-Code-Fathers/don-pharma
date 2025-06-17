@@ -88,6 +88,7 @@ public class MainLayout extends AppLayout {
         var productLink = new SideNavItem("Products", ProductsView.class, VaadinIcon.STOCK.create());
         var orderLink = new SideNavItem("Sales Order", OrderView.class, VaadinIcon.CLIPBOARD.create());
         var shippingLink = new SideNavItem("Shipping");
+        var goalLink = new SideNavItem("Goals");
 
         shippingLink.setPrefixComponent(VaadinIcon.TRUCK.create());
         shippingLink.addItem(new SideNavItem("Shipping Area", ShippingAreaView.class,
@@ -108,6 +109,8 @@ public class MainLayout extends AppLayout {
         var financialLink = new SideNavItem("Financial", FinancialView.class, VaadinIcon.MONEY.create());
 
         var paymentLink = new SideNavItem("Payment", PaymentView.class, VaadinIcon.CASH.create());
+
+        goalLink = new SideNavItem("Goals", GoalsView.class, VaadinIcon.ANGLE_DOUBLE_UP.create());
         
         sideNav.addItem(
                 dashboardLink,
@@ -118,7 +121,8 @@ public class MainLayout extends AppLayout {
                 shippingLink,
                 orderLink,
                 purchaseOrderLink,
-                storageLink
+                storageLink,
+                goalLink
         );
 
         Scroller scroller = new Scroller(sideNav);
