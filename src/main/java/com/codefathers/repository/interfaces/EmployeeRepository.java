@@ -13,5 +13,6 @@ public interface EmployeeRepository {
     List<Employee> listAll();
     void delete(UUID id);
     long count();
+    List<Employee> findEmployeesRankedByOrderStatus(OrderStatus status, int limit);
 }
 

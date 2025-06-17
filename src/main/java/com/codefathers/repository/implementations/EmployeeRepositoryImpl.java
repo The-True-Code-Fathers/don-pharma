@@ -75,6 +75,24 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             return 0;
         }
     }
+    @Override
+    public List<Employee> findEmployeesRankedByOrderStatus(OrderStatus status, int limit) {
+        String hql = "SELECT o.seller FROM orders o " +
+                "WHERE o.orderStatus = :status AND o.seller.role = :role " +
+                "GROUP BY o.seller " +
+                "ORDER BY COUNT(o) DESC";
+
+        try (var session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(hql, Employee.class)
+                    .setParameter("status", status)
+                    .setParameter("role", EmployeeRole.SALES)
+                    .setMaxResults(limit)
+                    .getResultList();
+        } catch (Exception e) {
+            log.error("Error finding employees ranked by order status and role", e);
+            return Collections.emptyList();
+        }
+    }
 
     @Override
     public Employee findById(UUID id) {
