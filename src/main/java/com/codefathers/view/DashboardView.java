@@ -444,7 +444,6 @@ public class DashboardView extends FlexLayout {
 
         DashboardService.SeriesData data = dashboardService.getSellersPerformanceChartData(startDay, endDay);
 
-        // Dummy data for employee performance
         chartBuilder.withSeries(
                 new Series<>("Sales (Goal %)", data.data().toArray(new BigDecimal[0]))
         );

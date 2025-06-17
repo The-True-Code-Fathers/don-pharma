@@ -3,6 +3,7 @@ package com.codefathers.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import com.codefathers.model.entity.*;
 import com.codefathers.model.enums.OrderStatus;
@@ -56,7 +57,7 @@ public class FinancialService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public List<Employee> getTopPerformingSellers(LocalDate from, LocalDate to, int limit) {
+    public Map<Employee, Double> getTopPerformingSellers(LocalDate from, LocalDate to, int limit) {
         return orderRepository.findSellersRankedByOrderStatus(from, to, OrderStatus.INVOICED, limit);
     }
 

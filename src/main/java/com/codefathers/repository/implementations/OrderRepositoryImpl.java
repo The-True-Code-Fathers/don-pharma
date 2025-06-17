@@ -11,13 +11,11 @@ import com.codefathers.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Transaction;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 public class OrderRepositoryImpl implements OrderRepository {
@@ -147,25 +145,37 @@ public class OrderRepositoryImpl implements OrderRepository {
             return Collections.emptyList();
         }
     }
-    @Override
-    public List<Employee> findSellersRankedByOrderStatus(LocalDate from, LocalDate to, OrderStatus status, int limit) {
-        String hql = "SELECT o.seller FROM orders o " +
+    public Map<Employee, Double> findSellersRankedByOrderStatus(LocalDate from, LocalDate to, OrderStatus status, int limit) {
+        // HQL query to select seller and sum of their totalAmount
+        String hql = "SELECT o.seller, SUM(o.totalAmount) FROM orders o " + // 'orders' is the @Entity name
                 "WHERE o.orderStatus = :status AND o.seller.role = :role " +
-                "AND o.createdAt between :startDate and :endDate" +
+                "AND o.createdAt BETWEEN :startDate AND :endDate " +
                 "GROUP BY o.seller " +
-                "ORDER BY COUNT(o) DESC";
+                "ORDER BY SUM(o.totalAmount) DESC"; // Order by the total sales amount
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(hql, Employee.class)
+
+            Query<Object[]> query = session.createQuery(hql, Object[].class)
                     .setParameter("status", status)
-                    .setParameter("role", EmployeeRole.SALES)
+                    .setParameter("role", EmployeeRole.SALES) // Assuming EmployeeRole.SALES exists
                     .setParameter("startDate", from.atStartOfDay())
-                    .setParameter("endDate", to.plusDays(1 + 1).atStartOfDay())
-                    .setMaxResults(limit)
-                    .getResultList();
+                    .setParameter("endDate", to.plusDays(1).atStartOfDay()) // endDate is exclusive in BETWEEN, so add 1 day
+                    .setMaxResults(limit);
+
+            List<Object[]> results = query.getResultList();
+
+            Map<Employee, Double> sellersRankedBySales = new LinkedHashMap<>();
+            for (Object[] result : results) {
+                Employee seller = (Employee) result[0];
+                Double totalSales = ((BigDecimal) result[1]).doubleValue();
+                sellersRankedBySales.put(seller, totalSales);
+            }
+
+            return sellersRankedBySales;
+
         } catch (Exception e) {
             log.error("Error finding sellers ranked by order status", e);
-            return Collections.emptyList();
+            return Collections.emptyMap(); // Return an empty map on error
         }
     }
 

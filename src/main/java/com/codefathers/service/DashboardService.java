@@ -124,6 +124,14 @@ public class DashboardService {
             goalPerformance.add(percentage);
         }));
 
-        return new SeriesData(sellerNames, goalPerformance.stream().map(BigDecimal::valueOf).toList());
+        log.debug("Seller names: {}", sellerNames);
+        log.debug("Goal performance: {}", goalPerformance);
+
+        return new SeriesData(sellerNames, goalPerformance.stream()
+                .map(BigDecimal::valueOf)
+                .map(bd -> bd.setScale(2, RoundingMode.HALF_UP))
+                .map(bd -> bd.multiply(BigDecimal.valueOf(100)))
+                .toList()
+        );
     }
 }

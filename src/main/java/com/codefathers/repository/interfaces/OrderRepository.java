@@ -8,6 +8,7 @@ import com.codefathers.model.enums.OrderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,5 +24,5 @@ public interface OrderRepository {
     List<Order> findOrdersByTimePeriod(LocalDate start, LocalDate end);
     List<Order> findOrdersByStatus(OrderStatus status);
     List<Order> findOrdersByStatusAndTimePeriod(OrderStatus status, LocalDate start, LocalDate end);
-    List<Employee> findSellersRankedByOrderStatus(LocalDate from, LocalDate to, OrderStatus status, int limit);
+    Map<Employee, Double> findSellersRankedByOrderStatus(LocalDate from, LocalDate to, OrderStatus status, int limit);
 }
