@@ -27,6 +27,7 @@ public class PurchaseOrderService {
     private final EmployeeRepository employeeRepository;
     private final StorageRepository storageRepository;
     private final Validator validator;
+    BigDecimal totalPrice = BigDecimal.ZERO;
 
     public PurchaseOrderService(PurchaseOrderRepository purchaseOrderRepository,
             EmployeeRepository employeeRepository, StorageRepository storageRepository,
@@ -90,10 +91,11 @@ public class PurchaseOrderService {
         var tempPurchaseOrder = purchaseOrder;
 
         List<PurchaseOrderItem> purchaseOrderItems = purchaseOrder.getPurchaseItems().stream().map(dto -> {
+            totalPrice = dto.getPrice().multiply(BigDecimal.valueOf(dto.getQuantity()));
             PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
             purchaseOrderItem.setPurchaseOrder(purchaseOrder);
             purchaseOrderItem.setQuantity(dto.getQuantity());
-            purchaseOrderItem.setPrice(dto.getPrice());
+            purchaseOrderItem.setPrice(totalPrice);
             purchaseOrderItem.setProduct(dto.getProduct());
             return purchaseOrderItem;
         }).toList();
@@ -120,10 +122,11 @@ public class PurchaseOrderService {
 
     public void finishPurchaseOrder(PurchaseOrder purchaseOrder) {
         List<PurchaseOrderItem> purchaseOrderItems = purchaseOrder.getPurchaseItems().stream().map(dto -> {
+            totalPrice = dto.getPrice().multiply(BigDecimal.valueOf(dto.getQuantity()));
             PurchaseOrderItem purchaseOrderItem = new PurchaseOrderItem();
             purchaseOrderItem.setPurchaseOrder(purchaseOrder);
             purchaseOrderItem.setQuantity(dto.getQuantity());
-            purchaseOrderItem.setPrice(dto.getPrice());
+            purchaseOrderItem.setPrice(totalPrice);
             purchaseOrderItem.setProduct(dto.getProduct());
             return purchaseOrderItem;
         }).toList();
