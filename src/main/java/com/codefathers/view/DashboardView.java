@@ -2,8 +2,12 @@ package com.codefathers.view;
 
 import com.codefathers.factory.ServiceFactory;
 import com.codefathers.model.entity.SystemUser;
+import com.codefathers.repository.implementations.OrderRepositoryImpl;
+import com.codefathers.repository.implementations.ProductRepositoryImpl;
+import com.codefathers.repository.implementations.StorageRepositoryImpl;
 import com.codefathers.service.AuthService;
 import com.codefathers.service.DashboardService;
+import com.codefathers.service.KpiService;
 import com.codefathers.util.JsonUtil;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI; // Import UI
@@ -53,6 +57,8 @@ import java.util.Map;
 @Route("")
 @PageTitle("Dashboard | Don Pharma")
 public class DashboardView extends FlexLayout {
+
+    private KpiService kpiService;
     private final AuthService authService = ServiceFactory.getAuthService();
     private final DashboardService dashboardService = ServiceFactory.getDashboardService();
 
@@ -60,19 +66,34 @@ public class DashboardView extends FlexLayout {
     private LocalDate endDay = LocalDate.of(2026, 1, 1);
 
     public DashboardView() {
+        this.kpiService = new KpiService(
+                new OrderRepositoryImpl(),   // ou como for a implementação
+                new ProductRepositoryImpl(),
+                new StorageRepositoryImpl()
+        );
         setSizeFull();
         setFlexDirection(FlexDirection.COLUMN);
+        add(createKpiSection());
         addClassName("dashboard-view");
+        // Header
         add(createHeader());
 
+        // KPI Cards
         add(createKpiSection());
 
+        // Charts Section
         FlexLayout chartContainer = new FlexLayout();
             chartContainer.setSizeFull();
             chartContainer.setAlignItems(Alignment.CENTER);
             chartContainer.setFlexDirection(FlexDirection.COLUMN);
             chartContainer.add(createMainChartsSection(), createWrapChartsSection());
         add(chartContainer);
+
+        // Tables Section
+        // add(createTablesSection());
+    }
+
+    private void datePickerListener() {
 
     }
 
@@ -104,10 +125,8 @@ public class DashboardView extends FlexLayout {
 
         var startDate = new DatePicker("Start date", LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()));
         var endDate = new DatePicker("End date", LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()));
-        startDate
-                .addValueChangeListener(e -> endDate.setMin(e.getValue()));
-        endDate.addValueChangeListener(
-                e -> startDate.setMax(e.getValue()));
+        startDate.addValueChangeListener(e -> endDate.setMin(e.getValue()));
+        endDate.addValueChangeListener(e -> startDate.setMax(e.getValue()));
 
         var datePickerLayout = new FlexLayout(startDate, endDate);
         datePickerLayout.getStyle().set("gap", "1em");
@@ -127,13 +146,34 @@ public class DashboardView extends FlexLayout {
         kpiLayout.setWidthFull();
         kpiLayout.getStyle().set("gap", "1rem");
 
-        kpiLayout.add(
-                createKpiCard("Vendas Hoje", "R$ 45.230,00", "+12%", "⬆️", "success"),
-                createKpiCard("Pedidos Ativos", "127", "+8", "📦", "primary"),
-                createKpiCard("Produtos em Estoque", "1.847", "-23", "📦", "warning"),
-                createKpiCard("Faturamento Mensal", "R$ 890.450,00", "+18%", "💰", "success")
-        );
-        kpiLayout.addClassNames(LumoUtility.Margin.Top.MEDIUM, LumoUtility.Margin.Bottom.MEDIUM);
+        // Criar os cards, inicialmente com as datas padrões
+        Runnable updateKpis = () -> {
+            kpiLayout.removeAll();
+
+            LocalDate start = startDate.getValue();
+            LocalDate end = endDate.getValue();
+
+            String vendasHoje = formatCurrency(kpiService.getTotalRevenue(start, end));
+            String pedidosAtivos = String.valueOf(kpiService.getTotalOrders(start, end));
+            String produtosEmEstoque = String.valueOf(kpiService.getTotalStockQuantity());
+            // Para faturamento mensal, você pode usar a receita total no mês atual, exemplo:
+            String faturamentoMensal = formatCurrency(kpiService.getTotalRevenue(
+                    LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()),
+                    LocalDate.now().with(TemporalAdjusters.lastDayOfMonth())));
+
+            kpiLayout.add(
+                    createKpiCard("Vendas Hoje", vendasHoje, "+12%", "⬆️", "success"),
+                    createKpiCard("Pedidos Ativos", pedidosAtivos, "+8", "📦", "primary"),
+                    createKpiCard("Produtos em Estoque", produtosEmEstoque, "-23", "📦", "warning"),
+                    createKpiCard("Faturamento Mensal", faturamentoMensal, "+18%", "💰", "success")
+            );
+        };
+
+        // Atualiza os KPIs ao mudar datas
+        startDate.addValueChangeListener(e -> updateKpis.run());
+        endDate.addValueChangeListener(e -> updateKpis.run());
+
+        updateKpis.run(); // Atualiza na inicialização
 
         var finalLayout = new VerticalLayout(subtitleLayout, kpiLayout);
         finalLayout.setSpacing(true);
@@ -141,10 +181,17 @@ public class DashboardView extends FlexLayout {
         return finalLayout;
     }
 
+    // Método auxiliar para formatar BigDecimal em moeda BRL
+    private String formatCurrency(BigDecimal value) {
+        if (value == null) return "R$ 0,00";
+        return java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("pt", "BR")).format(value);
+    }
+
+
     private Component createKpiCard(String title, String value, String change, String iconString, String theme) {
         Span cardIcon = new Span(iconString);
-        cardIcon.addClassNames(LumoUtility.FontSize.XLARGE);
-        cardIcon.getStyle().set("color", getThemeColor(theme));
+        cardIcon.addClassNames(LumoUtility.FontSize.XLARGE); // Make emoji larger
+        cardIcon.getStyle().set("color", getThemeColor(theme)); // Apply theme color
 
         H3 cardValue = new H3(value);
         cardValue.addClassNames(LumoUtility.Margin.NONE, LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
@@ -168,12 +215,12 @@ public class DashboardView extends FlexLayout {
                 LumoUtility.BorderRadius.LARGE,
                 LumoUtility.Border.ALL,
                 LumoUtility.BorderColor.CONTRAST_10,
-                LumoUtility.Margin.End.MEDIUM,
-                LumoUtility.Margin.Bottom.MEDIUM
+                LumoUtility.Margin.End.MEDIUM, // Added right margin for spacing
+                LumoUtility.Margin.Bottom.MEDIUM // Added bottom margin for wrapping
         );
-        layout.setFlexGrow(1, content);
-        layout.setMinWidth("250px");
-        layout.setMaxWidth("350px");
+        layout.setFlexGrow(1, content); // Make content grow
+        layout.setMinWidth("250px"); // Ensure cards don't get too small
+        layout.setMaxWidth("350px"); // Limit card width for better layout on large screens
 
         return layout;
     }

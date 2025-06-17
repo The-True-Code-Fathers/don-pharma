@@ -12,6 +12,9 @@ public class RepositoryFactory {
     private static OrderRepository orderRepository = new OrderRepositoryImpl();
 
     @Getter
+    private static OrderItemRepository orderItemRepository = new OrderItemRepositoryImpl();
+
+    @Getter
     private static PaymentRepository paymentRepository = new PaymentRepositoryImpl();
 
     @Getter
@@ -19,6 +22,9 @@ public class RepositoryFactory {
 
     @Getter
     private static PurchaseOrderRepository purchaseOrderRepository = new PurchaseOrderRepositoryImpl();
+
+    @Getter
+    private static PurchaseOrderItemRepository purchaseOrderItemRepository = new PurchaseOrderItemRepositoryImpl();
 
     @Getter
     private static ShippingAreaRepository shippingAreaRepository = new ShippingAreaRepositoryImpl();
