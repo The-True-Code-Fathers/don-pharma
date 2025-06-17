@@ -27,18 +27,11 @@ import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @Layout
-public class MainLayout extends AppLayout implements BeforeEnterObserver {
+public class MainLayout extends AppLayout {
     private Button themeToggleButton;
     private boolean darkModeEnabled = false;
 
     public MainLayout() {
-        UI.getCurrent().getPage().executeJs(
-                "setTimeout(() => localStorage.getItem('dark-mode-enabled'), 100);"
-        ).then(String.class, darkMode -> {
-            boolean enabled = "true".equals(darkMode);
-            setDarkMode(enabled);
-        });
-
         DrawerToggle toggle = new DrawerToggle();
 
         H1 title = new H1("⚕\uFE0F Don Pharma");
@@ -48,32 +41,16 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         themeToggleButton = new Button(VaadinIcon.SUN_O.create());
         themeToggleButton.addClickListener(event -> {
             setDarkMode(!darkModeEnabled);
-            UI.getCurrent().getPage().executeJs(
-                    "return localStorage.getItem('dark-mode-enabled');"
-            ).then(String.class, result -> {
-                if (result != null) {
-                    boolean darkModeEnabled = Boolean.parseBoolean(result);
-                    setDarkMode(darkModeEnabled);
-                } else {
-                    // Se não tiver nada no localStorage, use o tema do sistema
-                    UI.getCurrent().getPage().executeJs(
-                            "return window.matchMedia('(prefers-color-scheme: dark)').matches;"
-                    ).then(Boolean.class, systemPrefersDark -> {
-                        setDarkMode(systemPrefersDark);
-                    });
-                }
-            });
+
         });
+
         themeToggleButton.getStyle().set("margin-right", "0.5em");
         themeToggleButton.getStyle().set("background", "transparent");
 
-
-
         setDarkMode(darkModeEnabled);
 
-
         Avatar avatarBasic = new Avatar();
-        avatarBasic.getStyle().set("margin-right", "1em");
+                avatarBasic.getStyle().set("margin-right", "1em");
 
         Button avatarButton = new Button(avatarBasic);
 
@@ -145,29 +122,29 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         this.darkModeEnabled = enabled;
 
         UI.getCurrent().getPage().executeJs(
-                "document.documentElement.setAttribute('theme', $0);",
-                enabled ? "dark" : "light"
+                "document.documentElement.setAttribute('theme', $0);" +
+                        "localStorage.setItem('dark-mode-enabled', $1);",
+                enabled ? "dark" : "light",
+                enabled
         );
 
         themeToggleButton.setIcon(enabled ? VaadinIcon.MOON_O.create() : VaadinIcon.SUN_O.create());
     }
 
-    @Override
-    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+//    @Override
+//    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+////        UI.getCurrent().getPage().executeJs(
+////                "localStorage.removeItem('dark-mode-enabled');"
+////        );
+//
 //        UI.getCurrent().getPage().executeJs(
-//                "localStorage.removeItem('dark-mode-enabled');"
-//        );
-
-        UI.getCurrent().getPage().executeJs(
-                "const localSetting = localStorage.getItem('dark-mode-enabled');" +
-                        "const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;" +
-                        "const useDark = localSetting === null ? prefersDark : localSetting === 'true';" +
-                        "document.documentElement.setAttribute('theme', useDark ? 'dark' : 'light');" +
-                        "return useDark;"
-        ).then(Boolean.class, enabled -> {
-            setDarkMode(enabled);
-        });
-    }
+//                "const localSetting = localStorage.getItem('dark-mode-enabled');" +
+//                        "const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;" +
+//                        "const useDark = localSetting === null ? prefersDark : localSetting === 'true';" +
+//                        "document.documentElement.setAttribute('theme', useDark ? 'dark' : 'light');" +
+//                        "return useDark;"
+//        ).then(Boolean.class, this::setDarkMode);
+//    }
 
     private void openUserDialog() {
         Dialog userDialog = new Dialog();

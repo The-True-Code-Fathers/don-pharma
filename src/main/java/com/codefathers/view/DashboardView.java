@@ -53,7 +53,6 @@ import java.util.Map;
 @Route("")
 @PageTitle("Dashboard | Don Pharma")
 public class DashboardView extends FlexLayout {
-
     private final AuthService authService = ServiceFactory.getAuthService();
     private final DashboardService dashboardService = ServiceFactory.getDashboardService();
 
