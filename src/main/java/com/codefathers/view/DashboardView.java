@@ -158,11 +158,11 @@ public class DashboardView extends FlexLayout {
         String custosTotais = formatCurrency(kpiService.getTotalSpendings(start, end));
 
         Component[] cards = {
-                createKpiCard("Pedidos Faturados", pedidosFaturados, "", "✅", "primary"),
-                createKpiCard("Total de Faturamento", totalFaturamento, "", "💰", "success"),
-                createKpiCard("Entregues e Faturados", entreguesEFaturados, "", "🚚", "primary"),
-                createKpiCard("Ticket Médio", ticketMedio, "", "📊", "success"),
-                createKpiCard("Custos Totais", custosTotais, "", "💸", "error")
+                createKpiCard("Invoiced Orders", pedidosFaturados, "", "✅", "primary"),
+                createKpiCard("Total Revenue", totalFaturamento, "", "💰", "success"),
+                createKpiCard("Delivered and Invoiced", entreguesEFaturados, "", "🚚", "primary"),
+                createKpiCard("Average Ticket", ticketMedio, "", "📊", "success"),
+                createKpiCard("Total Costs", custosTotais, "", "💸", "error")
         };
         kpiLayout.add(cards);
     }
@@ -253,7 +253,7 @@ public class DashboardView extends FlexLayout {
 
         ApexChartsBuilder chartBuilder = new ApexChartsBuilder()
                 .withChart(ChartBuilder.get().withType(Type.DONUT).withHeight("350px").build())
-                .withTitle(TitleSubtitleBuilder.get().withText("Status dos Pedidos").build())
+                .withTitle(TitleSubtitleBuilder.get().withText("Order status").build())
                 .withLabels(seriesData.categories().toArray(String[]::new))
                 .withSeries(seriesValues)
                 .withLegend(LegendBuilder.get().withPosition(Position.BOTTOM).build());
@@ -269,7 +269,7 @@ public class DashboardView extends FlexLayout {
         ApexChartsBuilder chartBuilder = new ApexChartsBuilder()
                 .withChart(ChartBuilder.get().withType(Type.BAR).withHeight("300px").build())
                 .withPlotOptions(PlotOptionsBuilder.get().withBar(BarBuilder.get().withHorizontal(true).build()).build())
-                .withTitle(TitleSubtitleBuilder.get().withText("Top 5 Produtos Mais Vendidos").build())
+                .withTitle(TitleSubtitleBuilder.get().withText("Top 5 Most Sold Products").build())
                 .withSeries(new Series<>("Units Sold", seriesData.data().toArray(new BigDecimal[0])))
                 .withXaxis(XAxisBuilder.get().withCategories(seriesData.categories()).build());
 
