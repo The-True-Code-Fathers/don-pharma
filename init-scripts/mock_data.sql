@@ -3,8 +3,12 @@
 -- ##################################################################
 -- Descrição: Versão final ajustada para ser compatível com a tabela
 -- 'orders' após a remoção da coluna 'total_amount'.
--- MODIFICAÇÃO: As quantidades em 'order_item' e o estoque inicial
+-- MODIFICAÇÃO 1: As quantidades em 'order_item' e o estoque inicial
 -- foram multiplicados por 20 para gerar uma receita maior.
+-- MODIFICAÇÃO 2: Garante ao menos 1 pedido por dia em Maio e Junho de 2025.
+-- MODIFICAÇÃO 3: Lógica de vendas refeita para uma distribuição de datas
+-- mais natural (baseada em probabilidade) e com tendência de aumento
+-- no valor total dos pedidos ao longo do tempo.
 
 -- ETAPA 1: LIMPEZA COMPLETA DO BANCO DE DADOS
 DELETE FROM public.purchase_order_item;
@@ -62,7 +66,6 @@ INSERT INTO public.product (sku, active, created_at, description, measurementuni
 
 INSERT INTO public.storage (id, product_sku, product_quantity)
 SELECT gen_random_uuid(), sku,
-       -- ## MODIFICAÇÃO ##: Quantidade inicial de estoque multiplicada por 20 para suportar o aumento das vendas.
        CASE WHEN not active THEN 0 ELSE (floor(random() * (200 - 50 + 1) + 50)::int) * 20 END
 FROM public.product;
 
@@ -137,15 +140,31 @@ v_start_date DATE := '2025-04-01';
     v_order_weight NUMERIC(38,2);
     v_item_quantity INT;
     v_item_price NUMERIC(19,4);
+    v_orders_to_create INT;
+    v_progress_factor NUMERIC;
+    v_total_days INT;
+    v_elapsed_days INT;
+    v_max_items_per_order INT;
 
 BEGIN
     v_seller_ids := ARRAY(SELECT id FROM public.employee WHERE role = 'SALES' AND active = true);
+    v_total_days := v_end_date - v_start_date;
 
     CREATE TEMP TABLE temp_stock ON COMMIT DROP AS SELECT product_sku, product_quantity FROM public.storage;
 
 FOR v_current_date IN SELECT generate_series(v_start_date, v_end_date, '1 day'::interval) LOOP
-                          IF EXTRACT(ISODOW FROM v_current_date) IN (1, 3, 5) THEN
-            FOR i IN 1..floor(random() * 4 + 1)::INT LOOP
+
+-- ## MODIFICAÇÃO ##: Lógica de distribuição natural de vendas.
+-- Há uma chance de 80% de haver vendas em um dia.
+                          IF random() < 0.80 THEN
+            -- Calcula o fator de progresso (0.0 no início, 1.0 no final da simulação)
+            v_elapsed_days := v_current_date - v_start_date;
+v_progress_factor := v_elapsed_days::numeric / v_total_days::numeric;
+
+            -- Gera de 1 a 3 pedidos por dia
+            v_orders_to_create := floor(random() * 3 + 1)::INT;
+
+FOR i IN 1..v_orders_to_create LOOP
                 v_created_at_timestamp := v_current_date + (floor(random()*60000 + 28800))::integer * '1 second'::interval;
 
 IF v_current_date >= (v_today - interval '2 days') THEN v_order_status := 'OPEN';
@@ -153,7 +172,6 @@ IF v_current_date >= (v_today - interval '2 days') THEN v_order_status := 'OPEN'
 ELSE v_order_status := 'INVOICED';
 END IF;
 
-                -- ## AJUSTE ##: Coluna 'total_amount' removida do INSERT
 INSERT INTO public.orders (id, created_at, description, orderstatus, products_price, seller_id, shipping_order_id)
 VALUES (gen_random_uuid(), v_created_at_timestamp, 'Pedido com status variado', v_order_status, 0, v_seller_ids[floor(random() * array_length(v_seller_ids, 1) + 1)], NULL)
     RETURNING id INTO v_order_id;
@@ -176,16 +194,22 @@ INSERT INTO public.shipping_order (id, active, created_at, delivery_date, destin
 VALUES (gen_random_uuid(), true, v_created_at_timestamp, v_delivery_date, 'Cidade Exemplo', 'SP', v_provider_record.average_delivery_days, v_shipment_date, round((random() * 30 + 12)::numeric, 2), v_shipping_status, 0, v_provider_record.id)
     RETURNING id INTO v_shipping_order_id;
 
-FOR j IN 1..floor(random() * 3 + 1)::INT LOOP
+-- ## MODIFICAÇÃO ##: O número de itens por pedido aumenta com o tempo.
+-- Começa com 1-3 itens e progride para 1-5 itens no final do período.
+v_max_items_per_order := floor(random() * (3 + (v_progress_factor * 2)) + 1)::INT;
+
+FOR j IN 1..v_max_items_per_order LOOP
 SELECT sku, temp_stock.product_quantity INTO v_product_record FROM public.product p
                                                                        JOIN temp_stock ON p.sku = temp_stock.product_sku
 WHERE p.active = true AND temp_stock.product_quantity > 0 ORDER BY random() LIMIT 1;
 
 IF FOUND THEN
-                            -- ## MODIFICAÇÃO ##: Quantidade do item multiplicada por 20.
                             v_item_quantity := (floor(random() * 2 + 1)::INT) * 20;
-                            v_item_price := round((random() * 150 + 8)::numeric, 4);
-                            v_item_quantity := LEAST(v_item_quantity, v_product_record.product_quantity);
+
+-- ## MODIFICAÇÃO ##: O preço do item tem uma leve tendência de aumento com o tempo.
+v_item_price := round((random() * (150 + (v_progress_factor * 50)) + (8 + (v_progress_factor * 12)))::numeric, 4);
+
+v_item_quantity := LEAST(v_item_quantity, v_product_record.product_quantity);
 
 INSERT INTO public.order_item (id, created_at, price, quantity, orders_id, product_sku)
 VALUES (gen_random_uuid(), v_created_at_timestamp, v_item_price, v_item_quantity, v_order_id, v_product_record.sku);
@@ -196,7 +220,6 @@ UPDATE temp_stock SET product_quantity = product_quantity - v_item_quantity WHER
 END IF;
 END LOOP;
 
-                    -- ## AJUSTE ##: Coluna 'total_amount' removida do UPDATE
 UPDATE public.orders o SET products_price = v_order_products_price, shipping_order_id = v_shipping_order_id WHERE o.id = v_order_id;
 UPDATE public.shipping_order SET weight = v_order_weight WHERE id = v_shipping_order_id;
 END IF;
