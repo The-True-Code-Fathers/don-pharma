@@ -28,9 +28,11 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import lombok.extern.slf4j.Slf4j;
 
 @PageTitle("Financial")
 @Route("financial")
+@Slf4j
 public class FinancialView extends VerticalLayout {
 
     private final FinancialService financialService;
@@ -156,6 +158,11 @@ public class FinancialView extends VerticalLayout {
         LocalDate startDate = startDatePicker.getValue();
         LocalDate endDate = endDatePicker.getValue();
 
+        log.debug("Chart refresh requested");
+
+        log.debug("start date: {}",  startDate);
+        log.debug("end date: {}",  endDate);
+
         // Validação básica das datas
         if (startDate == null || endDate == null) {
             // Poderia mostrar uma notificação ao usuário ou usar um período padrão
@@ -175,6 +182,10 @@ public class FinancialView extends VerticalLayout {
         BigDecimal totalInflows = financialService.getTotalInflows();
         BigDecimal totalOutflows = financialService.getTotalOutflows();
         BigDecimal netCashFlow = financialService.getCashFlow(); // Assuming cashFlow is updated after calculations
+
+        log.debug("Total inflows: {}", totalInflows);
+        log.debug("Total cashflows: {}", totalOutflows);
+        log.debug("Net cash: {}", netCashFlow);
 
         updateSummaryCards(totalInflows, totalOutflows, netCashFlow);
         updateTransactionDetailsGrids(); // Não precisa mais passar os totais aqui, eles já estão no service

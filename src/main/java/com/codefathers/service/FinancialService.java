@@ -15,7 +15,10 @@ import com.codefathers.repository.interfaces.OrderRepository;
 import com.codefathers.repository.interfaces.PaymentRepository;
 import com.codefathers.repository.interfaces.PurchaseOrderItemRepository;
 import com.codefathers.repository.interfaces.ShippingOrderRepository;
+import com.codefathers.util.JsonUtil;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class FinancialService {
 
     private final PaymentRepository paymentRepository;
@@ -64,19 +67,28 @@ public class FinancialService {
                     .subtract(pagamento.getAmountInTaxes());
         }
 
+        log.debug("Purchase total before: {}", purchaseTotal);
+
         for (PurchaseOrderItem purchaseOrderItem : purchaseOrderItemRepository.listByTimePeriod(from, to)) {
+
+            System.out.println("Porno da xuxa");
+
+            log.debug("PurchaseOrderItem: {}", JsonUtil.toPrettyJson(purchaseOrderItem));
+
             BigDecimal itemTotal = purchaseOrderItem.getPrice()
                     .multiply(BigDecimal.valueOf(purchaseOrderItem.getQuantity()));
+            log.debug("Total do item: {}", itemTotal);
+
             purchaseTotal = purchaseTotal.add(itemTotal);
         }
+
+        log.debug("Purchase total after: {}", purchaseTotal);
 
         shippingTotal = shippingOrderRepository.listByTimePeriod(from, to).stream()
                 .map(ShippingOrder::getShippingCost)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         cashFlow = cashFlow.subtract(purchaseTotal).subtract(shippingTotal).subtract(netPayment);
 
-        System.out.println("LOG !!!!!" + cashFlow + " " + shippingTotal + " " + purchaseTotal + " " + netPayment + " " + netPayment);
-        System.out.println("LOG!!!" + purchaseOrderItemRepository.listByTimePeriod(from, to) + " " +  paymentRepository.listByTimePeriod(from, to) + " " +  shippingOrderRepository.listByTimePeriod(from, to));
     }
 
     public void calculateInflows(LocalDate from, LocalDate to) {
@@ -86,7 +98,6 @@ public class FinancialService {
         }
 
         cashFlow = cashFlow.add(orderTotal);
-        System.out.println("LOG!!! " + orderTotal);
     }
 
     public Map<Employee, Double> getTopPerformingSellers(LocalDate from, LocalDate to, int limit) {
