@@ -72,7 +72,7 @@ public class FinancialView extends VerticalLayout {
     }
 
     private void createHeader() {
-        H1 title = new H1("Relatório Financeiro");
+        H1 title = new H1("Financial Report");
         title.addClassNames(LumoUtility.FontSize.XXLARGE, LumoUtility.Margin.Bottom.MEDIUM);
         
         Icon moneyIcon = VaadinIcon.MONEY_DEPOSIT.create();
@@ -87,15 +87,15 @@ public class FinancialView extends VerticalLayout {
 
     // Novo método para criar os componentes de filtro de data
     private void createDateFilters() {
-        startDatePicker = new DatePicker("Data Inicial");
+        startDatePicker = new DatePicker("Start date");
         startDatePicker.setLocale(new Locale("pt", "BR")); // Localização para exibir corretamente as datas
-        startDatePicker.setPlaceholder("Selecione a data inicial");
+        startDatePicker.setPlaceholder("Select start date");
 
-        endDatePicker = new DatePicker("Data Final");
+        endDatePicker = new DatePicker("End date");
         endDatePicker.setLocale(new Locale("pt", "BR")); // Localização para exibir corretamente as datas
-        endDatePicker.setPlaceholder("Selecione a data final");
+        endDatePicker.setPlaceholder("Select end date");
 
-        filterButton = new Button("Filtrar");
+        filterButton = new Button("Filter");
         filterButton.setIcon(VaadinIcon.FILTER.create());
         filterButton.addClickListener(event -> refreshData()); // Adiciona o listener para atualizar os dados ao clicar
 
@@ -116,8 +116,8 @@ public class FinancialView extends VerticalLayout {
         detailsLayout.setSizeFull();
         detailsLayout.addClassNames(LumoUtility.Gap.LARGE);
 
-        inflowsGrid = createDetailsGrid("ENTRADAS DE DINHEIRO", "success");
-        outflowsGrid = createDetailsGrid("SAÍDAS DE DINHEIRO", "error");
+        inflowsGrid = createDetailsGrid("MONEY INFLOWS", "success");
+        outflowsGrid = createDetailsGrid("MONEY OUTFLOWS", "error");
 
         detailsLayout.add(inflowsGrid, outflowsGrid);
         add(detailsLayout);
@@ -194,13 +194,13 @@ public class FinancialView extends VerticalLayout {
     private void updateSummaryCards(BigDecimal totalInflows, BigDecimal totalOutflows, BigDecimal netCashFlow) {
         summaryCards.removeAll();
 
-        Component inflowCard = createSummaryCard("Total Entradas", formatCurrency(totalInflows), VaadinIcon.ARROW_CIRCLE_UP_O, "success");
-        Component outflowCard = createSummaryCard("Total Saídas", formatCurrency(totalOutflows), VaadinIcon.ARROW_CIRCLE_DOWN_O, "error");
+        Component inflowCard = createSummaryCard("Total Inflows", formatCurrency(totalInflows), VaadinIcon.ARROW_CIRCLE_UP_O, "success");
+        Component outflowCard = createSummaryCard("Total Outflows", formatCurrency(totalOutflows), VaadinIcon.ARROW_CIRCLE_DOWN_O, "error");
 
         boolean isPositive = netCashFlow.compareTo(BigDecimal.ZERO) >= 0;
         VaadinIcon cashFlowIcon = isPositive ? VaadinIcon.TRENDING_UP : VaadinIcon.TRENDING_DOWN;
         String cashFlowTheme = isPositive ? "success" : "error";
-        Component cashFlowCard = createSummaryCard("Fluxo de Caixa", formatCurrency(netCashFlow), cashFlowIcon, cashFlowTheme);
+        Component cashFlowCard = createSummaryCard("Cash flow", formatCurrency(netCashFlow), cashFlowIcon, cashFlowTheme);
 
         summaryCards.add(inflowCard, outflowCard, cashFlowCard);
     }
@@ -208,14 +208,14 @@ public class FinancialView extends VerticalLayout {
     private void updateTransactionDetailsGrids() {
         // --- Grid de Entradas ---
         inflowsGrid.setItems(List.of(
-                new CategoryData("Vendas de Produtos", financialService.getTotalInflows()) // Obtém o valor do service
+                new CategoryData("Product Sales", financialService.getTotalInflows()) // Obtém o valor do service
         ));
         
         // --- Grid de Saídas ---
         List<CategoryData> outflowData = new ArrayList<>();
-        outflowData.add(new CategoryData("Pagamentos Diversos", financialService.getNetPayment()));
-        outflowData.add(new CategoryData("Compras de Produtos", financialService.getPurchaseTotal()));
-        outflowData.add(new CategoryData("Custos de Frete", financialService.getShippingTotal()));
+        outflowData.add(new CategoryData("Miscellaneous Payments", financialService.getNetPayment()));
+        outflowData.add(new CategoryData("Product Purchases", financialService.getPurchaseTotal()));
+        outflowData.add(new CategoryData("Shipping Costs", financialService.getShippingTotal()));
         outflowsGrid.setItems(outflowData);
     }
 
