@@ -14,6 +14,8 @@ import org.hibernate.Transaction;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,11 +36,18 @@ public class MetaPorVendedorService {
             for (Employee vendedor : vendedores) {
 
                 // 2. Total de vendas do vendedor
-                String hqlTotalVendas = "SELECT SUM(o.productsPrice) FROM orders o WHERE o.seller.id = :sellerId AND o.orderStatus = :status";
+                String hqlTotalVendas = """
+                    SELECT SUM(o.productsPrice) 
+                    FROM orders o 
+                    WHERE o.seller.id = :sellerId AND o.orderStatus = :status AND o.createdAt BETWEEN :startDate AND :endDate
+                """;
                 BigDecimal totalVendas = session.createQuery(hqlTotalVendas, BigDecimal.class)
                         .setParameter("sellerId", vendedor.getId())
                         .setParameter("status", OrderStatus.INVOICED)
+                        .setParameter("startDate", LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay())
+                        .setParameter("endDate", LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).plusDays(1).atStartOfDay())
                         .uniqueResult();
+
                 totalVendas = totalVendas != null ? totalVendas : BigDecimal.ZERO;
 
                 BigDecimal restante = metaFinanceira.subtract(totalVendas);
