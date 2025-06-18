@@ -121,8 +121,18 @@ public class MetaPorVendedorService {
             }
 
             // Calcular quantidade ótima para este produto
+            // Calcular quantidade ótima para este produto
             int quantidadeNecessaria = valorRestante.divide(candidato.precoUnitario, RoundingMode.UP).intValue();
-            int quantidadeUsada = Math.min(quantidadeNecessaria, candidato.quantidadeDisponivel);
+
+            // Aplicar restrição de máximo 20% do estoque disponível
+            int quantidadeMaximaPermitida = (int) Math.floor(candidato.quantidadeDisponivel * 0.2);
+
+            // Garantir que pelo menos 1 item possa ser sugerido se houver estoque suficiente
+            if (quantidadeMaximaPermitida == 0 && candidato.quantidadeDisponivel > 0) {
+                quantidadeMaximaPermitida = 1;
+            }
+
+            int quantidadeUsada = Math.min(quantidadeNecessaria, quantidadeMaximaPermitida);
 
             if (quantidadeUsada > 0) {
                 ProdutoSugeridoDTO dto = new ProdutoSugeridoDTO();
