@@ -11,10 +11,10 @@ import java.util.List;
 public class teste {
     public static void main(String[] args) {
         // Definindo uma meta financeira
-        BigDecimal metaFinanceira = new BigDecimal("3000.00");  // Meta de exemplo
+        BigDecimal metaFinanceira = new BigDecimal("60000.00");  // Meta de exemplo
 
         // Criando uma instância do serviço MetaPorVendedorService
-        MetaPorVendedorService metaPorVendedorService = new MetaPorVendedorService();
+        MetaService metaPorVendedorService = new MetaService();
 
         // Chamando o método calcularPlanoPorVendedor
         List<PlanoVendedorDTO> planos = metaPorVendedorService.calcularPlanoPorVendedor(metaFinanceira);

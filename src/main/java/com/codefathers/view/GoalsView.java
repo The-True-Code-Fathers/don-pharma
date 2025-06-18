@@ -181,19 +181,29 @@ public class GoalsView extends VerticalLayout {
                 .setHeader("Meta")
                 .setSortable(true)
                 .setFlexGrow(1);
-        grid.addColumn(plano -> "Produtos Sugeridos")
+
+        grid.addColumn(plano -> "Lista de Produtos Sugeridos")
                 .setHeader("Ações")
                 .setSortable(false)
                 .setFlexGrow(1);
 
-        grid.addColumn(data -> {
-            return data.getCreatedAt() != null ? data.getCreatedAt().format(dateFormatter) : "";
-        }).setHeader("Created At").setSortable(true).setFlexGrow(1);
-
+        grid.addColumn(plano -> plano.getStatus())
+                .setHeader("Status")
+                .setSortable(false)
+                .setFlexGrow(1);
 
         grid.addItemClickListener(event -> {
             if (event.getClickCount() == 2) {
-                currentPlan = event.getItem();
+                PlanoVendedorDTO item = event.getItem();
+
+                // Validação mais robusta com null check e trim
+                if (item != null &&
+                        item.getStatus() != null &&
+                        "META ATINGIDA".equalsIgnoreCase(item.getStatus().trim())) {
+                    return; // Não abre o dialog
+                }
+
+                currentPlan = item;
                 populateUpdateForm(currentPlan);
 
                 List<ProdutoSugeridoDTO> produtos = currentPlan.getProdutosSugeridos();
