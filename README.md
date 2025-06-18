@@ -27,10 +27,10 @@ docker-compose up -d
 Isso irá iniciar um container PostgreSQL acessível em localhost:5432 com o banco dondb, usuário admin e senha password.
 
 2. Configurar o Ambiente Java
-O projeto requer Java 23. Recomenda-se usar o SDKMAN! ou asdf para gerenciar versões.
+O projeto requer Java 23. 
 
-3. Instalar Dependências Frontend
-Na raiz do projeto, execute:
+3. Rodar a Aplicação
+Com o banco rodando, execute o comando Maven para iniciar o servidor Jetty:
 
 ```
 mvn jetty:run
