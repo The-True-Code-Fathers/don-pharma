@@ -26,11 +26,11 @@ public class FinancialService {
 
     private BigDecimal netPayment = BigDecimal.ZERO;
     private BigDecimal cashFlow = BigDecimal.valueOf(200000);
-    private BigDecimal paymentsTotal;
     private BigDecimal purchaseTotal = BigDecimal.ZERO;
-    private BigDecimal shippingTotal;
+    private BigDecimal shippingTotal = BigDecimal.ZERO;
     private BigDecimal orderTotal = BigDecimal.ZERO;
 
+    // Construtor sem parâmetros de data, para compatibilidade caso necessário
     public FinancialService(PaymentRepository paymentRepository,
             PurchaseOrderItemRepository purchaseOrderItemRepository,
             OrderItemRepository orderItemRepository,
@@ -41,49 +41,56 @@ public class FinancialService {
         this.orderItemRepository = orderItemRepository;
         this.shippingOrderRepository = shippingOrderRepository;
         this.orderRepository = orderRepository;
-
-        calculateOutflows();
-        calculateInflows();
     }
 
-    private void calculateOutflows() {
+    public void calculateFinancialData(LocalDate from, LocalDate to) {
+        this.netPayment = BigDecimal.ZERO;
+        this.purchaseTotal = BigDecimal.ZERO;
+        this.shippingTotal = BigDecimal.ZERO;
+        this.orderTotal = BigDecimal.ZERO;
+        this.cashFlow = BigDecimal.valueOf(200000);
+        
+        calculateOutflows(from, to);
+        calculateInflows(from, to);
+    }
 
-        for (Payment pagamento : paymentRepository.listAll()) {
-            netPayment = netPayment.add(pagamento.getGrossIncome()).add(pagamento.getFoodVoucherAmount()).add(pagamento.getMealVoucherAmount()).add(pagamento.getProfitSharingAmount()).subtract(pagamento.getAmountInTaxes()); 
+    public void calculateOutflows(LocalDate from, LocalDate to) {
+
+        for (Payment pagamento : paymentRepository.listByTimePeriod(from, to)) {
+            netPayment = netPayment.add(pagamento.getGrossIncome())
+                    .add(pagamento.getFoodVoucherAmount())
+                    .add(pagamento.getMealVoucherAmount())
+                    .add(pagamento.getProfitSharingAmount())
+                    .subtract(pagamento.getAmountInTaxes());
         }
 
-        paymentsTotal = paymentRepository.listAll().stream()
-                .map(Payment::getGrossIncome)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        for (PurchaseOrderItem purchaseOrderItem : purchaseOrderItemRepository.findAll()) {
+        for (PurchaseOrderItem purchaseOrderItem : purchaseOrderItemRepository.listByTimePeriod(from, to)) {
             BigDecimal itemTotal = purchaseOrderItem.getPrice()
                     .multiply(BigDecimal.valueOf(purchaseOrderItem.getQuantity()));
             purchaseTotal = purchaseTotal.add(itemTotal);
         }
 
-        shippingTotal = shippingOrderRepository.listAll().stream()
+        shippingTotal = shippingOrderRepository.listByTimePeriod(from, to).stream()
                 .map(ShippingOrder::getShippingCost)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         cashFlow = cashFlow.subtract(purchaseTotal).subtract(shippingTotal).subtract(netPayment);
+
+        System.out.println("LOG !!!!!" + cashFlow + " " + shippingTotal + " " + purchaseTotal + " " + netPayment + " " + netPayment);
+        System.out.println("LOG!!!" + purchaseOrderItemRepository.listByTimePeriod(from, to) + " " +  paymentRepository.listByTimePeriod(from, to) + " " +  shippingOrderRepository.listByTimePeriod(from, to));
     }
 
-    private void calculateInflows() {
-        for (OrderItem orderItem : orderItemRepository.listAll()) {
+    public void calculateInflows(LocalDate from, LocalDate to) {
+        for (OrderItem orderItem : orderItemRepository.listByTimePeriod(from, to)) {
             BigDecimal itemTotal = orderItem.getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()));
             orderTotal = orderTotal.add(itemTotal);
         }
 
         cashFlow = cashFlow.add(orderTotal);
-
+        System.out.println("LOG!!! " + orderTotal);
     }
 
     public Map<Employee, Double> getTopPerformingSellers(LocalDate from, LocalDate to, int limit) {
         return orderRepository.findSellersRankedByOrderStatus(from, to, OrderStatus.INVOICED, limit);
-    }
-
-    public BigDecimal getPaymentsTotal() {
-        return paymentsTotal;
     }
 
     public BigDecimal getPurchaseTotal() {
@@ -95,7 +102,7 @@ public class FinancialService {
     }
 
     public BigDecimal getTotalOutflows() {
-        return paymentsTotal.add(purchaseTotal).add(shippingTotal);
+        return netPayment.add(purchaseTotal).add(shippingTotal);
     }
 
     public BigDecimal getTotalInflows() {
@@ -113,5 +120,4 @@ public class FinancialService {
     public BigDecimal getNetPayment() {
         return netPayment;
     }
-
 }

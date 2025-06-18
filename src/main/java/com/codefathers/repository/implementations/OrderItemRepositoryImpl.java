@@ -1,5 +1,6 @@
 package com.codefathers.repository.implementations;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -8,6 +9,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import com.codefathers.model.entity.OrderItem;
+import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.repository.interfaces.OrderItemRepository;
 import com.codefathers.util.HibernateUtil;
 
@@ -60,6 +62,19 @@ public class OrderItemRepositoryImpl implements OrderItemRepository {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             List<OrderItem> orderItemList = session.createQuery("select i from order_item i", OrderItem.class).list();
             return orderItemList;
+        }
+    }
+
+    @Override
+    public List<OrderItem> listByTimePeriod(LocalDate from, LocalDate to) {
+        try (var session =  HibernateUtil.sessionFactory.openSession()) {
+            String hql = "select o from order_item o where createdAt between :from and :to";
+            return session.createQuery(hql, OrderItem.class)
+                    .setParameter("from", from.atStartOfDay())
+                    .setParameter("to", to.plusDays(2).atStartOfDay()).getResultList();
+        } catch (Exception e) {
+            e.getMessage();
+            return List.of();
         }
     }
 

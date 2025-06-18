@@ -2,6 +2,7 @@ package com.codefathers.view;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.LocalDate; // Importar LocalDate
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -13,6 +14,8 @@ import com.codefathers.repository.implementations.PurchaseOrderItemRepositoryImp
 import com.codefathers.repository.implementations.ShippingOrderRepositoryImpl;
 import com.codefathers.service.FinancialService;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button; // Importar Button
+import com.vaadin.flow.component.datepicker.DatePicker; // Importar DatePicker
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -34,10 +37,13 @@ public class FinancialView extends VerticalLayout {
     private final NumberFormat currencyFormatter;
 
     // Componentes da UI
+    private DatePicker startDatePicker; // Novo: Seletor de data de início
+    private DatePicker endDatePicker;   // Novo: Seletor de data de fim
+    private Button filterButton;        // Novo: Botão para aplicar o filtro
     private Div summaryCards;
     private Grid<CategoryData> inflowsGrid;
     private Grid<CategoryData> outflowsGrid;
-    private HorizontalLayout detailsLayout; // CHANGED: Usando HorizontalLayout para os grids
+    private HorizontalLayout detailsLayout;
 
     public FinancialView() {
         this.financialService = new FinancialService(new PaymentRepositoryImpl(), new PurchaseOrderItemRepositoryImpl(),
@@ -46,15 +52,18 @@ public class FinancialView extends VerticalLayout {
 
         setupLayout();
         createHeader();
+        createDateFilters(); // Novo: Adiciona os seletores de data e botão
         createSummaryCards();
-        createTransactionDetailsGrids(); // CHANGED: Novo método para criar os grids
+        createTransactionDetailsGrids();
 
-        refreshData();
+        // Inicializa com dados dos últimos 30 dias, por exemplo
+        startDatePicker.setValue(LocalDate.now().minusDays(30));
+        endDatePicker.setValue(LocalDate.now());
+        refreshData(); // Chama refreshData inicialmente com as datas padrão
     }
 
     private void setupLayout() {
         setSizeFull();
-        // CHANGED: Reduzindo padding e espaçamento geral
         getStyle().set("padding", "var(--lumo-space-m)");
         setSpacing(false);
         addClassName("financial-view");
@@ -74,35 +83,49 @@ public class FinancialView extends VerticalLayout {
         add(header);
     }
 
+    // Novo método para criar os componentes de filtro de data
+    private void createDateFilters() {
+        startDatePicker = new DatePicker("Data Inicial");
+        startDatePicker.setLocale(new Locale("pt", "BR")); // Localização para exibir corretamente as datas
+        startDatePicker.setPlaceholder("Selecione a data inicial");
+
+        endDatePicker = new DatePicker("Data Final");
+        endDatePicker.setLocale(new Locale("pt", "BR")); // Localização para exibir corretamente as datas
+        endDatePicker.setPlaceholder("Selecione a data final");
+
+        filterButton = new Button("Filtrar");
+        filterButton.setIcon(VaadinIcon.FILTER.create());
+        filterButton.addClickListener(event -> refreshData()); // Adiciona o listener para atualizar os dados ao clicar
+
+        HorizontalLayout dateFilterLayout = new HorizontalLayout(startDatePicker, endDatePicker, filterButton);
+        dateFilterLayout.setAlignItems(Alignment.BASELINE); // Alinha os componentes pela base
+        dateFilterLayout.addClassNames(LumoUtility.Gap.MEDIUM, LumoUtility.Margin.Bottom.MEDIUM); // Espaçamento e margem
+        add(dateFilterLayout);
+    }
+
     private void createSummaryCards() {
         summaryCards = new Div();
         summaryCards.addClassNames("summary-cards", LumoUtility.Display.FLEX, LumoUtility.Gap.MEDIUM, LumoUtility.Margin.Bottom.LARGE, LumoUtility.Flex.AUTO);
         add(summaryCards);
     }
 
-    // CHANGED: Método renomeado e simplificado
     private void createTransactionDetailsGrids() {
         detailsLayout = new HorizontalLayout();
         detailsLayout.setSizeFull();
-        detailsLayout.addClassNames(LumoUtility.Gap.LARGE); // Espaço entre os grids
+        detailsLayout.addClassNames(LumoUtility.Gap.LARGE);
 
-        // Grid de Entradas
         inflowsGrid = createDetailsGrid("ENTRADAS DE DINHEIRO", "success");
-
-        // Grid de Saídas
         outflowsGrid = createDetailsGrid("SAÍDAS DE DINHEIRO", "error");
 
         detailsLayout.add(inflowsGrid, outflowsGrid);
         add(detailsLayout);
     }
 
-    // NEW METHOD: Cria e estiliza um grid para detalhes
     private <T> Grid<T> createDetailsGrid(String header, String theme) {
         Grid<T> grid = new Grid<>();
-        grid.addThemeName("compact"); // Tema de grid mais denso
+        grid.addThemeName("compact");
         grid.getStyle().set("border", "1px solid var(--lumo-contrast-10pct)").set("border-radius", "var(--lumo-border-radius-l)");
 
-        // Adiciona um cabeçalho customizado ao grid
         H3 gridHeader = new H3(header);
         gridHeader.getStyle()
             .set("margin", "var(--lumo-space-m)")
@@ -122,19 +145,39 @@ public class FinancialView extends VerticalLayout {
         gridLayout.setPadding(false);
         gridLayout.getStyle().set("border", "1px solid var(--lumo-contrast-10pct)").set("border-radius", "var(--lumo-border-radius-l)");
 
-        // Como o grid está dentro de um layout, retornamos o layout
-        // Para adicionar colunas e itens, você ainda usará a variável de instância `inflowsGrid` e `outflowsGrid`
-        return grid;
+        // O grid em si precisa ser adicionado ao layout, e o layout é retornado.
+        // A referência ao grid é mantida pela variável de instância (inflowsGrid/outflowsGrid).
+        // Isso permite configurar as colunas e os itens diretamente no grid.
+        return grid; // Retorna o grid para que as colunas possam ser configuradas
     }
 
 
     private void refreshData() {
+        LocalDate startDate = startDatePicker.getValue();
+        LocalDate endDate = endDatePicker.getValue();
+
+        // Validação básica das datas
+        if (startDate == null || endDate == null) {
+            // Poderia mostrar uma notificação ao usuário ou usar um período padrão
+            System.out.println("Por favor, selecione as datas inicial e final.");
+            return;
+        }
+
+        if (startDate.isAfter(endDate)) {
+            // Poderia mostrar uma notificação ao usuário
+            System.out.println("A data inicial não pode ser posterior à data final.");
+            return;
+        }
+
+        // Chame o método calculateFinancialData do FinancialService com as datas
+        financialService.calculateFinancialData(startDate, endDate);
+
         BigDecimal totalInflows = financialService.getTotalInflows();
         BigDecimal totalOutflows = financialService.getTotalOutflows();
-        BigDecimal netCashFlow = financialService.getCashFlow();
+        BigDecimal netCashFlow = financialService.getCashFlow(); // Assuming cashFlow is updated after calculations
 
         updateSummaryCards(totalInflows, totalOutflows, netCashFlow);
-        updateTransactionDetailsGrids(totalInflows, totalOutflows);
+        updateTransactionDetailsGrids(); // Não precisa mais passar os totais aqui, eles já estão no service
     }
 
     private void updateSummaryCards(BigDecimal totalInflows, BigDecimal totalOutflows, BigDecimal netCashFlow) {
@@ -151,11 +194,10 @@ public class FinancialView extends VerticalLayout {
         summaryCards.add(inflowCard, outflowCard, cashFlowCard);
     }
 
-    // REFACTORED: Lógica movida para cá para preencher os grids
-    private void updateTransactionDetailsGrids(BigDecimal totalInflows, BigDecimal totalOutflows) {
+    private void updateTransactionDetailsGrids() {
         // --- Grid de Entradas ---
         inflowsGrid.setItems(List.of(
-                new CategoryData("Vendas de Produtos", totalInflows)
+                new CategoryData("Vendas de Produtos", financialService.getTotalInflows()) // Obtém o valor do service
         ));
         
         // --- Grid de Saídas ---
@@ -166,7 +208,6 @@ public class FinancialView extends VerticalLayout {
         outflowsGrid.setItems(outflowData);
     }
 
-    // REFACTORED: Parâmetros e estilo ajustados
     private Component createSummaryCard(String title, String value, VaadinIcon icon, String theme) {
         Div card = new Div();
         card.addClassNames(
@@ -202,13 +243,10 @@ public class FinancialView extends VerticalLayout {
         return card;
     }
     
-    // REFACTORED: Configuração do Grid agora é feita na inicialização
     @Override
     protected void onAttach(com.vaadin.flow.component.AttachEvent attachEvent) {
-        super.onAttach(attachEvent); // Garante que a lógica do framework seja executada
+        super.onAttach(attachEvent);
         
-        // A configuração das colunas deve ser feita apenas uma vez.
-        // onAttach é um bom lugar para isso, pois é chamado quando o componente é adicionado à UI.
         if (inflowsGrid.getColumns().isEmpty()) {
             configureGridColumns(inflowsGrid);
         }
@@ -222,12 +260,10 @@ public class FinancialView extends VerticalLayout {
         grid.addColumn(data -> formatCurrency(data.getAmount())).setHeader("Valor").setTextAlign(com.vaadin.flow.component.grid.ColumnTextAlign.END);
     }
 
-
     private String formatCurrency(BigDecimal amount) {
         return currencyFormatter.format(amount != null ? amount : BigDecimal.ZERO);
     }
 
-    // --- Classe de Dados Simplificada ---
     public static class CategoryData {
         private final String name;
         private final BigDecimal amount;
