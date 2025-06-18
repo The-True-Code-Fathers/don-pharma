@@ -1,9 +1,8 @@
 -- ##################################################################
--- ##      SCRIPT DE DADOS DEFINITIVO - VERSÃO FINAL REFINADA      ##
+-- ##      SCRIPT DE DADOS DEFINITIVO - VERSÃO SEM total_amount    ##
 -- ##################################################################
--- Descrição: Versão final com volume de dados reduzido e com a
--- criação de Ordens de Compra feita de forma manual e coerente,
--- em vez de por gatilho automático.
+-- Descrição: Versão final ajustada para ser compatível com a tabela
+-- 'orders' após a remoção da coluna 'total_amount'.
 
 -- ETAPA 1: LIMPEZA COMPLETA DO BANCO DE DADOS
 DELETE FROM public.purchase_order_item;
@@ -27,11 +26,11 @@ INSERT INTO public.employee (id, active, birthdate, created_at, fullname, gender
                                                                                             (gen_random_uuid(), true, '1996-02-18', NOW() - interval '3 year', 'Aline Gomes', 'FEMALE', 'SALES'),
                                                                                             (gen_random_uuid(), true, '1994-06-22', NOW() - interval '3 year', 'Marcos Rodrigues', 'MALE', 'SALES'),
                                                                                             (gen_random_uuid(), true, '1999-04-12', NOW() - interval '2 year', 'Gabriela Ferreira', 'FEMALE', 'SALES'),
-                                                                                            (gen_random_uuid(), true, '2000-07-19', NOW() - interval '1 year', 'Letícia Barros', 'FEMALE', 'SALES'),
                                                                                             (gen_random_uuid(), true, '1998-11-10', NOW() - interval '2 year', 'Beatriz Martins', 'FEMALE', 'SAC'),
                                                                                             (gen_random_uuid(), true, '2000-03-25', NOW() - interval '2 year', 'Lucas Farias', 'MALE', 'STORAGE'),
                                                                                             (gen_random_uuid(), true, '1993-07-15', NOW() - interval '3 year', 'Juliana Nunes', 'FEMALE', 'SHIPPING'),
                                                                                             (gen_random_uuid(), false, '1989-03-14', NOW() - interval '5 year', 'Patrícia Andrade', 'FEMALE', 'STORAGE');
+
 
 INSERT INTO public.shipping_provider (id, active, average_delivery_days, base_price, cnpj, created_at, daily_capacity, name) VALUES
                                                                                                                                  (gen_random_uuid(), true, 5, 15.50, '11.222.333/0001-44', NOW() - interval '3 year', 5000, 'RápidoLog'),
@@ -70,24 +69,20 @@ DECLARE
 v_purchaser_id UUID;
     v_purchase_order_id UUID;
 BEGIN
-    -- Seleciona um comprador uma única vez
 SELECT id INTO v_purchaser_id FROM public.employee WHERE role = 'LOCAL_MANAGER' LIMIT 1;
 
--- Compra para o Produto 1: Dorflex (PROD005) - Março de 2025
 INSERT INTO public.purchase_order (id, created_at, purchaseorderstatus, purchase_total_price_amount, purchase_total_product_amount, purchaser_id)
 VALUES (gen_random_uuid(), '2025-03-10 10:00:00', 'INVOICED', (150 * 18.50), 150, v_purchaser_id)
     RETURNING id INTO v_purchase_order_id;
 INSERT INTO public.purchase_order_item (id, created_at, purchase_price, purchase_quantity, purchase_product_sku, purchase_order_id)
 VALUES (gen_random_uuid(), '2025-03-10 10:00:00', 18.50, 150, 'PROD005', v_purchase_order_id);
 
--- Compra para o Produto 2: Paracetamol (PROD002) - Março de 2025
 INSERT INTO public.purchase_order (id, created_at, purchaseorderstatus, purchase_total_price_amount, purchase_total_product_amount, purchaser_id)
 VALUES (gen_random_uuid(), '2025-03-12 11:30:00', 'INVOICED', (200 * 8.20), 200, v_purchaser_id)
     RETURNING id INTO v_purchase_order_id;
 INSERT INTO public.purchase_order_item (id, created_at, purchase_price, purchase_quantity, purchase_product_sku, purchase_order_id)
 VALUES (gen_random_uuid(), '2025-03-12 11:30:00', 8.20, 200, 'PROD002', v_purchase_order_id);
 
--- Compra para o Produto 3: Fralda Pampers (PROD057) - Março de 2025
 INSERT INTO public.purchase_order (id, created_at, purchaseorderstatus, purchase_total_price_amount, purchase_total_product_amount, purchaser_id)
 VALUES (gen_random_uuid(), '2025-03-15 09:00:00', 'INVOICED', (100 * 35.00), 100, v_purchaser_id)
     RETURNING id INTO v_purchase_order_id;
@@ -110,7 +105,6 @@ SELECT CASE v_employee.role
            ELSE 2500.00
            END INTO v_gross_income;
 
--- Gera pagamentos para Maio e Junho de 2025
 FOR i IN 0..1 LOOP
             v_payment_date := (date_trunc('month', '2025-06-17'::date) - (i * interval '1 month') + interval '4 days')::date;
 INSERT INTO public.payment(id, active, amount_in_taxes, created_at, dental_insurance_amount, food_voucher_amount, gross_income, health_insurance_amount, meal_voucher_amount, profit_sharing_amount, employee_id)
@@ -119,7 +113,7 @@ END LOOP;
 END LOOP;
 END $$;
 
--- ETAPA 6: SIMULAÇÃO DE VENDAS COM VOLUME REDUZIDO E LÓGICA DE STATUS APRIMORADA
+-- ETAPA 6: SIMULAÇÃO DE VENDAS (SEM A COLUNA total_amount)
 DO $$
 DECLARE
 v_start_date DATE := '2025-04-01';
@@ -156,8 +150,9 @@ IF v_current_date >= (v_today - interval '2 days') THEN v_order_status := 'OPEN'
 ELSE v_order_status := 'INVOICED';
 END IF;
 
-INSERT INTO public.orders (id, created_at, description, orderstatus, products_price, total_amount, seller_id, shipping_order_id)
-VALUES (gen_random_uuid(), v_created_at_timestamp, 'Pedido com status variado', v_order_status, 0, 0, v_seller_ids[floor(random() * array_length(v_seller_ids, 1) + 1)], NULL)
+                -- ## AJUSTE ##: Coluna 'total_amount' removida do INSERT
+INSERT INTO public.orders (id, created_at, description, orderstatus, products_price, seller_id, shipping_order_id)
+VALUES (gen_random_uuid(), v_created_at_timestamp, 'Pedido com status variado', v_order_status, 0, v_seller_ids[floor(random() * array_length(v_seller_ids, 1) + 1)], NULL)
     RETURNING id INTO v_order_id;
 
 IF v_order_status IN ('OPEN', 'INVOICED') THEN
@@ -197,7 +192,8 @@ UPDATE temp_stock SET product_quantity = product_quantity - v_item_quantity WHER
 END IF;
 END LOOP;
 
-UPDATE public.orders o SET products_price = v_order_products_price, total_amount = v_order_products_price + s.shipping_cost, shipping_order_id = v_shipping_order_id FROM public.shipping_order s WHERE o.id = v_order_id AND s.id = v_shipping_order_id;
+                    -- ## AJUSTE ##: Coluna 'total_amount' removida do UPDATE
+UPDATE public.orders o SET products_price = v_order_products_price, shipping_order_id = v_shipping_order_id WHERE o.id = v_order_id;
 UPDATE public.shipping_order SET weight = v_order_weight WHERE id = v_shipping_order_id;
 END IF;
 END LOOP;
