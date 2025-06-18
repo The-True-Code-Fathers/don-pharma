@@ -1,6 +1,6 @@
 # DonPharma
 
-DonPharma é um sistema de gestão para farmácias, desenvolvido em Java com Vaadin, que oferece funcionalidades para controle de vendas, estoque, funcionários, pedidos, metas e relatórios financeiros. O projeto utiliza uma arquitetura moderna, integra banco de dados PostgreSQL e oferece uma interface web responsiva e personalizável.
+DonPharma é um sistema de gestão para farmácias, desenvolvido em Java com Vaadin, que oferece funcionalidades para controle de vendas, estoque, funcionários, pedidos, metas e relatórios financeiros. O projeto utiliza uma arquitetura MVC, integra banco de dados PostgreSQL e oferece uma interface web responsiva e personalizável.
 
 ## Tecnologias Utilizadas
 
@@ -17,7 +17,6 @@ DonPharma é um sistema de gestão para farmácias, desenvolvido em Java com Vaa
 ## Como Executar o Projeto
 
 ### 1. Subir o Banco de Dados PostgreSQL
-
 Certifique-se de ter o Docker instalado. Execute:
 
 ```sh
@@ -26,14 +25,21 @@ docker-compose up -d
 
 Isso irá iniciar um container PostgreSQL acessível em localhost:5432 com o banco dondb, usuário admin e senha password.
 
-2. Configurar o Ambiente Java
+### 2. Configurar mock de dados
+O projeto possui uma base de dados para auxiliar a visualização dos dados.
+
+```sh
+docker exec -it postgres_db psql -d dondb -U admin -f /docker-entrypoint-initdb.d/mock_data.sql
+```
+
+### 3. Configurar o Ambiente Java
 O projeto requer Java 23. 
 
-3. Rodar a Aplicação
+### 4. Rodar a Aplicação
 Com o banco rodando, execute o comando Maven para iniciar o servidor Jetty:
 
-```
+```sh
 mvn jetty:run
 ```
 
-Acesse a aplicação em http://localhost:8080.
+Acesse a aplicação em http://localhost:8080 com o usuário **admin** e senha **adminpass**
