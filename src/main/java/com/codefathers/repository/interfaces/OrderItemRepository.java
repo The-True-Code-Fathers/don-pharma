@@ -1,5 +1,6 @@
 package com.codefathers.repository.interfaces;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,4 +14,5 @@ public interface OrderItemRepository {
     Optional<OrderItem> findById(UUID id);
     Optional<List<OrderItem>> findByProductSku(String productSku);
     List<OrderItem> listAll();
+    List<OrderItem> listByTimePeriod(LocalDate from, LocalDate to); 
 }

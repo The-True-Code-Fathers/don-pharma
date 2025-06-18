@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.codefathers.model.entity.Payment;
+import com.codefathers.model.enums.PurchaseOrderStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -14,6 +16,7 @@ import com.codefathers.model.entity.PurchaseOrderItem;
 import com.codefathers.repository.interfaces.PurchaseOrderItemRepository;
 import com.codefathers.util.HibernateUtil;
 
+@Slf4j
 public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemRepository {
 
     @Override
@@ -68,13 +71,32 @@ public class PurchaseOrderItemRepositoryImpl implements PurchaseOrderItemReposit
 
     @Override
     public List<PurchaseOrderItem> listByTimePeriod(LocalDate from, LocalDate to) {
+
+        log.debug("Ricardo eletro");
+
         try (var session =  HibernateUtil.sessionFactory.openSession()) {
-            String hql = "select p from purchase_order p where createdAt between :from and :to";
-            return session.createQuery(hql, PurchaseOrderItem.class)
+            String hql = """
+                SELECT
+                    poi
+                FROM
+                    purchase_order_item poi
+                JOIN
+                    poi.purchaseOrder po
+                WHERE
+                    po.purchaseOrderStatus = :status
+                    AND poi.createdAt between :from and :to
+            """;
+
+            // String hql = "select p from purchase_order_item join order o where op.status = :status and ;
+            var q = session.createQuery(hql, PurchaseOrderItem.class)
                     .setParameter("from", from.atStartOfDay())
-                    .setParameter("to", to.plusDays(2).atStartOfDay()).getResultList();
+                    .setParameter("to", to.plusDays(2).atStartOfDay())
+                    .setParameter("status", PurchaseOrderStatus.INVOICED);
+
+            return q.getResultList();
+
         } catch (Exception e) {
-            e.getMessage();
+            log.error(e.getMessage(), e);
             return List.of();
         }
     }
