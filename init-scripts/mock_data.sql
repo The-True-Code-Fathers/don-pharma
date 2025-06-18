@@ -1,8 +1,9 @@
 -- ##################################################################
 -- ##      SCRIPT DE DADOS DEFINITIVO - VERSÃO FINAL REFINADA      ##
 -- ##################################################################
--- Descrição: Versão final com volume de dados reduzido e lógica de
--- negócios aprimorada para status de pedidos e pagamentos.
+-- Descrição: Versão final com volume de dados reduzido e com a
+-- criação de Ordens de Compra feita de forma manual e coerente,
+-- em vez de por gatilho automático.
 
 -- ETAPA 1: LIMPEZA COMPLETA DO BANCO DE DADOS
 DELETE FROM public.purchase_order_item;
@@ -18,7 +19,6 @@ DELETE FROM public.product;
 DELETE FROM public.employee;
 
 -- ETAPA 2: ESTRUTURA DA EMPRESA
--- Inserindo um quadro de funcionários
 INSERT INTO public.employee (id, active, birthdate, created_at, fullname, gender, role) VALUES
                                                                                             (gen_random_uuid(), true, '1988-05-12', NOW() - interval '5 year', 'Carlos Santana', 'MALE', 'LOCAL_MANAGER'),
                                                                                             (gen_random_uuid(), true, '1992-08-20', NOW() - interval '4 year', 'Fernanda Lima', 'FEMALE', 'FINANCIAL'),
@@ -33,7 +33,6 @@ INSERT INTO public.employee (id, active, birthdate, created_at, fullname, gender
                                                                                             (gen_random_uuid(), true, '1993-07-15', NOW() - interval '3 year', 'Juliana Nunes', 'FEMALE', 'SHIPPING'),
                                                                                             (gen_random_uuid(), false, '1989-03-14', NOW() - interval '5 year', 'Patrícia Andrade', 'FEMALE', 'STORAGE');
 
--- Inserindo Transportadoras
 INSERT INTO public.shipping_provider (id, active, average_delivery_days, base_price, cnpj, created_at, daily_capacity, name) VALUES
                                                                                                                                  (gen_random_uuid(), true, 5, 15.50, '11.222.333/0001-44', NOW() - interval '3 year', 5000, 'RápidoLog'),
                                                                                                                                  (gen_random_uuid(), true, 3, 18.00, '22.333.444/0001-55', NOW() - interval '2 year', 8000, 'ExpressBrasil');
@@ -62,10 +61,42 @@ INSERT INTO public.product (sku, active, created_at, description, measurementuni
 
 INSERT INTO public.storage (id, product_sku, product_quantity)
 SELECT gen_random_uuid(), sku,
-       CASE WHEN not active THEN 0 ELSE floor(random() * (250 - 50 + 1) + 50)::int END
+       CASE WHEN not active THEN 0 ELSE floor(random() * (200 - 50 + 1) + 50)::int END
 FROM public.product;
 
--- ETAPA 4: HISTÓRICO FINANCEIRO REDUZIDO (Maio e Junho de 2025)
+-- ETAPA 4: CRIAÇÃO DE ORDENS DE COMPRA (PURCHASE ORDERS) DE DEMONSTRAÇÃO
+DO $$
+DECLARE
+v_purchaser_id UUID;
+    v_purchase_order_id UUID;
+BEGIN
+    -- Seleciona um comprador uma única vez
+SELECT id INTO v_purchaser_id FROM public.employee WHERE role = 'LOCAL_MANAGER' LIMIT 1;
+
+-- Compra para o Produto 1: Dorflex (PROD005) - Março de 2025
+INSERT INTO public.purchase_order (id, created_at, purchaseorderstatus, purchase_total_price_amount, purchase_total_product_amount, purchaser_id)
+VALUES (gen_random_uuid(), '2025-03-10 10:00:00', 'INVOICED', (150 * 18.50), 150, v_purchaser_id)
+    RETURNING id INTO v_purchase_order_id;
+INSERT INTO public.purchase_order_item (id, created_at, purchase_price, purchase_quantity, purchase_product_sku, purchase_order_id)
+VALUES (gen_random_uuid(), '2025-03-10 10:00:00', 18.50, 150, 'PROD005', v_purchase_order_id);
+
+-- Compra para o Produto 2: Paracetamol (PROD002) - Março de 2025
+INSERT INTO public.purchase_order (id, created_at, purchaseorderstatus, purchase_total_price_amount, purchase_total_product_amount, purchaser_id)
+VALUES (gen_random_uuid(), '2025-03-12 11:30:00', 'INVOICED', (200 * 8.20), 200, v_purchaser_id)
+    RETURNING id INTO v_purchase_order_id;
+INSERT INTO public.purchase_order_item (id, created_at, purchase_price, purchase_quantity, purchase_product_sku, purchase_order_id)
+VALUES (gen_random_uuid(), '2025-03-12 11:30:00', 8.20, 200, 'PROD002', v_purchase_order_id);
+
+-- Compra para o Produto 3: Fralda Pampers (PROD057) - Março de 2025
+INSERT INTO public.purchase_order (id, created_at, purchaseorderstatus, purchase_total_price_amount, purchase_total_product_amount, purchaser_id)
+VALUES (gen_random_uuid(), '2025-03-15 09:00:00', 'INVOICED', (100 * 35.00), 100, v_purchaser_id)
+    RETURNING id INTO v_purchase_order_id;
+INSERT INTO public.purchase_order_item (id, created_at, purchase_price, purchase_quantity, purchase_product_sku, purchase_order_id)
+VALUES (gen_random_uuid(), '2025-03-15 09:00:00', 35.00, 100, 'PROD057', v_purchase_order_id);
+END $$;
+
+
+-- ETAPA 5: HISTÓRICO FINANCEIRO REDUZIDO (Maio e Junho de 2025)
 DO $$
 DECLARE
 v_employee RECORD;
@@ -79,7 +110,7 @@ SELECT CASE v_employee.role
            ELSE 2500.00
            END INTO v_gross_income;
 
--- Gera pagamentos para os 2 últimos meses (Maio e Junho)
+-- Gera pagamentos para Maio e Junho de 2025
 FOR i IN 0..1 LOOP
             v_payment_date := (date_trunc('month', '2025-06-17'::date) - (i * interval '1 month') + interval '4 days')::date;
 INSERT INTO public.payment(id, active, amount_in_taxes, created_at, dental_insurance_amount, food_voucher_amount, gross_income, health_insurance_amount, meal_voucher_amount, profit_sharing_amount, employee_id)
@@ -88,73 +119,51 @@ END LOOP;
 END LOOP;
 END $$;
 
--- ETAPA 5: SIMULAÇÃO DE VENDAS COM VOLUME REDUZIDO E LÓGICA DE STATUS APRIMORADA
+-- ETAPA 6: SIMULAÇÃO DE VENDAS COM VOLUME REDUZIDO E LÓGICA DE STATUS APRIMORADA
 DO $$
 DECLARE
-    -- ### Configuração da Simulação ###
 v_start_date DATE := '2025-04-01';
     v_end_date DATE := '2025-06-17';
     v_today DATE := '2025-06-17';
-    v_stock_threshold INT := 40;
-
-    -- ### Variáveis de Apoio ###
     v_seller_ids UUID[];
-    v_purchaser_id UUID;
     v_current_date DATE;
     v_provider_record RECORD;
-
-    -- ### Variáveis de Loop ###
     v_product_record RECORD;
     v_order_id UUID;
     v_shipping_order_id UUID;
-    v_purchase_order_id UUID;
     v_created_at_timestamp TIMESTAMP;
     v_shipment_date DATE;
     v_delivery_date DATE;
     v_shipping_status VARCHAR(255);
-    v_order_status VARCHAR(255); -- Nova variável para o status do pedido
+    v_order_status VARCHAR(255);
     v_order_products_price NUMERIC(19,4);
     v_order_weight NUMERIC(38,2);
     v_item_quantity INT;
     v_item_price NUMERIC(19,4);
 
 BEGIN
-    -- Carrega dados de apoio
     v_seller_ids := ARRAY(SELECT id FROM public.employee WHERE role = 'SALES' AND active = true);
-SELECT id INTO v_purchaser_id FROM public.employee WHERE role = 'LOCAL_MANAGER' LIMIT 1;
 
--- Tabela temporária para simular o estoque em tempo real
-CREATE TEMP TABLE temp_stock ON COMMIT DROP AS SELECT product_sku, product_quantity FROM public.storage;
+    CREATE TEMP TABLE temp_stock ON COMMIT DROP AS SELECT product_sku, product_quantity FROM public.storage;
 
-    -- Loop principal por cada dia de simulação
 FOR v_current_date IN SELECT generate_series(v_start_date, v_end_date, '1 day'::interval) LOOP
-                             -- Gera pedidos apenas em alguns dias da semana para reduzir o volume total
-                          IF EXTRACT(ISODOW FROM v_current_date) IN (1, 3, 5) THEN -- Seg, Qua, Sex
-            -- Gera entre 1 e 4 pedidos nesses dias
+                          IF EXTRACT(ISODOW FROM v_current_date) IN (1, 3, 5) THEN
             FOR i IN 1..floor(random() * 4 + 1)::INT LOOP
                 v_created_at_timestamp := v_current_date + (floor(random()*60000 + 28800))::integer * '1 second'::interval;
 
--- ### LÓGICA DE STATUS DO PEDIDO (NOVO) ###
-IF v_current_date >= (v_today - interval '2 days') THEN
-                    v_order_status := 'OPEN'; -- Pedidos muito recentes ficam abertos
-                ELSIF random() < 0.08 THEN
-                    v_order_status := 'CANCELLED'; -- 8% de chance de ser cancelado
-ELSE
-                    v_order_status := 'INVOICED'; -- O resto é faturado
+IF v_current_date >= (v_today - interval '2 days') THEN v_order_status := 'OPEN';
+                ELSIF random() < 0.08 THEN v_order_status := 'CANCELLED';
+ELSE v_order_status := 'INVOICED';
 END IF;
 
-                -- Cria o registro do pedido primeiro
 INSERT INTO public.orders (id, created_at, description, orderstatus, products_price, total_amount, seller_id, shipping_order_id)
 VALUES (gen_random_uuid(), v_created_at_timestamp, 'Pedido com status variado', v_order_status, 0, 0, v_seller_ids[floor(random() * array_length(v_seller_ids, 1) + 1)], NULL)
     RETURNING id INTO v_order_id;
 
--- ### LÓGICA CONDICIONAL (NOVO) ###
--- Só cria itens, frete e afeta estoque se o pedido NÃO for cancelado
 IF v_order_status IN ('OPEN', 'INVOICED') THEN
                     v_order_products_price := 0;
                     v_order_weight := 0;
 
-                    -- Seleciona transportadora e calcula frete
 SELECT id, average_delivery_days INTO v_provider_record FROM public.shipping_provider WHERE active = true ORDER BY random() LIMIT 1;
 v_shipment_date := v_current_date + (floor(random()*2+1) * interval '1 day');
                     v_delivery_date := v_shipment_date + (v_provider_record.average_delivery_days * interval '1 day');
@@ -162,13 +171,13 @@ v_shipment_date := v_current_date + (floor(random()*2+1) * interval '1 day');
                     IF random() < 0.03 AND v_delivery_date < v_today THEN v_shipping_status := 'ATRASADO';
                     ELSIF v_delivery_date < v_today THEN v_shipping_status := 'ENTREGUE';
                     ELSIF v_shipment_date <= v_today AND v_delivery_date >= v_today THEN v_shipping_status := 'EM_TRANSPORTE';
-ELSE v_shipping_status := 'PENDENTE'; END IF;
+ELSE v_shipping_status := 'PENDENTE';
+END IF;
 
 INSERT INTO public.shipping_order (id, active, created_at, delivery_date, destinationcity, destinationstate, estimated_delivery_days, shipment_date, shipping_cost, status, weight, shippingprovider_id)
 VALUES (gen_random_uuid(), true, v_created_at_timestamp, v_delivery_date, 'Cidade Exemplo', 'SP', v_provider_record.average_delivery_days, v_shipment_date, round((random() * 30 + 12)::numeric, 2), v_shipping_status, 0, v_provider_record.id)
     RETURNING id INTO v_shipping_order_id;
 
--- Adiciona itens ao pedido
 FOR j IN 1..floor(random() * 3 + 1)::INT LOOP
 SELECT sku, temp_stock.product_quantity INTO v_product_record FROM public.product p
                                                                        JOIN temp_stock ON p.sku = temp_stock.product_sku
@@ -185,23 +194,15 @@ VALUES (gen_random_uuid(), v_created_at_timestamp, v_item_price, v_item_quantity
 v_order_products_price := v_order_products_price + (v_item_price * v_item_quantity);
                             v_order_weight := v_order_weight + (0.5 * v_item_quantity);
 UPDATE temp_stock SET product_quantity = product_quantity - v_item_quantity WHERE product_sku = v_product_record.sku;
-
--- Gatilho de compra
-IF (SELECT product_quantity FROM temp_stock WHERE product_sku = v_product_record.sku) < v_stock_threshold THEN
-    INSERT INTO public.purchase_order (id, created_at, purchaseorderstatus, purchase_total_price_amount, purchase_total_product_amount, purchaser_id)
-    VALUES (gen_random_uuid(), v_created_at_timestamp, 'OPEN', 0, floor(random()*100+100)::int, v_purchaser_id);
-END IF;
 END IF;
 END LOOP;
 
-                    -- Atualiza o pedido com os totais e o ID do frete
 UPDATE public.orders o SET products_price = v_order_products_price, total_amount = v_order_products_price + s.shipping_cost, shipping_order_id = v_shipping_order_id FROM public.shipping_order s WHERE o.id = v_order_id AND s.id = v_shipping_order_id;
 UPDATE public.shipping_order SET weight = v_order_weight WHERE id = v_shipping_order_id;
-END IF; -- Fim do bloco para pedidos não-cancelados
+END IF;
 END LOOP;
-END IF; -- Fim do bloco de dias da semana
+END IF;
 END LOOP;
 
-    -- Atualiza a tabela de storage real com os resultados da simulação
 UPDATE public.storage s SET product_quantity = ts.product_quantity FROM temp_stock ts WHERE s.product_sku = ts.product_sku;
 END $$;
