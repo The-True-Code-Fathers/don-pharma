@@ -3,6 +3,8 @@
 -- ##################################################################
 -- Descrição: Versão final ajustada para ser compatível com a tabela
 -- 'orders' após a remoção da coluna 'total_amount'.
+-- MODIFICAÇÃO: As quantidades em 'order_item' e o estoque inicial
+-- foram multiplicados por 20 para gerar uma receita maior.
 
 -- ETAPA 1: LIMPEZA COMPLETA DO BANCO DE DADOS
 DELETE FROM public.purchase_order_item;
@@ -60,7 +62,8 @@ INSERT INTO public.product (sku, active, created_at, description, measurementuni
 
 INSERT INTO public.storage (id, product_sku, product_quantity)
 SELECT gen_random_uuid(), sku,
-       CASE WHEN not active THEN 0 ELSE floor(random() * (200 - 50 + 1) + 50)::int END
+       -- ## MODIFICAÇÃO ##: Quantidade inicial de estoque multiplicada por 20 para suportar o aumento das vendas.
+       CASE WHEN not active THEN 0 ELSE (floor(random() * (200 - 50 + 1) + 50)::int) * 20 END
 FROM public.product;
 
 -- ETAPA 4: CRIAÇÃO DE ORDENS DE COMPRA (PURCHASE ORDERS) DE DEMONSTRAÇÃO
@@ -179,7 +182,8 @@ SELECT sku, temp_stock.product_quantity INTO v_product_record FROM public.produc
 WHERE p.active = true AND temp_stock.product_quantity > 0 ORDER BY random() LIMIT 1;
 
 IF FOUND THEN
-                            v_item_quantity := floor(random() * 2 + 1)::INT;
+                            -- ## MODIFICAÇÃO ##: Quantidade do item multiplicada por 20.
+                            v_item_quantity := (floor(random() * 2 + 1)::INT) * 20;
                             v_item_price := round((random() * 150 + 8)::numeric, 4);
                             v_item_quantity := LEAST(v_item_quantity, v_product_record.product_quantity);
 
