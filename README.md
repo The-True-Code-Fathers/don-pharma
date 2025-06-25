@@ -2,6 +2,8 @@
 
 DonPharma é um sistema de gestão para farmácias, desenvolvido em Java com Vaadin, que oferece funcionalidades para controle de vendas, estoque, funcionários, pedidos, metas e relatórios financeiros. O projeto utiliza uma arquitetura MVC, integra banco de dados PostgreSQL e oferece uma interface web responsiva e personalizável.
 
+![Demonstração do Sistema DonPharma](image/demo.png)
+
 ## Tecnologias Utilizadas
 
 - **Java 23** — Backend principal
