@@ -4,6 +4,8 @@ DonPharma é um sistema de gestão para farmácias, desenvolvido em Java com Vaa
 
 ![Demonstração do Sistema DonPharma](image/demo.png)
 
+![Demonstração do Sistema DonPharma Video](image/demo-video.gif)
+
 ## Tecnologias Utilizadas
 
 - **Java 23** — Backend principal
